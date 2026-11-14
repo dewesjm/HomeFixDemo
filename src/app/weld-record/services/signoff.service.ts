@@ -60,7 +60,7 @@ export class SignoffService {
   signStage(job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
     const workflow = this.store.workflowFor(job)();
     const stage = workflow.stages.find(s => s.id === stageId);
-    if (!stage || !this.viewer.canSignType(stage.signoffType)) return false;
+    if (!stage || !this.viewer.canSignRouting(stage.id, stage.signoffType)) return false;
     let r: ReturnType<SignoffService['applySignoff']>;
     try {
       r = this.applySignoff(workflow, job, stageId, inputs, engineeringHold);
@@ -194,7 +194,7 @@ export class SignoffService {
 
   /* Release a job past the Fit-Up Release stage */
   releaseFitUp(job: Job) {
-    if (!this.viewer.canUseLegacyWorkflowActions() || !this.viewer.canSignType(FITUP_RELEASE)) return;
+    if (!this.viewer.canSignType(FITUP_RELEASE) || !this.viewer.roles().includes('Foreman')) return;
     this.store.update(job, wf => {
       const undo = signoffUndo(wf, job, FITUP_RELEASE);
       const stages = wf.stages.map(s =>

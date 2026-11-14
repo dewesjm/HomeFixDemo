@@ -1,3 +1,4 @@
+import { ViewerService } from '../access-logic/viewer.service';
 import { TestBed } from '@angular/core/testing';
 import { Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
@@ -606,6 +607,27 @@ describe('SignoffService', () => {
       service.signStage(job, 'fit');
       expect(stage(job, 'fit').signed).toBeTrue();
     });
+  });
+
+  it('limits Foreman signoffs to regular Fit-Up Insp, Fit-Up Release and Repair', () => {
+    const viewer = TestBed.inject(ViewerService);
+    viewer.select('foreman');
+    expect(viewer.canSearch()).toBeTrue();
+    expect(viewer.canViewJoint()).toBeTrue();
+    expect(viewer.canViewJointHistory()).toBeTrue();
+    expect(viewer.canViewHistoryPage()).toBeTrue();
+    expect(viewer.canAccessAdmin()).toBeFalse();
+    expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
+    expect(viewer.canSignRouting('repair-2', 'repair')).toBeTrue();
+    expect(viewer.canSignRouting('root-weld', 'root')).toBeFalse();
+
+    const regular = weldingJob();
+    const nqc = weldingJob({ id: 'foreman-nqc', nInd: '1' });
+    expect(service.signStage(regular, 'fitup-insp')).toBeTrue();
+    expect(service.signStage(nqc, 'nqc-fitup-insp')).toBeFalse();
+    expect(store.workflowFor(nqc)().stages.find(s => s.id === 'nqc-fitup-insp')?.signed).toBeFalse();
+    service.releaseFitUp(regular);
+    expect(store.workflowFor(regular)().stages.find(s => s.id === 'fitup-release')?.signed).toBeTrue();
   });
 
   it('releaseFitUp signs the Fit-Up Release stage and logs a Release entry', () => {

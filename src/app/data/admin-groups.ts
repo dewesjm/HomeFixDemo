@@ -82,6 +82,7 @@ export const ADMINISTRATORS_GROUP_ID = 'g1';
 export const VIEW_GROUP_ID = 'g10';
 export const FITTING_GROUP_ID = 'g2';
 export const WELDING_GROUP_ID = 'g3';
+export const FOREMAN_GROUP_ID = 'g4';
 
 const SAMPLE_GROUPS: AdminGroup[] = [
   { id: DEVELOPER_GROUP_ID, name: 'Developer', description: 'Full access to the demo.',
@@ -95,8 +96,10 @@ const SAMPLE_GROUPS: AdminGroup[] = [
       ...VIEW_PERMISSIONS, EDIT_FABRICATION_PERMISSION,
       ...[WELD_BUILDUP_TYPE, 'tack', 'deferred-tack', 'root', 'interim', 'final-weld'].map(signoffPermission),
     ] },
-  { id: 'g4', name: 'Foreman', description: 'Foremen who handle fit-up and repair routings.',
-    personas: ['Foreman'], allowed: [EDIT_FABRICATION_PERMISSION, ...EXISTING_SIGNOFF_PERMISSIONS] },
+  { id: FOREMAN_GROUP_ID, name: 'Foreman', description: 'Foremen who handle fit-up and repair routings.',
+    personas: ['Foreman'], allowed: [
+      ...VIEW_PERMISSIONS, ...['fitup-insp', 'fitup-release', 'repair'].map(signoffPermission),
+    ] },
   { id: 'g5', name: 'Inspector', description: 'Inspectors who handle inspection routings.',
     personas: ['Inspector'], allowed: EXISTING_SIGNOFF_PERMISSIONS },
   { id: 'g6', name: 'NQC Inspector', description: 'Inspectors who handle NQC inspection routings.',

@@ -382,13 +382,14 @@ export class PipeWeldingPageComponent {
   }
 
   canReleaseSelected = computed(() => {
-    if (!this.viewer.canUseLegacyWorkflowActions() || !this.viewer.canSignType('fitup-release') || this.selectedRole() !== 'Foreman') return false;
+    if (!this.viewer.canSignType('fitup-release') || this.selectedRole() !== 'Foreman') return false;
     const ids = this.selectedIds();
     if (ids.size === 0) return false;
     return this.table.paged().filter(r => ids.has(r.id)).every(r => r.currentRouting === 'Fit-Up Release');
   });
 
   releaseSelected() {
+    if (!this.canReleaseSelected()) return;
     const ids = this.selectedIds();
     for (const row of this.table.paged()) {
       if (ids.has(row.id)) this.signoffService.releaseFitUp(row);

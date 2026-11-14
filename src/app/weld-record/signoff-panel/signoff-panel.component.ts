@@ -36,7 +36,7 @@ export class SignoffPanelComponent {
   lacksSignoffPermission(st: WorkflowStage): boolean {
     const ctx = this.ctx();
     return !ctx.canSign(st) && (!!st.inspectionType ||
-      (ctx.showRestrictedWorkflowActions() && !st.typeOptions?.some(option => ctx.canSignType(option.value))));
+      (ctx.showRestrictedWorkflowActions() && !st.typeOptions?.some(option => ctx.canSignType(st, option.value))));
   }
 
   /* a step that records a WTN: the Foreman Override button (switched off) shows there */
