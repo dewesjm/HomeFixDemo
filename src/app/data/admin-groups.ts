@@ -1,6 +1,9 @@
 /* Admin → Groups: the permission list and the sample groups. A group either allows a permission
    (its key is in allowed) or doesn't. */
 
+import { ROUTING_PERSONAS, type Role } from './roles';
+import { STORAGE } from './storage-keys';
+
 interface Permission {
   key: string;
   label: string;
@@ -11,30 +14,16 @@ export interface AdminGroup {
   id: string;
   name: string;
   description: string;
+  personas: Exclude<Role, 'View'>[];
   allowed: string[];
 }
 
+export const VIEW_PERMISSION = 'view';
+
 const PERMISSIONS: Permission[] = [
+  { key: VIEW_PERMISSION, label: 'Search records', category: 'Access' },
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
-  { key: 'signoff-pre-fit', label: 'Pre-Fit', category: 'Sign-off' },
-  { key: 'signoff-fit', label: 'Fit', category: 'Sign-off' },
-  { key: 'signoff-tack', label: 'Tack', category: 'Sign-off' },
-  { key: 'signoff-fitup-insp', label: 'Fit-Up Insp', category: 'Sign-off' },
-  { key: 'signoff-fitup-release', label: 'Fit-Up Release', category: 'Sign-off' },
-  { key: 'signoff-deferred-tack', label: 'Deferred Tack', category: 'Sign-off' },
-  { key: 'signoff-root', label: 'Root', category: 'Sign-off' },
-  { key: 'signoff-layer', label: 'Layer', category: 'Sign-off' },
-  { key: 'signoff-final-weld', label: 'Final Weld', category: 'Sign-off' },
-  { key: 'signoff-root-ndt', label: 'Root NDT', category: 'Sign-off' },
-  { key: 'signoff-layer-ndt', label: 'Layer NDT', category: 'Sign-off' },
-  { key: 'signoff-final-ndt', label: 'Final NDT', category: 'Sign-off' },
-  { key: 'signoff-repair', label: 'Repair', category: 'Sign-off' },
-  { key: 'signoff-excavation-ndt', label: 'Excavation NDT', category: 'Sign-off' },
-  { key: 'signoff-engineering-hold', label: 'Engineering Hold', category: 'Sign-off' },
-  { key: 'signoff-review-o63', label: 'O63 Records Review', category: 'Sign-off' },
-  { key: 'signoff-review-o04', label: 'O04 Records Review', category: 'Sign-off' },
-  { key: 'signoff-sold', label: 'Sold', category: 'Sign-off' },
   { key: 'edit-fabrication', label: 'Edit fabrication fields', category: 'Data Entry' },
   { key: 'admin-groups', label: 'Manage groups and permissions', category: 'Administration' },
   { key: 'admin-tables', label: 'Maintain other admin tables', category: 'Administration' },
@@ -56,26 +45,42 @@ export function permissionSummary(allowed: readonly string[]): { category: strin
     .filter(line => line.labels.length);
 }
 
-/* one sample group per persona (the Persona column in Admin > Routing Settings), plus Administrators */
-export const SAMPLE_GROUPS: AdminGroup[] = [
+export const DEVELOPER_GROUP_ID = 'developer';
+export const VIEW_GROUP_ID = 'g10';
+
+const SAMPLE_GROUPS: AdminGroup[] = [
+  { id: DEVELOPER_GROUP_ID, name: 'Developer', description: 'Full access to the demo.',
+    personas: ROUTING_PERSONAS, allowed: PERMISSIONS.map(p => p.key) },
   { id: 'g1', name: 'Administrators', description: 'Maintain groups and the other admin tables.',
-    allowed: ['admin-groups', 'admin-tables'] },
-  { id: 'g2', name: 'Fitting', description: 'Fitters who sign off the Fit routing.',
-    allowed: ['signoff-fit', 'edit-fabrication'] },
-  { id: 'g3', name: 'Welding', description: 'Welders who sign off Tack, Root, Layer and Final Weld.',
-    allowed: ['signoff-tack', 'signoff-deferred-tack', 'signoff-root', 'signoff-layer', 'signoff-final-weld', 'edit-fabrication'] },
-  { id: 'g4', name: 'Foreman', description: 'Foremen who sign off Fit-Up Insp, Fit-Up Release and Repair.',
-    allowed: ['signoff-fitup-insp', 'signoff-fitup-release', 'signoff-repair', 'edit-fabrication'] },
-  { id: 'g5', name: 'Inspector', description: 'Inspectors who sign off Fit-Up Insp and the NDT routings.',
-    allowed: ['signoff-fitup-insp', 'signoff-root-ndt', 'signoff-layer-ndt', 'signoff-final-ndt', 'signoff-excavation-ndt'] },
-  { id: 'g6', name: 'NQC Inspector', description: 'NQC Inspectors who sign off Pre-Fit, and Fit-Up Insp and the NDT routings on N Ind. 1 or 2 joints.',
-    allowed: ['signoff-pre-fit', 'signoff-fitup-insp', 'signoff-root-ndt', 'signoff-layer-ndt', 'signoff-final-ndt'] },
-  { id: 'g7', name: 'O63 Records', description: 'O63 Records, who sign off O63 Records Review and Sold.',
-    allowed: ['signoff-review-o63', 'signoff-sold'] },
-  { id: 'g8', name: 'O04 Records', description: 'O04 Records, who sign off O04 Records Review.',
-    allowed: ['signoff-review-o04'] },
-  { id: 'g9', name: 'Engineering', description: 'Engineers who sign off Engineering Hold and can force a routing override.',
-    allowed: ['signoff-engineering-hold', 'manage-routing', 'force-routing'] },
-  { id: 'g10', name: 'View', description: 'Read-only access; no sign-offs.',
-    allowed: [] },
+    personas: [], allowed: ['admin-groups', 'admin-tables'] },
+  { id: 'g2', name: 'Fitting', description: 'Fitters who handle Fit.',
+    personas: ['Fitting'], allowed: ['edit-fabrication'] },
+  { id: 'g3', name: 'Welding', description: 'Welders who handle welding routings.',
+    personas: ['Welding'], allowed: ['edit-fabrication'] },
+  { id: 'g4', name: 'Foreman', description: 'Foremen who handle fit-up and repair routings.',
+    personas: ['Foreman'], allowed: ['edit-fabrication'] },
+  { id: 'g5', name: 'Inspector', description: 'Inspectors who handle inspection routings.',
+    personas: ['Inspector'], allowed: [] },
+  { id: 'g6', name: 'NQC Inspector', description: 'Inspectors who handle NQC inspection routings.',
+    personas: ['NQC Inspector'], allowed: [] },
+  { id: 'g7', name: 'O63 Records', description: 'O63 records reviewers.',
+    personas: ['O63 Records'], allowed: [] },
+  { id: 'g8', name: 'O04 Records', description: 'O04 records reviewers.',
+    personas: ['O04 Records'], allowed: [] },
+  { id: 'g9', name: 'Engineering', description: 'Engineers who handle Engineering Hold and routing overrides.',
+    personas: ['Engineering'], allowed: ['manage-routing', 'force-routing'] },
+  { id: VIEW_GROUP_ID, name: 'View', description: 'Search Weld Record.',
+    personas: [], allowed: [VIEW_PERMISSION] },
 ];
+
+export function loadGroups(): AdminGroup[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE.adminGroups) ?? 'null');
+    if (Array.isArray(saved)) return saved;
+  } catch { /* use the sample groups */ }
+  return SAMPLE_GROUPS;
+}
+
+export function saveGroups(groups: AdminGroup[]) {
+  localStorage.setItem(STORAGE.adminGroups, JSON.stringify(groups));
+}

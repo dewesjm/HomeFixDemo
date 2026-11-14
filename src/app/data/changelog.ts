@@ -13,7 +13,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Weld Record > Admin > Services: try the calls made to Weld Record and see each exact response: get one joint, its routing path, or its History (all of it or one section). Read-only so far.',
+    added: ['Use View as in the avatar menu to switch demo viewers. Pipe Welding offers the queues assigned to that viewer and remembers the selected queue in saved views.',
+      'Weld Record > Admin > Groups saves group personas and permissions across reloads. Routing Settings defines which personas sign each routing.',
+      'Weld Record > Admin > Services: try the calls made to Weld Record and see each exact response: get one joint, its routing path, or its History (all of it or one section). Read-only so far.',
       'Weld Record > Admin > Services can also find joints matching exact conditions, or search them like a list screen (search text, filters, sort, paging). Every joint it answers includes a ready-made link to its Joint Details page, so other systems can link straight to it.',
       'Weld Record > Admin > Services: pick the find filter\'s fields from a droplist with their names, and list every joint field a caller can use.',
       'Weld Engineering > Admin > Services: try the calls other systems make to Weld Engineering and see each exact response. Get one procedure (all of it or only some fields), find procedures matching a filter, or change a procedure\'s section values. Changing values really changes the procedure; an Active one needs a revision note.',

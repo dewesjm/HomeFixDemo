@@ -2,7 +2,7 @@
    search, column filters, Release to Welding, History) plus Adapt filters with stacked conditions, a
    column picker and saved variants that keep filters and columns together. Every Job, Fabrication and
    step field can be a filter or a column. */
-import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, linkedSignal, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -37,7 +37,9 @@ import { allStepAnswerFields } from '../catalogs/field-choices';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { activeStage } from '../routing-logic/current-routing';
-import { ROLES, type Role } from '../../data/roles';
+import { DEFAULT_DEMO_PERSON } from '../../data/demo-people';
+import { ViewerService } from '../access-logic/viewer.service';
+import { type Role } from '../../data/roles';
 import { formatDate } from '../../shared/date-format';
 import { jointRoute } from '../joint-page/joint-route';
 
@@ -59,7 +61,12 @@ export class PipeWeldingPageComponent {
 
   readonly STANDARD = STANDARD_VARIANT;
   banner = signal(bannerFor('pipe-welding'));
-  roleOptions = ROLES.map(r => ({ label: r === 'View' ? 'View All' : r, value: r }));
+  private viewer = inject(ViewerService);
+  roleOptions = computed(() => this.viewer.roles().map(role => ({
+    label: role === 'View' ? 'View All' : role,
+    value: role,
+  })));
+  private defaultRole = this.viewer.defaultRole;
 
   fields = searchFields();
   private fieldMap = new Map(this.fields.map(f => [f.key, f]));
@@ -72,7 +79,14 @@ export class PipeWeldingPageComponent {
     Object.fromEntries(this.fields.filter(f => f.kind === 'list').map(f => [f.key, inArray]))
   );
 
-  selectedRole = signal<Role>('View');
+  selectedRole = linkedSignal<{ person: ReturnType<ViewerService['person']>; roles: Role[] }, Role | null>({
+    source: () => ({ person: this.viewer.person(), roles: this.viewer.roles() }),
+    computation: ({ person, roles }, previous): Role | null => {
+      const prior = previous?.value;
+      if (person === previous?.source.person && prior && roles.includes(prior)) return prior;
+      return this.defaultRole();
+    },
+  });
   filterKeys = signal<string[]>([]);
   values = signal<FilterValues>({});
   columnKeys = signal<string[]>([]);
@@ -86,8 +100,10 @@ export class PipeWeldingPageComponent {
               private confirm: ConfirmService) {
     /* this tab's state (refresh, back from a joint), else a new visit: the default variant */
     const saved = loadTabSearchState();
-    if (saved) this.applyLayout(saved);
-    else this.pickVariant(this.defaultVariant() || STANDARD_VARIANT);
+    if (saved) {
+      const savedViewer = saved.viewerId ?? DEFAULT_DEMO_PERSON.id;
+      this.applyLayout(saved, savedViewer === this.viewer.person().id ? saved.role : null);
+    } else this.pickVariant(this.defaultVariant() || STANDARD_VARIANT);
     /* a new visit starts with the filter bar hidden; page size carries over */
     const last = saved ?? loadSearchState();
     this.filtersHidden.set(saved ? !!saved.filtersHidden : true);
@@ -98,9 +114,14 @@ export class PipeWeldingPageComponent {
     }
 
     effect(() => this.table.setRows(this.filtered()));
+    effect(() => {
+      this.viewer.person();
+      this.selectedIds.set(new Set());
+    });
     effect(() => saveSearchState({
       ...this.currentLayout(),
       variant: this.selectedVariant(),
+      viewerId: this.viewer.person().id,
       filtersHidden: this.filtersHidden(),
       page: this.table.page(),
       pageSize: this.table.pageSize(),
@@ -130,7 +151,7 @@ export class PipeWeldingPageComponent {
   /* role droplist: jobs whose current step routes to that role (same as Pipe Welding) */
   private roleRows = computed<SearchRow[]>(() => {
     const role = this.selectedRole();
-    if (role === 'View') return this.allRows();
+    if (!role || role === 'View') return this.allRows();
     return this.allRows().filter(r => {
       const current = activeStage(this.store.workflowFor(r)().stages);
       return (current?.role ?? '').split('|').includes(role);
@@ -174,11 +195,11 @@ export class PipeWeldingPageComponent {
       globalFilter: this.table.globalFilter(),
       sortField: this.table.sortField(),
       sortOrder: this.table.sortOrder(),
-      role: this.selectedRole(),
+      role: this.selectedRole() ?? '',
     };
   }
 
-  private applyLayout(l: SearchLayout) {
+  private applyLayout(l: SearchLayout, role: string | null = l.role) {
     const known = (keys: string[]) => keys.filter(k => this.fieldMap.has(k));
     this.filterKeys.set(known(l.filterKeys));
     this.values.set(JSON.parse(JSON.stringify(l.values ?? {})));
@@ -187,7 +208,7 @@ export class PipeWeldingPageComponent {
     this.table.globalFilter.set(l.globalFilter ?? '');
     this.table.sortField.set(l.sortField ?? null);
     this.table.sortOrder.set(l.sortOrder ?? 1);
-    this.selectedRole.set((ROLES as readonly string[]).includes(l.role) ? l.role as Role : 'View');
+    this.selectedRole.set(this.viewer.roles().find(option => option === role) ?? this.defaultRole());
     this.table.page.set(0);
     this.selectedIds.set(new Set());
   }
@@ -199,7 +220,7 @@ export class PipeWeldingPageComponent {
 
   pickVariant(name: string) {
     this.selectedVariant.set(name);
-    if (name === STANDARD_VARIANT) { this.applyLayout(standardLayout()); return; }
+    if (name === STANDARD_VARIANT) { this.applyLayout(standardLayout(), null); return; }
     const v = this.variants().find(x => x.name === name);
     if (v) this.applyLayout(v);
   }
@@ -324,15 +345,16 @@ export class PipeWeldingPageComponent {
     this.activeChips().length > 0
     || Object.values(this.table.columnFilters()).some(v => Array.isArray(v) ? v.length : !!v)
     || !!this.table.globalFilter()
-    || this.selectedRole() !== 'View');
+    || this.selectedRole() !== this.defaultRole());
 
   clear() {
     this.values.set({});
     this.table.clearFilters();
-    this.selectedRole.set('View');
+    this.selectedRole.set(this.defaultRole());
   }
 
   onRoleChange(role: Role) {
+    if (!this.viewer.roles().includes(role)) return;
     this.selectedRole.set(role);
     this.table.columnFilters.update(f => ({ ...f, currentRouting: [] }));
   }
