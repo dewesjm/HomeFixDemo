@@ -80,7 +80,7 @@ export const routes: Routes = [
       return (jointHistory ? viewer.canViewJointHistory() : viewer.canViewHistoryPage())
         || inject(Router).parseUrl('/pipe-welding');
     }] },
-  { path: 'makeup', component: MakeupPageComponent, title: 'EWR - Makeup', canActivate: [requireWorkflowAccess] },
+  { path: 'makeup', component: MakeupPageComponent, title: 'EWR - Makeup', canActivate: [requireWeldRecordAccess(viewer => viewer.canManageMakeup())] },
   { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings', canActivate: [requireAdminAccess] },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
   { path: 'admin/attribute-codes', component: AdminAttributeCodesComponent, title: 'EWR - Attribute Codes', canActivate: [requireAdminAccess] },

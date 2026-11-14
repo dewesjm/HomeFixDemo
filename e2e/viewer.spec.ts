@@ -69,7 +69,7 @@ test('View can read joints and use each History permission independently', async
   await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
   // Use the same persisted group rows that the in-app editor writes.
   await page.evaluate(() => {
-    localStorage.setItem('welding:admin-groups:v7', JSON.stringify([
+    localStorage.setItem('welding:admin-groups:v8', JSON.stringify([
       { id: 'g10', name: 'View', description: '', personas: [], allowed: ['view', 'joint-details', 'joint-history'] },
     ]));
   });

@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, NQC_INSPECTOR_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
@@ -10,6 +10,7 @@ import { GroupsStore } from './groups.store';
 
 const GROUPS_WITH_RESTRICTION_MESSAGES = [
   WELDING_GROUP_ID, FOREMAN_GROUP_ID, INSPECTOR_GROUP_ID, NQC_INSPECTOR_GROUP_ID,
+  O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID,
 ];
 const GROUPS_WITHOUT_LEGACY_ACTIONS = [VIEW_GROUP_ID, FITTING_GROUP_ID, ...GROUPS_WITH_RESTRICTION_MESSAGES];
 
@@ -28,6 +29,9 @@ export class ViewerService {
   // Other workflow actions keep their current access until their roles are reviewed.
   readonly canUseLegacyWorkflowActions = computed(() =>
     this.memberships().some(group => !GROUPS_WITHOUT_LEGACY_ACTIONS.includes(group.id)));
+  readonly showAdminAccessRequired = computed(() =>
+    this.showRestrictedWorkflowActions() && !this.memberships().some(group => group.id === FOREMAN_GROUP_ID));
+  readonly canManageMakeup = computed(() => this.permissions().has(MANAGE_MAKEUP_PERMISSION));
   readonly canEditFabrication = computed(() => this.permissions().has(EDIT_FABRICATION_PERMISSION));
   readonly canAccessAdmin = computed(() => this.isAdmin() || this.canUseLegacyWorkflowActions());
   readonly canSearch = computed(() => this.permissions().has(VIEW_PERMISSION));
@@ -64,6 +68,8 @@ export class ViewerService {
       if (!group.allowed.includes(permission)) return false;
       if (group.id === INSPECTOR_GROUP_ID) return inspection && !nqc;
       if (group.id === NQC_INSPECTOR_GROUP_ID) return inspection && nqc;
+      if (group.id === O63_RECORDS_GROUP_ID) return stageId === 'review-o63';
+      if (group.id === O04_RECORDS_GROUP_ID) return stageId === 'review-o04';
       return group.id !== FOREMAN_GROUP_ID || stageId !== nqcStepId('fitup-insp');
     });
   }

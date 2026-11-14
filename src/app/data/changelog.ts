@@ -13,7 +13,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Inspectors and NQC Inspectors can sign their Fit-Up Insp, NDT and Excavation NDT routings, edit Fabrication where routing allows it, and use search, Joint Details and both History views.',
+    added: ['Foremen can open Makeup from the Weld Record menu. Groups has a Manage Makeup permission, and the Weld Record Admin menu is hidden for Foremen.',
+      'O63 and O04 Records can sign their respective Records Review routings, search, open Joint Details, and read both History views. Groups no longer lists Manage routing.',
+      'Inspectors and NQC Inspectors can sign their Fit-Up Insp, NDT and Excavation NDT routings, edit Fabrication where routing allows it, and use search, Joint Details and both History views.',
       'Groups lists Sign Excavation NDT as a separate permission and drops Sign Sold. Records Review still closes the joint automatically.',
       'Foremen can search Weld Record, open Joint Details and History, sign regular Fit-Up Insp and Repair, and use Release to Welding for Fit-Up Release.',
       'Fitters can search Weld Record, open Joint Details and joint History, enter Fabrication values when routing allows it, and sign Fit.',

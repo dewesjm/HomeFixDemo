@@ -39,6 +39,7 @@ const EXISTING_SIGNOFF_PERMISSIONS = [
   SIGN_EXCAVATION_NDT_PERMISSION,
 ];
 
+export const MANAGE_MAKEUP_PERMISSION = 'manage-makeup';
 export const API_ACCESS_PERMISSION = 'api-access';
 
 const PERMISSIONS: Permission[] = [
@@ -47,7 +48,7 @@ const PERMISSIONS: Permission[] = [
   { key: JOINT_DETAILS_PERMISSION, label: 'View Joint Details', category: 'Access' },
   { key: JOINT_HISTORY_PERMISSION, label: 'Joint History button', category: 'Access' },
   { key: HISTORY_PAGE_PERMISSION, label: 'View History page', category: 'Access' },
-  { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
+  { key: MANAGE_MAKEUP_PERMISSION, label: 'Manage Makeup', category: 'Access' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
   { key: EDIT_FABRICATION_PERMISSION, label: 'Edit fabrication fields', category: 'Data Entry' },
   { key: 'admin-groups', label: 'Manage groups and permissions', category: 'Administration' },
@@ -93,6 +94,8 @@ export const WELDING_GROUP_ID = 'g3';
 export const FOREMAN_GROUP_ID = 'g4';
 export const INSPECTOR_GROUP_ID = 'g5';
 export const NQC_INSPECTOR_GROUP_ID = 'g6';
+export const O63_RECORDS_GROUP_ID = 'g7';
+export const O04_RECORDS_GROUP_ID = 'g8';
 
 const INSPECTOR_PERMISSIONS = [
   ...VIEW_PERMISSIONS, EDIT_FABRICATION_PERMISSION, SIGN_EXCAVATION_NDT_PERMISSION,
@@ -113,18 +116,18 @@ const SAMPLE_GROUPS: AdminGroup[] = [
     ] },
   { id: FOREMAN_GROUP_ID, name: 'Foreman', description: 'Foremen who handle fit-up and repair routings.',
     personas: ['Foreman'], allowed: [
-      ...VIEW_PERMISSIONS, ...['fitup-insp', 'fitup-release', 'repair'].map(signoffPermission),
+      ...VIEW_PERMISSIONS, MANAGE_MAKEUP_PERMISSION, ...['fitup-insp', 'fitup-release', 'repair'].map(signoffPermission),
     ] },
   { id: INSPECTOR_GROUP_ID, name: 'Inspector', description: 'Inspectors who handle inspection routings.',
     personas: ['Inspector'], allowed: INSPECTOR_PERMISSIONS },
   { id: NQC_INSPECTOR_GROUP_ID, name: 'NQC Inspector', description: 'Inspectors who handle NQC inspection routings.',
     personas: ['NQC Inspector'], allowed: INSPECTOR_PERMISSIONS },
-  { id: 'g7', name: 'O63 Records', description: 'O63 records reviewers.',
-    personas: ['O63 Records'], allowed: EXISTING_SIGNOFF_PERMISSIONS },
-  { id: 'g8', name: 'O04 Records', description: 'O04 records reviewers.',
-    personas: ['O04 Records'], allowed: EXISTING_SIGNOFF_PERMISSIONS },
+  { id: O63_RECORDS_GROUP_ID, name: 'O63 Records', description: 'O63 records reviewers.',
+    personas: ['O63 Records'], allowed: [...VIEW_PERMISSIONS, signoffPermission('review-o63')] },
+  { id: O04_RECORDS_GROUP_ID, name: 'O04 Records', description: 'O04 records reviewers.',
+    personas: ['O04 Records'], allowed: [...VIEW_PERMISSIONS, signoffPermission('review-o04')] },
   { id: 'g9', name: 'Engineering', description: 'Engineers who handle Engineering Hold and routing overrides.',
-    personas: ['Engineering'], allowed: ['manage-routing', 'force-routing', ...EXISTING_SIGNOFF_PERMISSIONS] },
+    personas: ['Engineering'], allowed: [MANAGE_MAKEUP_PERMISSION, 'force-routing', ...EXISTING_SIGNOFF_PERMISSIONS] },
   { id: VIEW_GROUP_ID, name: 'View', description: 'Search Weld Record.',
     personas: [], allowed: VIEW_PERMISSIONS },
 ];

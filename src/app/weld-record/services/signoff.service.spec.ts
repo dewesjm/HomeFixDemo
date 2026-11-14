@@ -649,9 +649,30 @@ describe('SignoffService', () => {
     }
   });
 
+  it('grants Records reviewers their own review and read access', () => {
+    const viewer = TestBed.inject(ViewerService);
+    for (const [person, ownReview, otherReview] of [
+      ['o63', 'review-o63', 'review-o04'], ['o04', 'review-o04', 'review-o63'],
+    ]) {
+      viewer.select(person);
+      expect(viewer.canSearch()).toBeTrue();
+      expect(viewer.canViewJoint()).toBeTrue();
+      expect(viewer.canViewJointHistory()).toBeTrue();
+      expect(viewer.canViewHistoryPage()).toBeTrue();
+      expect(viewer.canEditFabrication()).toBeFalse();
+      expect(viewer.canAccessAdmin()).toBeFalse();
+      expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
+      expect(viewer.canSignRouting(otherReview, otherReview)).toBeFalse();
+      expect(viewer.canSignRouting('repair', 'repair')).toBeFalse();
+      expect(viewer.canSignRouting(ownReview, ownReview)).toBeTrue();
+    }
+  });
+
   it('limits Foreman signoffs to regular Fit-Up Insp, Fit-Up Release and Repair', () => {
     const viewer = TestBed.inject(ViewerService);
     viewer.select('foreman');
+    expect(viewer.canManageMakeup()).toBeTrue();
+    expect(viewer.showAdminAccessRequired()).toBeFalse();
     expect(viewer.canSearch()).toBeTrue();
     expect(viewer.canViewJoint()).toBeTrue();
     expect(viewer.canViewJointHistory()).toBeTrue();
