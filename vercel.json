@@ -3,6 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/welding/browser",
   "rewrites": [
-    { "source": "/((?!.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
+    { "source": "/((?!api(?:/|$)|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
   ]
 }

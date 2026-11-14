@@ -24,7 +24,7 @@ import { WorkflowStore } from '../../../weld-record/services/workflow-store.serv
 import { currentRoutingLabel, activeStage } from '../../../weld-record/routing-logic/current-routing';
 import { ROLES, DEFAULT_ROLE, type Role } from '../../../data/roles';
 import { BannerPillComponent } from '../../../shared/banner-pill.component';
-import { jointRoute } from '../../../weld-record/joint-page/joint-route';
+import { jointRoute } from '../../../weld-record/joint-link-logic/joint-route';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 

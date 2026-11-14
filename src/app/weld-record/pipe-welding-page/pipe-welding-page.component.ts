@@ -41,7 +41,7 @@ import { DEFAULT_DEMO_PERSON } from '../../data/demo-people';
 import { ViewerService } from '../access-logic/viewer.service';
 import { type Role } from '../../data/roles';
 import { formatDate } from '../../shared/date-format';
-import { jointRoute } from '../joint-page/joint-route';
+import { jointRoute } from '../joint-link-logic/joint-route';
 
 const PAGE_SIZES = [10, 25, 50, 100];
 

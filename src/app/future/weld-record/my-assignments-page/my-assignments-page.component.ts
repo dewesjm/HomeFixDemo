@@ -19,7 +19,7 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { AppDatePipe, formatDate } from '../../../shared/date-format';
 import { BannerPillComponent } from '../../../shared/banner-pill.component';
-import { jointRoute } from '../../../weld-record/joint-page/joint-route';
+import { jointRoute } from '../../../weld-record/joint-link-logic/joint-route';
 
 /* Assignment plus its live routing, so the table can sort/filter/search on it like any other column */
 type AssignmentRow = Assignment & { routing: string };

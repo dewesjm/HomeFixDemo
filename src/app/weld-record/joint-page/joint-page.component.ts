@@ -21,7 +21,7 @@ import { SignoffFormEditsService } from '../signoff-validation-logic/signoff-for
 import { SignoffFormErrorsService } from '../signoff-validation-logic/signoff-form-errors.service';
 
 import { Job } from '../../data/jobs';
-import { findJointByRoute } from './joint-route';
+import { findJointByRoute } from '../joint-link-logic/joint-route';
 import { JointRoutingWritesService } from '../joint-service/joint-routing-writes.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';

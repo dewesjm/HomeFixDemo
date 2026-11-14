@@ -12,7 +12,7 @@ import { visibleSignoffFields, withoutHiddenAnswers } from '../signoff-forms-log
 import { snapshotInputs } from '../signoff-forms-logic/stage-display';
 import { signProblems } from '../signoff-validation-logic/sign-validation';
 import { visibleStageFields } from '../signoff-validation-logic/stage-form';
-import { findJoint, type JointKey, type JointResult } from './joint-service';
+import { findJoint, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 
 const blocked = (error: string) => ({ ok: false as const, title: 'Signoff blocked', error });
 

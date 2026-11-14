@@ -2,7 +2,8 @@
    operations. example: a joint the inputs start filled in with, so each call answers something the
    first time it's run. */
 import { sent, type OperationParam, type ServiceOperation } from '../../../../shared/service-tester-panel/service-operation';
-import { HISTORY_SECTIONS, type JointFieldDefinition, type JointFilter, type JointKey, type JointSearch, type JointService } from '../../../joint-service/joint-service';
+import type { JointKey } from '../../../joint-link-logic/joint-lookup';
+import { HISTORY_SECTIONS, type JointFieldDefinition, type JointFilter, type JointSearch, type JointService } from '../../../joint-service/joint-service';
 import { SEARCH_COLUMNS } from '../../../joint-service/joint-search';
 import type { HistoryEntry } from '../../../model/history';
 import { FABRICATION_FIELDS } from '../../../fabrication-logic/fabrication-fields';

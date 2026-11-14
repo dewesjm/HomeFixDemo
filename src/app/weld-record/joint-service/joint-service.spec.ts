@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { JOBS, type Job } from '../../data/jobs';
-import { JOINT_FIELDS, JointService, findJoint } from './joint-service';
-import { jointUrl } from '../joint-page/joint-route';
+import { JOINT_FIELDS, JointService } from './joint-service';
+import { findJoint } from '../joint-link-logic/joint-lookup';
+import { jointUrl } from '../joint-link-logic/joint-route';
 import { ViewerService } from '../access-logic/viewer.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { setRoutingFrom } from '../routing-logic/current-routing';

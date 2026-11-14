@@ -16,7 +16,7 @@ import { getTemplates } from '../routing-logic/routing-settings-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { HistoryTableState } from './history-table-state';
-import { jointRoute } from '../joint-page/joint-route';
+import { jointRoute } from '../joint-link-logic/joint-route';
 
 @Component({
   selector: 'app-history-table',

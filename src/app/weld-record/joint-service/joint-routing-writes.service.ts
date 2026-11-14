@@ -3,7 +3,7 @@ import { ViewerService } from '../access-logic/viewer.service';
 import { activeStageId, currentRoutingLabel } from '../routing-logic/current-routing';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { findJoint, type JointKey, type JointResult } from './joint-service';
+import { findJoint, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 
 @Injectable({ providedIn: 'root' })
 export class JointRoutingWritesService {

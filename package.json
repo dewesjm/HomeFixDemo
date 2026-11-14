@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:once": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:joint-url": "tsc -p tsconfig.api.json && node --test scripts/joint-url.test.mjs",
     "test:coverage": "node scripts/test-coverage.mjs",
     "typecheck": "tsc --noEmit --noUnusedLocals -p tsconfig.app.json",
     "e2e": "playwright test"

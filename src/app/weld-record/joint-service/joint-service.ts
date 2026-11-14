@@ -22,7 +22,8 @@ import { SignoffService } from '../services/signoff.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { fabricationFieldsShown } from '../fabrication-logic/fabrication-form';
 import type { HistoryEntry } from '../model/history';
-import { jointUrl } from '../joint-page/joint-route';
+import { jointUrl } from '../joint-link-logic/joint-route';
+import { findJoint, jointFailure as fail, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
 import {
   SEARCH_COLUMNS, filterProblem, matchesFilter, searchProblem, searchRow, searchRows,
@@ -30,10 +31,6 @@ import {
 } from './joint-search';
 
 export type { JointRecord, JointFilter, JointSearch, JointSearchRow } from './joint-search';
-
-export interface JointKey { xrefid?: string; hull?: string; drawing?: string; joint?: string; }
-
-export type JointResult<T> = { ok: true; data: T } | { ok: false; error: string; title: string };
 
 export interface RoutingRow {
   id: string;
@@ -68,30 +65,6 @@ export const HISTORY_SECTIONS: HistoryEntry['section'][] = [
   'Stages', 'Sign-off', 'Correction', 'References', 'Fabrication', 'Release', 'Refit', 'Routing',
   'Deviation', 'Foreman Override', 'Engineering Override',
 ];
-
-const fail = (error: string, title = 'Not found') => ({ ok: false as const, error, title });
-const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
-
-function keyText(k: JointKey): string {
-  return k.xrefid?.trim() ? `XREFID ${k.xrefid.trim()}` : `hull ${k.hull ?? ''} / drawing ${k.drawing ?? ''} / joint ${k.joint ?? ''}`;
-}
-
-/* the one joint the key names: by XREFID when given, else hull + drawing + joint (all three needed) */
-export function findJoint(key: JointKey, jobs: Job[] = JOBS): JointResult<Job> {
-  const xrefid = key.xrefid?.trim() ?? '';
-  let found: Job[];
-  if (xrefid) {
-    found = jobs.filter(j => j.xrefid && same(j.xrefid, xrefid));
-  } else {
-    if (!key.hull?.trim() || !key.drawing?.trim() || !key.joint?.trim()) {
-      return fail('Give an XREFID, or hull, drawing and joint.', 'Key missing');
-    }
-    found = jobs.filter(j => same(j.hull, key.hull!) && same(j.drawing, key.drawing!) && same(j.joint, key.joint!));
-  }
-  if (!found.length) return fail(`There is no joint ${keyText(key)}.`);
-  if (found.length > 1) return fail(`${found.length} joints match ${keyText(key)}; give the XREFID.`, 'More than one joint');
-  return { ok: true, data: found[0] };
-}
 
 @Injectable({ providedIn: 'root' })
 export class JointService {

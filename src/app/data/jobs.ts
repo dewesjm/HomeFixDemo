@@ -2,7 +2,7 @@
 import { TECHNICIAN_NAMES } from './people';
 import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
 import { attributeDemoJobs } from './attribute-demo-jobs';
-import { JOINT_DESIGN_LABELS } from './joint-designs';
+import { JOINT_DESIGN_LABELS } from './joint-design-seed';
 
 export interface Job {
   id: string;          /* internal key, always present — never shown; the real (sometimes-missing) source

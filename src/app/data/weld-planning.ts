@@ -11,7 +11,7 @@ import {
 import { ATTRIBUTE_CODES } from './attribute-codes';
 import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
 import { signal } from '@angular/core';
-import { JOINT_DESIGN_LABELS } from './joint-designs';
+import { JOINT_DESIGN_LABELS } from './joint-design-seed';
 import { NDT_LABELS } from './ndt-labels';
 import { getGwpOptions } from '../future/weld-engineering/procedure-service/procedure-usage';
 

@@ -1,9 +1,12 @@
 /* Joint Details URL: /jobs/<hull>/<drawing>/<joint>, the combination that uniquely identifies a joint
    (XREFID can be blank, so it is never part of the URL) */
-import { JOBS, Job } from '../../data/jobs';
+import { JOBS, type Job } from '../../data/jobs';
 
-export function jointRoute(job: Pick<Job, 'hull' | 'drawing' | 'joint'>): string[] {
-  return ['/jobs', job.hull, job.drawing, job.joint];
+type JointIdentity = Pick<Job, 'hull' | 'drawing' | 'joint'>;
+const jointSegments = (job: JointIdentity) => [job.hull, job.drawing, job.joint];
+
+export function jointRoute(job: JointIdentity): string[] {
+  return ['/jobs', ...jointSegments(job)];
 }
 
 export function findJointByRoute(hull: string | null, drawing: string | null, joint: string | null): Job | undefined {
@@ -17,7 +20,7 @@ export function appBaseUrl(): string {
 }
 
 /* the full Joint Details link other systems are given (each part URL-encoded), so they never build it */
-export function jointUrl(job: Pick<Job, 'hull' | 'drawing' | 'joint'>, base = appBaseUrl()): string {
-  const path = ['jobs', job.hull, job.drawing, job.joint].map(encodeURIComponent).join('/');
+export function jointUrl(job: JointIdentity, base = appBaseUrl()): string {
+  const path = ['jobs', ...jointSegments(job)].map(encodeURIComponent).join('/');
   return new URL(path, base).href;
 }

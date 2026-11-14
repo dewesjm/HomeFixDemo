@@ -7,7 +7,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import { isUserEditable } from '../signoff-forms-logic/field-locks';
 import { fieldsShown, visibleSignoffFields } from '../signoff-forms-logic/shown-fields';
 import { isRoutingLockedField } from '../signoff-forms-logic/stage-rules';
-import { findJoint, type JointKey, type JointResult } from './joint-service';
+import { findJoint, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 
 type Correction = { inputs?: Record<string, string>; signoffInputs?: Record<string, string> };
 const fail = (title: string, error: string) => ({ ok: false as const, title, error });
