@@ -29,8 +29,6 @@ export class ViewerService {
   // Other workflow actions keep their current access until their roles are reviewed.
   readonly canUseLegacyWorkflowActions = computed(() =>
     this.memberships().some(group => !GROUPS_WITHOUT_LEGACY_ACTIONS.includes(group.id)));
-  readonly showAdminAccessRequired = computed(() =>
-    this.showRestrictedWorkflowActions() && !this.memberships().some(group => group.id === FOREMAN_GROUP_ID));
   readonly canManageMakeup = computed(() => this.permissions().has(MANAGE_MAKEUP_PERMISSION));
   readonly canEditFabrication = computed(() => this.permissions().has(EDIT_FABRICATION_PERMISSION));
   readonly canAccessAdmin = computed(() => this.isAdmin() || this.canUseLegacyWorkflowActions());

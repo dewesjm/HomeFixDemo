@@ -672,7 +672,6 @@ describe('SignoffService', () => {
     const viewer = TestBed.inject(ViewerService);
     viewer.select('foreman');
     expect(viewer.canManageMakeup()).toBeTrue();
-    expect(viewer.showAdminAccessRequired()).toBeFalse();
     expect(viewer.canSearch()).toBeTrue();
     expect(viewer.canViewJoint()).toBeTrue();
     expect(viewer.canViewJointHistory()).toBeTrue();

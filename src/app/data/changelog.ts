@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Foremen can open Makeup from the Weld Record menu. Groups has a Manage Makeup permission, and the Weld Record Admin menu is hidden for Foremen.',
+    added: ['Weld Record hides Admin, Makeup, and History navigation when you lack access. A record’s History button opens History locked to that joint in both Pipe Welding tables.',
+      'Foremen can open Makeup from the Weld Record menu. Groups has a Manage Makeup permission, and the Weld Record Admin menu is hidden for Foremen.',
       'O63 and O04 Records can sign their respective Records Review routings, search, open Joint Details, and read both History views. Groups no longer lists Manage routing.',
       'Inspectors and NQC Inspectors can sign their Fit-Up Insp, NDT and Excavation NDT routings, edit Fabrication where routing allows it, and use search, Joint Details and both History views.',
       'Groups lists Sign Excavation NDT as a separate permission and drops Sign Sold. Records Review still closes the joint automatically.',

@@ -4,7 +4,7 @@
    be turned back on without a rewrite. */
 import { bannerFor } from '../../../data/banner';
 import { STORAGE } from '../../../data/storage-keys';
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,6 +18,7 @@ import { downloadCsv } from '../../../shared/export-csv';
 import {
   JOBS, Job
 } from '../../../data/jobs';
+import { ViewerService } from '../../../weld-record/access-logic/viewer.service';
 import { SignoffService } from '../../../weld-record/services/signoff.service';
 import { WorkflowStore } from '../../../weld-record/services/workflow-store.service';
 import { currentRoutingLabel, activeStage } from '../../../weld-record/routing-logic/current-routing';
@@ -40,6 +41,8 @@ type Row = Job & { currentRouting: string };
   templateUrl: './pipe-welding-classic-page.component.html'
 })
 export class PipeWeldingClassicPageComponent {
+  readonly viewer = inject(ViewerService);
+
   constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
     // Restore saved state
     const saved = this.loadState();
@@ -170,9 +173,8 @@ export class PipeWeldingClassicPageComponent {
     this.router.navigate(jointRoute(job));
   }
 
-//nav to history with this job pre-filled
   openHistory(job: Job) {
-    this.router.navigate(['/history'], { queryParams: { job: job.id } });
+    this.router.navigate(['/history'], { queryParams: { job: job.id, jointHistory: job.id } });
   }
 
   onRoleChange(role: Role) {

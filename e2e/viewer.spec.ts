@@ -75,8 +75,13 @@ test('View can read joints and use each History permission independently', async
   });
   await page.reload();
   await expect(page).toHaveURL(/\/pipe-welding$/);
+  const weldRecord = page.locator('details').filter({ has: page.locator('summary[title="Weld Record"]') });
+  await expect(weldRecord.locator('a[href="/history"]')).toHaveCount(0);
   await page.goto(scopedHistory);
   await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
+  await expect(page.getByPlaceholder(/Search XREFID, drawing, joint or order/)).toHaveCount(0);
+  await page.getByRole('button', { name: 'Clear', exact: true }).click();
+  await expect(page).toHaveURL(/jointHistory=/);
 });
 
 test('Fitter can sign Fit and read joint History, with separate Weld Build-Up access', async ({ page }) => {
@@ -117,6 +122,9 @@ test('Welding can sign Weld Build-Up and Tack, with read-only History', async ({
   await page.getByRole('button', { name: 'User menu' }).click();
   await page.getByLabel('View as').selectOption({ label: 'Jordan (Welder)' });
   await expect(page.getByRole('combobox', { name: 'Role', exact: true }).locator('option:checked')).toHaveText('Welding');
+  const weldRecord = page.locator('details').filter({ has: page.locator('summary[title="Weld Record"]') });
+  await expect(weldRecord.getByText(/^(Admin|Makeup)( \(access required\))?$/, { exact: false })).toHaveCount(0);
+  await expect(weldRecord.locator('a[href="/history"]')).toHaveCount(1);
 
   await page.goto(jointUrl(FIT_JOINT));
   const panel = signoffPanel(page);

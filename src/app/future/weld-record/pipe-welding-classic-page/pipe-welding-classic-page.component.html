@@ -74,9 +74,11 @@
         <td>{{ job.currentRouting }}</td>
         <td class="col-freeze-actions">
           <div class="row-tight">
-            <button type="button" class="btn btn-ghost btn-xs" title="History" (click)="openHistory(job)">
-              <svg lucideHistory class="size-3"></svg><span class="btn-label"> History</span>
-            </button>
+            @if (viewer.canViewJointHistory()) {
+              <button type="button" class="btn btn-ghost btn-xs" title="History" (click)="openHistory(job)">
+                <svg lucideHistory class="size-3"></svg><span class="btn-label"> History</span>
+              </button>
+            }
             <button type="button" class="btn btn-primary btn-xs" title="Details" (click)="openDetails(job)">
               <svg lucideArrowUpRight class="size-3"></svg><span class="btn-label"> Details</span>
             </button>
