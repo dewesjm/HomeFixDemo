@@ -1,9 +1,9 @@
-import { buildStages } from '../../routing-logic/build-stages';
-import { WorkflowStage } from '../../model/workflow-types';
-import { JOBS } from '../../../data/jobs';
-import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
+import { buildStages } from '../routing-logic/build-stages';
+import { WorkflowStage } from '../model/workflow-types';
+import { JOBS } from '../../data/jobs';
+import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
 import { detectDeviations, isActualOutOfRange } from './deviations';
-import { getFillerMetalTypeOptions, getGwpDetails } from '../../../future/weld-engineering/procedure-service/procedure-usage';
+import { getFillerMetalTypeOptions, getGwpDetails } from '../../future/weld-engineering/procedure-service/procedure-usage';
 
 const allowedFillers = (gwp: string, wtn: string) => getFillerMetalTypeOptions(gwp, wtn).map(o => o.value);
 

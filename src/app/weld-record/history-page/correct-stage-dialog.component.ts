@@ -11,8 +11,7 @@ import { fieldsShown, visibleSignoffFields } from '../signoff-forms-logic/shown-
 import { isUserEditable } from '../signoff-forms-logic/field-locks';
 import { isRoutingLockedField } from '../signoff-forms-logic/stage-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { SignoffService } from '../services/signoff.service';
-import { ReferenceService } from '../services/reference.service';
+import { JointRecordEditsService } from '../joint-service/joint-record-edits.service';
 import { ReferencesPanelComponent } from '../references-panel/references-panel.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
@@ -30,8 +29,7 @@ export interface CorrectTarget { job: Job; stageId: string }
 })
 export class CorrectStageDialogComponent {
   private store = inject(WorkflowStore);
-  private signoffSvc = inject(SignoffService);
-  private referenceSvc = inject(ReferenceService);
+  private editsService = inject(JointRecordEditsService);
 
   target = input<CorrectTarget | null>(null);
   closed = output<void>();
@@ -124,19 +122,18 @@ export class CorrectStageDialogComponent {
     for (const f of this.signoffFields()) {
       if (f.key in e && e[f.key] !== (st.signoffInputs[f.key] ?? '')) signoffInputs[f.key] = e[f.key];
     }
-    this.signoffSvc.correctStage(t.job, t.stageId, { inputs, signoffInputs }, this.reason().trim());
-    this.close();
+    if (this.editsService.correctRouting(t.job, t.stageId, { inputs, signoffInputs }, this.reason()).ok) this.close();
   }
 
   addReferences(files: FileList) {
     const t = this.target();
     if (!t) return;
-    for (const f of Array.from(files)) this.referenceSvc.addReference(t.job, f.name);
+    for (const f of Array.from(files)) this.editsService.addReference(t.job, f.name);
   }
 
   removeReference(id: string) {
     const t = this.target();
-    if (t) this.referenceSvc.removeReference(t.job, id);
+    if (t) this.editsService.removeReference(t.job, id);
   }
 
   close() {

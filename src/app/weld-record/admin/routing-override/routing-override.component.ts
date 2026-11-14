@@ -10,7 +10,7 @@ import { LucideRoute } from '@lucide/angular';
 import { ConfirmService } from '../../../shared/confirm.service';
 
 import { JOBS, Job } from '../../../data/jobs';
-import { RoutingService } from '../../services/routing.service';
+import { JointRoutingWritesService } from '../../joint-service/joint-routing-writes.service';
 import { WorkflowStore } from '../../services/workflow-store.service';
 import { currentRoutingLabel, activeStageId } from '../../routing-logic/current-routing';
 
@@ -22,7 +22,7 @@ import { currentRoutingLabel, activeStageId } from '../../routing-logic/current-
 })
 export class AdminRoutingOverrideComponent {
   private store = inject(WorkflowStore);
-  private wfService = inject(RoutingService);
+  private routingWrites = inject(JointRoutingWritesService);
   private confirm = inject(ConfirmService);
 
   hull = signal('');
@@ -84,7 +84,7 @@ export class AdminRoutingOverrideComponent {
       acceptLabel: 'Set routing',
       rejectLabel: 'Cancel',
       accept: () => {
-        this.wfService.setRouting(job, id, reason);
+        if (!this.routingWrites.setRouting(job, id, reason).ok) return;
         this.targetId.set(null);   // current routing now reflects the change
         this.reason.set('');
       }

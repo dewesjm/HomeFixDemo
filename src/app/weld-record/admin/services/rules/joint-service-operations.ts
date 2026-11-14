@@ -6,6 +6,9 @@ import { HISTORY_SECTIONS, type JointFieldDefinition, type JointFilter, type Joi
 import { SEARCH_COLUMNS } from '../../../joint-service/joint-search';
 import type { HistoryEntry } from '../../../model/history';
 import { FABRICATION_FIELDS } from '../../../fabrication-logic/fabrication-fields';
+import type { JointRoutingWritesService } from '../../../joint-service/joint-routing-writes.service';
+import type { JointSignoffService } from '../../../joint-service/joint-signoff.service';
+import type { JointRecordEditsService } from '../../../joint-service/joint-record-edits.service';
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 /* a field as a droplist entry, under its group */
@@ -24,6 +27,74 @@ const keyParams = (example: JointKey): OperationParam[] => [
   { name: 'joint', label: 'Joint', type: 'text', example: example.joint },
   { name: 'xrefid', label: 'XREFID', type: 'text', help: 'Or give the XREFID instead (it wins when both are given).' },
 ];
+
+const reasonParam: OperationParam = { name: 'reason', label: 'Reason', type: 'text', required: true };
+const routingParam: OperationParam = { name: 'routingId', label: 'Routing ID', type: 'text', required: true };
+
+export function jointRecordOperations(svc: JointRecordEditsService, example: JointKey): ServiceOperation[] {
+  return [
+    {
+      name: 'correctRouting',
+      signature: 'correctRouting(key, routingId, changes, reason)',
+      description: 'Corrects editable answers on a signed routing and records the changes in History.',
+      writes: true,
+      params: [...keyParams(example), routingParam, reasonParam,
+        { name: 'changes', label: 'Changes', type: 'json', required: true, help: 'Group field values under inputs or signoffInputs.' }],
+      call: a => [keyOf(a), str(a['routingId']), a['changes'], str(a['reason'])],
+      fn: (key, routingId, changes, reason) => svc.correctRouting(key, routingId, changes, reason),
+    },
+    {
+      name: 'addReference',
+      signature: 'addReference(key, name)',
+      description: 'Adds a reference file name to the demo joint and returns its current references.',
+      writes: true,
+      params: [...keyParams(example), { name: 'name', label: 'File name', type: 'text', required: true }],
+      call: a => [keyOf(a), str(a['name'])],
+      fn: (key, name) => svc.addReference(key, name),
+    },
+    {
+      name: 'removeReference',
+      signature: 'removeReference(key, id)',
+      description: 'Removes a reference by ID and returns the remaining references. Add Reference returns IDs.',
+      writes: true,
+      params: [...keyParams(example), { name: 'id', label: 'Reference ID', type: 'text', required: true }],
+      call: a => [keyOf(a), str(a['id'])],
+      fn: (key, id) => svc.removeReference(key, id),
+    },
+  ];
+}
+
+export function jointRoutingOperations(svc: JointRoutingWritesService, signoff: JointSignoffService, example: JointKey): ServiceOperation[] {
+  return [
+    {
+      name: 'signRouting',
+      signature: 'signRouting(key, routingId)',
+      description: 'Signs the current routing using the joint’s existing form answers and returns the resulting routing. Get the routing ID with getRouting.',
+      writes: true,
+      params: [...keyParams(example), routingParam],
+      call: a => [keyOf(a), str(a['routingId'])],
+      fn: (key, routingId) => signoff.signRouting(key, routingId),
+    },
+    {
+      name: 'deprogress',
+      signature: 'deprogress(key, reason)',
+      description: 'Reverses the latest eligible signoff and returns the resulting routing.',
+      writes: true,
+      params: [...keyParams(example), reasonParam],
+      call: a => [keyOf(a), str(a['reason'])],
+      fn: (key, reason) => svc.deprogress(key, reason),
+    },
+    {
+      name: 'setRouting',
+      signature: 'setRouting(key, routingId, reason)',
+      description: 'Performs a Routing Override and returns the resulting routing. Use getRouting to find a required target routing ID.',
+      writes: true,
+      params: [...keyParams(example), routingParam, reasonParam],
+      call: a => [keyOf(a), str(a['routingId']), str(a['reason'])],
+      fn: (key, routingId, reason) => svc.setRouting(key, routingId, reason),
+    },
+  ];
+}
 
 const openOnlyParam: OperationParam = {
   name: 'openOnly', label: 'Open only', type: 'select', options: ['true', 'false'], help: 'Default: false (closed joints, at Sold, included).',

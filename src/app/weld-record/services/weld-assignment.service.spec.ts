@@ -7,7 +7,7 @@ import {
 } from '../../future/weld-engineering/procedure-service/procedure-usage';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
 import { isEngineeringEntryJoint } from '../weld-assignment-logic/weld-assignment-mock';
-import { detectDeviations } from '../joint-page/rules/deviations';
+import { detectDeviations } from '../deviation-logic/deviations';
 import { WeldAssignmentService } from './weld-assignment.service';
 import { WorkflowStore } from './workflow-store.service';
 

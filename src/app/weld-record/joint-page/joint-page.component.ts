@@ -22,7 +22,7 @@ import { SignoffFormErrorsService } from '../signoff-validation-logic/signoff-fo
 
 import { Job } from '../../data/jobs';
 import { findJointByRoute } from './joint-route';
-import { RoutingService } from '../services/routing.service';
+import { JointRoutingWritesService } from '../joint-service/joint-routing-writes.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
 import { JointService } from '../joint-service/joint-service';
@@ -71,7 +71,7 @@ export class JointPageComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private store = inject(WorkflowStore);
-  private wfService = inject(RoutingService);
+  private routingWrites = inject(JointRoutingWritesService);
   private signoffService = inject(SignoffService);
   private referenceService = inject(ReferenceService);
   private jointService = inject(JointService);
@@ -407,7 +407,7 @@ export class JointPageComponent implements OnDestroy {
   private deprogress(reason: string) {
     if (!this.viewer.canUseLegacyWorkflowActions() || !this.job || !this.wf) return;
     const before = this.wf();
-    this.wfService.deprogress(this.job, reason);
+    if (!this.routingWrites.deprogress(this.job, reason).ok) return;
     if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
     this.selectedRouting.set(this.indexOfActive());
   }

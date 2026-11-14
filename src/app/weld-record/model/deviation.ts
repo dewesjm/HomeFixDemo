@@ -1,5 +1,5 @@
 /* deviations accepted at sign-off */
-/* one out-of-spec value accepted at sign-off (see weld-record/joint-page/rules/deviations.ts) */
+/* one out-of-spec value accepted at sign-off (see weld-record/deviation-logic/deviations.ts) */
 export interface DeviationItem {
   kind: 'out-of-range' | 'qual' | 'off-list' | 'reported';
   label: string;

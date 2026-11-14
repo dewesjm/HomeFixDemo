@@ -10,7 +10,7 @@ import { DeviationItem } from '../model/deviation';
 import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-forms-logic/weld-fields';
 import { displayValue } from '../signoff-forms-logic/stage-display';
 import { ASSIGNED_KEYS } from '../weld-assignment-logic/weld-assignment-rules';
-import { detectDeviations, isActualOutOfRange, BaseMetals } from './rules/deviations';
+import { detectDeviations, isActualOutOfRange, BaseMetals } from '../deviation-logic/deviations';
 import { conditionRequirements, heldQuals } from '../qualifications-logic/qual-conditions';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingService } from '../services/routing.service';

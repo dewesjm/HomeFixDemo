@@ -11,7 +11,7 @@ import { TablePagerComponent } from '../../shared/table-pager.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 import { JOBS, Job } from '../../data/jobs';
-import { RoutingService } from '../services/routing.service';
+import { JointRoutingWritesService } from '../joint-service/joint-routing-writes.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { HistoryRow, historyRows } from './rules/history-rows';
 import { downloadCsv } from '../../shared/export-csv';
@@ -36,7 +36,7 @@ export class HistoryPageComponent {
   readonly jointHistory = signal<string | null>(null);
   readonly canView = computed(() => this.jointHistory() !== null ? this.viewer.canViewJointHistory() : this.viewer.canViewHistoryPage());
   private store = inject(WorkflowStore);
-  private wfService = inject(RoutingService);
+  private routingWrites = inject(JointRoutingWritesService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
@@ -127,7 +127,7 @@ export class HistoryPageComponent {
   /* undo a job's most recent sign-off */
   deprogress(jobId: string, reason: string) {
     const job = this.jobById.get(jobId);
-    if (job && this.viewer.canUseLegacyWorkflowActions()) this.wfService.deprogress(job, reason);
+    if (job && this.viewer.canUseLegacyWorkflowActions()) this.routingWrites.deprogress(job, reason);
   }
 
   clear() {

@@ -53,7 +53,9 @@ export class RoutingService {
       label = target.label;
       return this.moveWithHistory(wf, job, targetId, 'Admin', 'admin', undefined, reason);
     });
+    if (!label) return false;
     this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set to ${label}`, life: 3000 });
+    return true;
   }
 
   /* moveRouting() plus its History entry ("Routing set to X (<by>)" / "Routed back to X (<by>)", with the
@@ -75,9 +77,11 @@ export class RoutingService {
 
   /* Deprogress: undo the most recent sign-off and everything it triggered (deprogressWorkflow) */
   deprogress(job: Job, comment?: string) {
+    let reversed = false;
     this.store.update(job, wf => {
       const d = deprogressWorkflow(wf, job);
       if (!d) return wf;
+      reversed = true;
       const s = d.stage;
       if (d.wf.refitNumber !== undefined) job.refitNumber = d.wf.refitNumber;
       if (d.wf.repairNumber !== undefined) job.repairNumber = d.wf.repairNumber;
@@ -90,6 +94,7 @@ export class RoutingService {
         stageId: s.id,
       });
     });
-    this.messages.add({ severity: 'info', summary: 'Routing reversed', life: 3000 });
+    if (reversed) this.messages.add({ severity: 'info', summary: 'Routing reversed', life: 3000 });
+    return reversed;
   }
 }
