@@ -1,10 +1,10 @@
-import { Injectable, signal } from '@angular/core';
-import { loadGroups, saveGroups, type AdminGroup } from '../../data/admin-groups';
+import { computed, Injectable, signal } from '@angular/core';
+import { loadGroups, saveGroups, withPrivilegedPermissions, type AdminGroup } from '../../data/admin-groups';
 
 @Injectable({ providedIn: 'root' })
 export class GroupsStore {
   private readonly rows = signal(loadGroups());
-  readonly groups = this.rows.asReadonly();
+  readonly groups = computed(() => withPrivilegedPermissions(this.rows()));
 
   save(group: AdminGroup) {
     const rows = this.groups();
@@ -15,6 +15,12 @@ export class GroupsStore {
 
   remove(id: string) {
     this.commit(this.groups().filter(row => row.id !== id));
+  }
+
+  removePermission(key: string) {
+    const groups = this.rows();
+    if (!groups.some(group => group.allowed.includes(key))) return;
+    this.commit(groups.map(group => ({ ...group, allowed: group.allowed.filter(permission => permission !== key) })));
   }
 
   private commit(groups: AdminGroup[]) {

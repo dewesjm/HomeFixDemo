@@ -114,7 +114,9 @@ export class AppComponent {
 
   constructor() {
     effect(() => {
-      if (this.viewer.isViewOnly() && /^\/(admin\/|makeup(?:[/?#]|$)|assignments(?:[/?#]|$)|pipe-welding-classic(?:[/?#]|$))/.test(this.router.url)) {
+      const url = this.router.url;
+      if ((!this.viewer.canAccessAdmin() && url.startsWith('/admin/')) ||
+          (!this.viewer.canUseLegacyWorkflowActions() && /^\/(makeup|assignments|pipe-welding-classic)(?:[/?#]|$)/.test(url))) {
         void this.router.navigateByUrl('/pipe-welding');
       }
     });

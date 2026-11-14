@@ -41,12 +41,12 @@
         @if (closesJoint(st.id)) {
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
-        } @else if (!st.signed && isEngineeringHold(st.id)) {
+        } @else if (!st.signed && isEngineeringHold(st.id) && ctx().canUseWorkflowActions()) {
           <div class="w-full"><app-engineering-release-panel [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
-        } @else if (!st.signed) {
+        } @else if (!st.signed && !isEngineeringHold(st.id) && (ctx().canSign(st) || ctx().inspectionTypeRequired(st))) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
                to trigger validation and see what's missing. signStage() shows what stops it. -->
-          <button type="button" class="btn btn-primary" [disabled]="!!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
+          <button type="button" class="btn btn-primary" [disabled]="!ctx().canSign(st) && !!st.inspectionType || !!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
           @if (ctx().editable(st) && ctx().engineeringOverrideAvailable(st)) {
@@ -56,14 +56,14 @@
               <svg lucideTriangleAlert class="size-4"></svg> Engineering Override
             </button>
           }
-          @if (foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || recordsWtn(st))) {
+          @if (ctx().canUseWorkflowActions() && foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || recordsWtn(st))) {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
             <span class="spacer"></span>
             <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)">
               <svg lucideTriangleAlert class="size-4"></svg> Foreman Override
             </button>
           }
-        } @else {
+        } @else if (st.signed) {
           @if (hasDecision(st) && st.result) {
             <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
               {{ (st.result || '') | uppercase }}
@@ -80,7 +80,7 @@
         }
       }
 
-      @if (!st.signed && ctx().reportedDeviations(st).length) {
+      @if (!st.signed && ctx().canUseWorkflowActions() && ctx().reportedDeviations(st).length) {
         <div class="mt-sm">
           <div class="font-semibold">Foreman overrides</div>
           <ul class="mt-1">

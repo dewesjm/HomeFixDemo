@@ -1,6 +1,7 @@
 /* Admin > Signoff Types: every Type a step can be signed as. A Type is added here first, then
    offered on steps (Admin > Signoff Type to Routing) and given its fields (Admin > Signoff Type
    Forms, one definition per Type, matched by its value). Stored in localStorage. */
+import { signal } from '@angular/core';
 import { STORAGE } from './storage-keys';
 import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
 
@@ -56,11 +57,14 @@ const SEED_TYPES: SignoffType[] = [
   type('Sold', 'sold'),
 ];
 
+export const seededSignoffTypeIds = SEED_TYPES.map(t => t.value);
+
 /* bumped on every save, so getTemplates() knows its cached options are out of date */
-let version = 0;
-export const signoffTypesVersion = () => version;
+const version = signal(0);
+export const signoffTypesVersion = version.asReadonly();
 
 export function getSignoffTypes(): SignoffType[] {
+  version();
   try {
     const raw = localStorage.getItem(STORAGE.signoffTypes);
     return raw ? JSON.parse(raw) as SignoffType[] : SEED_TYPES;
@@ -71,7 +75,7 @@ export function getSignoffTypes(): SignoffType[] {
 export function setSignoffTypes(types: SignoffType[]) {
   const filled = types.map(t => ({ ...t, value: t.value || valueFromName(t.label) }));
   localStorage.setItem(STORAGE.signoffTypes, JSON.stringify(filled));
-  version++;
+  version.update(value => value + 1);
 }
 
 function valueFromName(name: string): string {

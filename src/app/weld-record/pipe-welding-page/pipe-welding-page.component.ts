@@ -382,7 +382,7 @@ export class PipeWeldingPageComponent {
   }
 
   canReleaseSelected = computed(() => {
-    if (this.viewer.isViewOnly() || this.selectedRole() !== 'Foreman') return false;
+    if (!this.viewer.canUseLegacyWorkflowActions() || !this.viewer.canSignType('fitup-release') || this.selectedRole() !== 'Foreman') return false;
     const ids = this.selectedIds();
     if (ids.size === 0) return false;
     return this.table.paged().filter(r => ids.has(r.id)).every(r => r.currentRouting === 'Fit-Up Release');

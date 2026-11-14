@@ -11,6 +11,8 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { SignoffType, getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
+import { signoffPermission } from '../../../data/admin-groups';
+import { GroupsStore } from '../../access-logic/groups.store';
 import { getTemplates } from '../../routing-logic/routing-settings-rules';
 import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
 import { conditionText } from '../../signoff-forms-logic/field-rules';
@@ -28,6 +30,7 @@ interface TypeRow extends SignoffType {
 export class AdminSignoffTypesComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
+  private groups = inject(GroupsStore);
   private seq = 0;
 
   /* what Signs routing can name: the Routing Settings routings */
@@ -106,6 +109,7 @@ export class AdminSignoffTypesComponent {
     this.confirm.confirmDelete(`${row.label} (removed from every routing that offers it)`, () => {
       this.rows.update(r => r.filter(x => x.uid !== row.uid));
       this.persist();
+      this.groups.removePermission(signoffPermission(row.value));
       this.messages.add({ severity: 'info', summary: 'Deleted', detail: row.label, life: 3000 });
     });
   }

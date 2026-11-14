@@ -80,11 +80,11 @@ export class HistoryTableComponent {
   });
 
   isDeprogressable(r: HistoryRow): boolean {
-    return !this.viewer.isViewOnly() && this.actionKeys().deprogress.has(r.key);
+    return this.viewer.canUseLegacyWorkflowActions() && this.actionKeys().deprogress.has(r.key);
   }
 
   isCorrectable(r: HistoryRow): boolean {
-    return !this.viewer.isViewOnly() && this.actionKeys().correct.has(r.key);
+    return this.viewer.canUseLegacyWorkflowActions() && this.actionKeys().correct.has(r.key);
   }
 
   confirmDeprogress(jobId: string) {
@@ -101,7 +101,7 @@ export class HistoryTableComponent {
 
   openCorrect(r: HistoryRow) {
     const job = this.jobById.get(r.jobId);
-    if (!this.viewer.isViewOnly() && job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
+    if (this.viewer.canUseLegacyWorkflowActions() && job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
   }
 
   closeCorrect() {

@@ -1,5 +1,6 @@
 /* per-stage sign-off: signing a step (where it routes is routing-logic/on-signoff/signoff-routing.ts), saving it with its
    History entries and undo, Correct, and Fit-Up Release */
+import { ViewerService } from '../access-logic/viewer.service';
 import { RoutingConfigurationError } from '../routing-logic/routing-configuration-error';
 import { formInputFields, formSignoffFields } from '../signoff-forms-logic/form-fields';
 import { Injectable, inject } from '@angular/core';
@@ -37,6 +38,7 @@ function signedActionLabel(st: WorkflowStage): string {
 export class SignoffService {
   private store = inject(WorkflowStore);
   private messages = inject(ToastService);
+  private viewer = inject(ViewerService);
 
   /* patch a stage's sign-off fields (decision, Type, signoff inputs) before it's signed; logged under
      'Stages' like other field edits, which History hides -- the Signed off entry records them all */
@@ -56,9 +58,12 @@ export class SignoffService {
   /* lock a stage's sign-off and advance (or route back on reject) */
   /* engineeringHold: the sign-off accepted deviations, so the joint goes to Engineering Hold */
   signStage(job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
+    const workflow = this.store.workflowFor(job)();
+    const stage = workflow.stages.find(s => s.id === stageId);
+    if (!stage || !this.viewer.canSignType(stage.signoffType)) return false;
     let r: ReturnType<SignoffService['applySignoff']>;
     try {
-      r = this.applySignoff(this.store.workflowFor(job)(), job, stageId, inputs, engineeringHold);
+      r = this.applySignoff(workflow, job, stageId, inputs, engineeringHold);
     } catch (error) {
       if (!(error instanceof RoutingConfigurationError)) throw error;
       this.messages.add({ severity: 'error', summary: 'Routing configuration blocks signoff', detail: error.message, life: 6000 });
@@ -189,6 +194,7 @@ export class SignoffService {
 
   /* Release a job past the Fit-Up Release stage */
   releaseFitUp(job: Job) {
+    if (!this.viewer.canUseLegacyWorkflowActions() || !this.viewer.canSignType(FITUP_RELEASE)) return;
     this.store.update(job, wf => {
       const undo = signoffUndo(wf, job, FITUP_RELEASE);
       const stages = wf.stages.map(s =>

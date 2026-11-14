@@ -18,6 +18,9 @@ export interface SignoffContext {
   resultOptions: typeof STAGE_RESULT_OPTIONS;
 
   // Methods
+  canSign: (stage: WorkflowStage) => boolean;
+  canChooseType: (stage: WorkflowStage, type: string) => boolean;
+  canUseWorkflowActions: () => boolean;
   editable: (stage: WorkflowStage) => boolean;
   inputsEditable: (stage: WorkflowStage, idx: number) => boolean;
   visibleFields: (stage: WorkflowStage) => FormField[];

@@ -147,7 +147,7 @@ export class JointPageComponent implements OnDestroy {
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
   soldSigned = computed(() => !!this.wf?.().stages.some(s => closesJoint(s.id) && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing Settings) */
-  fabLocked = computed(() => this.viewer.isViewOnly() || !!this.wf && !!this.job && !fabricationEditable(this.wf().stages));
+  fabLocked = computed(() => !this.viewer.canEditFabrication() || !!this.wf && !!this.job && !fabricationEditable(this.wf().stages));
   /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
   rejectedCount = computed(() =>
@@ -176,7 +176,7 @@ export class JointPageComponent implements OnDestroy {
   fabFieldRequired = (f: FabricationField): boolean => !!this.wf && fabricationFieldRequired(f, this.fab());
 
   fabInputBlur(key: string, value: string) {
-    if (!this.viewer.isViewOnly() && this.job && this.wf && value !== (this.fab()[key] ?? '')) {
+    if (!this.fabLocked() && this.job && this.wf && value !== (this.fab()[key] ?? '')) {
       this.fabricationService.setFabricationData(this.job, key, value);
     }
   }
@@ -192,11 +192,19 @@ export class JointPageComponent implements OnDestroy {
   }
   /* sign-off editable only on the active stage */
   editable(stage: WorkflowStage): boolean {
-    return stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned() && !this.heldAt(stage);
+    return this.canSign(stage) && stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned() && !this.heldAt(stage);
   }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
+    return this.canSign(stage) && this.canSelectType(stage, i);
+  }
+
+  private canSelectType(stage: WorkflowStage, i: number): boolean {
     return !stage.signed && !this.locked(i) && !this.soldSigned() && !this.heldAt(stage);
+  }
+
+  private canSign(stage: WorkflowStage): boolean {
+    return this.viewer.canSignType(stage.signoffType);
   }
 
   /* ── Engineering Hold ── */
@@ -224,7 +232,7 @@ export class JointPageComponent implements OnDestroy {
   acceptDeviations(reason: string) {
     const req = this.deviationRequest();
     this.deviationRequest.set(null);
-    if (!req || !this.job) return;
+    if (!req || !this.job || !this.editable(req.stage)) return;
     this.deviationService.record(this.job, req.stage.id, req.items, reason);
     this.overrides.recordOverrides(req.stage);
     this.sign(req.stage.id, this.signoffSnapshot(req.stage), true);
@@ -250,6 +258,9 @@ export class JointPageComponent implements OnDestroy {
       jobComplete: () => this.jobComplete(),
       rejectedCount: () => this.rejectedCount(),
       resultOptions: STAGE_RESULT_OPTIONS,
+      canSign: (s) => this.canSign(s),
+      canChooseType: (s, type) => this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignType(type),
+      canUseWorkflowActions: () => this.viewer.canUseLegacyWorkflowActions(),
       editable: (s) => this.editable(s),
       inputsEditable: (s, i) => this.inputsEditable(s, i),
       visibleFields: (s) => this.visibleFields(s),
@@ -263,7 +274,7 @@ export class JointPageComponent implements OnDestroy {
       fieldWarning: (s, k) => ov.fieldWarning(s, k),
       reportedDeviations: (s) => ov.reported()[s.id] ?? [],
       foremanOverride: (s) => ov.foremanOverride(s),
-      engineeringOverrideAvailable: (s) => ov.engineeringOverrideAvailable(s),
+      engineeringOverrideAvailable: (s) => this.viewer.canUseLegacyWorkflowActions() && ov.engineeringOverrideAvailable(s),
       engineeringOverride: (s) => ov.engineeringOverrideClick(s),
       removeForemanOverride: (s, i) => ov.removeForemanOverride(s, i),
       assignedLocked: (s, k) => ov.assignedLocked(s, k),
@@ -274,7 +285,9 @@ export class JointPageComponent implements OnDestroy {
       signoffCheckboxChange: (s, f, c) => edits.setSignoffInput(s, f, c ? 'yes' : '', false),
       toggleAffectedItem: (s, item, e) => edits.toggleAffectedItem(s, item, e),
       onConsumableInsertChange: (s, v) => edits.onConsumableInsertChange(s, v),
-      setType: (s, v) => edits.setType(s, v),
+      setType: (s, v) => {
+        if (this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignType(v)) edits.setType(s, v);
+      },
       setStageResult: (s, r) => edits.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
       signBlockers: (s) => this.signBlockers(s),
@@ -343,7 +356,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   signStage(stage: WorkflowStage) {
-    if (!this.job || this.heldAt(stage)) return;
+    if (!this.job || (!this.canSign(stage) && stage.inspectionType) || this.heldAt(stage)) return;
     /* every problem shows: red on its field, or a line beside Signoff */
     const general = this.generalBlockers(stage);
     if (this.formErrors.showSigningErrors(stage.id, stageFieldErrors(stage, this.signCtx(stage)), general.length > 0,
@@ -366,6 +379,8 @@ export class JointPageComponent implements OnDestroy {
       rejectLabel: 'Cancel',
       password: true,
       accept: () => {
+        const live = this.wf?.().stages.find(s => s.id === st.id);
+        if (!live || live.signoffType !== st.signoffType || !this.editable(live)) return;
         this.overrides.recordOverrides(st);
         if (this.sign(stage.id, this.signoffSnapshot(stage))) this.router.navigate([this.backDestination()]);
       }
@@ -384,7 +399,7 @@ export class JointPageComponent implements OnDestroy {
   /* Records Review's Deprogress: undoes the latest sign-off, which the leave guard counts as loaded
      (as after signing), and shows the step the joint is now at */
   private deprogress(reason: string) {
-    if (!this.job || !this.wf) return;
+    if (!this.viewer.canUseLegacyWorkflowActions() || !this.job || !this.wf) return;
     const before = this.wf();
     this.wfService.deprogress(this.job, reason);
     if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
@@ -394,18 +409,23 @@ export class JointPageComponent implements OnDestroy {
   /* ── References and navigation ── */
 
   addReferences(files: FileList) {
-    if (!this.job) return;
+    if (!this.canEditReferences() || !this.job) return;
     for (const f of Array.from(files)) this.referenceService.addReference(this.job, f.name);
   }
   removeReference(id: string) {
-    if (this.job) this.referenceService.removeReference(this.job, id);
+    if (this.canEditReferences() && this.job) this.referenceService.removeReference(this.job, id);
   }
 
-  /* where "Back"/post-signoff navigation returns to, based on how this screen was opened */
+  private canEditReferences(): boolean {
+    const stage = this.wf?.().stages[this.selectedRouting()];
+    return this.viewer.canUseLegacyWorkflowActions() || (!!stage && this.editable(stage));
+  }
+
+  /* where "Back" /post-signoff navigation returns to, based on how this screen was opened */
   private backDestination(): string {
     const from = this.route.snapshot.queryParamMap.get('from');
     if (from === 'assignments') return '/assignments';
-    if (from === 'history') return '/history';
+    if (from === 'history' && this.viewer.canViewHistoryPage()) return '/history';
     return '/pipe-welding';
   }
 

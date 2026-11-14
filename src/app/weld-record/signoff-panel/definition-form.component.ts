@@ -117,7 +117,7 @@ export class DefinitionFormComponent {
   }
 
   referencesDisabled(): boolean {
-    return this.rule('references').disabled;
+    return this.rule('references').disabled || (!this.ctx().canUseWorkflowActions() && !this.ctx().editable(this.stage()));
   }
 
   /* the widths the definition gives its fields */

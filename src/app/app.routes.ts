@@ -56,7 +56,9 @@ import { ServicesComponent } from './future/weld-engineering/admin/services/serv
 const requireWeldRecordAccess = (allowed: (viewer: ViewerService) => boolean): CanActivateFn =>
   () => allowed(inject(ViewerService)) || inject(Router).parseUrl('/pipe-welding');
 
-const requireWorkflowAccess = requireWeldRecordAccess(viewer => !viewer.isViewOnly());
+const requireWorkflowAccess = requireWeldRecordAccess(viewer => viewer.canUseLegacyWorkflowActions());
+
+const requireAdminAccess = requireWeldRecordAccess(viewer => viewer.canAccessAdmin());
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'pipe-welding' },
@@ -79,35 +81,35 @@ export const routes: Routes = [
         || inject(Router).parseUrl('/pipe-welding');
     }] },
   { path: 'makeup', component: MakeupPageComponent, title: 'EWR - Makeup', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings', canActivate: [requireWorkflowAccess] },
+  { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings', canActivate: [requireAdminAccess] },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
-  { path: 'admin/attribute-codes', component: AdminAttributeCodesComponent, title: 'EWR - Attribute Codes', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/attribute-code-exceptions', component: AdminAttributeCodeExceptionsComponent, title: 'EWR - Attribute Code Exceptions', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/routing-override', component: AdminRoutingOverrideComponent, title: 'EWR - Routing Override', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/penetrant-types', component: AdminPenetrantTypesComponent, title: 'EWR - Penetrant Types', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/defect-codes', component: AdminDefectCodesComponent, title: 'EWR - Defect Codes', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent, title: 'EWR - Signoff Types', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/signoff-type-routing', component: AdminSignoffTypeRoutingComponent,     title: 'EWR - Signoff Type to Routing', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/signoff-type-forms', component: AdminSignoffTypeFormsComponent, title: 'EWR - Signoff Type Forms', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors', canActivate: [requireWorkflowAccess] },
+  { path: 'admin/attribute-codes', component: AdminAttributeCodesComponent, title: 'EWR - Attribute Codes', canActivate: [requireAdminAccess] },
+  { path: 'admin/attribute-code-exceptions', component: AdminAttributeCodeExceptionsComponent, title: 'EWR - Attribute Code Exceptions', canActivate: [requireAdminAccess] },
+  { path: 'admin/routing-override', component: AdminRoutingOverrideComponent, title: 'EWR - Routing Override', canActivate: [requireAdminAccess] },
+  { path: 'admin/penetrant-types', component: AdminPenetrantTypesComponent, title: 'EWR - Penetrant Types', canActivate: [requireAdminAccess] },
+  { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures', canActivate: [requireAdminAccess] },
+  { path: 'admin/defect-codes', component: AdminDefectCodesComponent, title: 'EWR - Defect Codes', canActivate: [requireAdminAccess] },
+  { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations', canActivate: [requireAdminAccess] },
+  { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations', canActivate: [requireAdminAccess] },
+  { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations', canActivate: [requireAdminAccess] },
+  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent, title: 'EWR - Signoff Types', canActivate: [requireAdminAccess] },
+  { path: 'admin/signoff-type-routing', component: AdminSignoffTypeRoutingComponent,     title: 'EWR - Signoff Type to Routing', canActivate: [requireAdminAccess] },
+  { path: 'admin/signoff-type-forms', component: AdminSignoffTypeFormsComponent, title: 'EWR - Signoff Type Forms', canActivate: [requireAdminAccess] },
+  { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes', canActivate: [requireAdminAccess] },
+  { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors', canActivate: [requireAdminAccess] },
   { path: 'admin/services', component: AdminServicesComponent, title: 'EWR - Services',
     canActivate: [() => inject(ViewerService).canAccessApi() || inject(Router).parseUrl('/pipe-welding')] },
-  { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/groups', component: AdminGroupsComponent, title: 'EWR - Groups', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/qualifications', component: AdminQualificationsComponent, title: 'EWR - Qualifications', canActivate: [requireWorkflowAccess] },
+  { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions', canActivate: [requireAdminAccess] },
+  { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner', canActivate: [requireAdminAccess] },
+  { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs', canActivate: [requireAdminAccess] },
+  { path: 'admin/groups', component: AdminGroupsComponent, title: 'EWR - Groups', canActivate: [requireAdminAccess] },
+  { path: 'admin/qualifications', component: AdminQualificationsComponent, title: 'EWR - Qualifications', canActivate: [requireAdminAccess] },
   { path: 'changelog', component: ChangelogComponent, title: 'Change Log' },
   { path: 'system-map', component: SystemMapComponent, title: 'System Map' },
-  { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR - Material Traceability', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR - Material Classification', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR - Quick Links', canActivate: [requireWorkflowAccess] },
-  { path: 'admin/feature-toggles', component: AdminFeatureTogglesComponent, title: 'EWR - Feature Toggles', canActivate: [requireWorkflowAccess] },
+  { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR - Material Traceability', canActivate: [requireAdminAccess] },
+  { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR - Material Classification', canActivate: [requireAdminAccess] },
+  { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR - Quick Links', canActivate: [requireAdminAccess] },
+  { path: 'admin/feature-toggles', component: AdminFeatureTogglesComponent, title: 'EWR - Feature Toggles', canActivate: [requireAdminAccess] },
 
   { path: 'jobs/:hull/:drawing/:joint', component: JointPageComponent, title: 'EWR - Hull Details', canActivate: [requireWeldRecordAccess(viewer => viewer.canViewJoint())], canDeactivate: [canDeactivateGuard] },
 

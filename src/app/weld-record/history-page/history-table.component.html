@@ -160,4 +160,4 @@
   </tbody>
 </table>
 
-<app-correct-stage-dialog [target]="viewer.isViewOnly() ? null : correctTarget()" (closed)="closeCorrect()" />
+<app-correct-stage-dialog [target]="viewer.canUseLegacyWorkflowActions() ? correctTarget() : null" (closed)="closeCorrect()" />

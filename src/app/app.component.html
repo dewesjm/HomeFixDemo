@@ -63,21 +63,21 @@
             </li>
           }
           @default {
-            @if (!viewer.isViewOnly() && toggles().myAssignments) {
+            @if (viewer.canUseLegacyWorkflowActions() && toggles().myAssignments) {
               <li><a title="My Assignments" routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> My Assignments</span></a></li>
             }
             <li><a title="Pipe Welding" routerLink="/pipe-welding" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding</span></a></li>
-            @if (!viewer.isViewOnly() && toggles().classicPipeWelding) {
+            @if (viewer.canUseLegacyWorkflowActions() && toggles().classicPipeWelding) {
               <li><a title="Pipe Welding (Classic)" routerLink="/pipe-welding-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding (Classic)</span></a></li>
             }
             <li><a title="Structural Welding" class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Structural Welding</span></a></li>
             @if (viewer.canViewHistoryPage()) {
               <li><a title="History" routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
             }
-            @if (!viewer.isViewOnly()) {
+            @if (viewer.canUseLegacyWorkflowActions()) {
               <li><a title="Makeup" routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
             }
-            @if (!viewer.isViewOnly()) {
+            @if (viewer.canAccessAdmin()) {
               <li class="dropdown-wrapper">
                 <details #flatAdminDetails (toggle)="onFlatAdminToggle()">
                   <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
@@ -94,7 +94,7 @@
                     <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
                     <li><a routerLink="/admin/penetrant-types" routerLinkActive="menu-active"><svg lucideDroplet class="size-4"></svg> Penetrant Types</a></li>
                     <li><a routerLink="/admin/qualifications" routerLinkActive="menu-active"><svg lucideUserCheck class="size-4"></svg> Qualifications</a></li>
-                    @if (!viewer.isViewOnly()) {
+                    @if (viewer.canAccessAdmin()) {
                     <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
                   }
                     <li><a routerLink="/admin/routing-override" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Override</a></li>
@@ -190,21 +190,21 @@
           <details #pipeWeldingDetails (toggle)="onPipeWeldingToggle()">
             <summary title="Weld Record"><svg lucideTable class="size-4"></svg><span class="nav-label"> Weld Record</span></summary>
             <ul class="dropdown-menu">
-              @if (!viewer.isViewOnly() && toggles().myAssignments) {
+              @if (viewer.canUseLegacyWorkflowActions() && toggles().myAssignments) {
                 <li><a routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg> My Assignments</a></li>
               }
               <li><a routerLink="/pipe-welding" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding</a></li>
-              @if (!viewer.isViewOnly() && toggles().classicPipeWelding) {
+              @if (viewer.canUseLegacyWorkflowActions() && toggles().classicPipeWelding) {
                 <li><a routerLink="/pipe-welding-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding (Classic)</a></li>
               }
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Structural Welding</a></li>
               @if (viewer.canViewHistoryPage()) {
                 <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> History</a></li>
               }
-              @if (!viewer.isViewOnly()) {
+              @if (viewer.canUseLegacyWorkflowActions()) {
                 <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg> Makeup</a></li>
               }
-              @if (!viewer.isViewOnly()) {
+              @if (viewer.canAccessAdmin()) {
                 <li class="dropdown-divider"></li>
                 <li class="has-submenu">
                   <details (toggle)="fitSubmenu($event)">
@@ -222,7 +222,7 @@
                       <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
                       <li><a routerLink="/admin/penetrant-types" routerLinkActive="menu-active"><svg lucideDroplet class="size-4"></svg> Penetrant Types</a></li>
                       <li><a routerLink="/admin/qualifications" routerLinkActive="menu-active"><svg lucideUserCheck class="size-4"></svg> Qualifications</a></li>
-                      @if (!viewer.isViewOnly()) {
+                      @if (viewer.canAccessAdmin()) {
                       <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
                     }
                       <li><a routerLink="/admin/routing-override" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Override</a></li>
@@ -262,7 +262,7 @@
             <li class="dropdown-divider"></li>
             <li><a routerLink="/changelog" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> Change Log</a></li>
             <li><a routerLink="/system-map" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> System Map</a></li>
-            @if (!viewer.isViewOnly()) {
+            @if (viewer.canAccessAdmin()) {
               <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Manage Quick Links</a></li>
             }
           </ul>

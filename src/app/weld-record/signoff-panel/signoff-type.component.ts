@@ -16,12 +16,12 @@ import { typesForAccessibleAnswer } from '../attribute-codes-logic/exception-eff
     <label class="stage-field">
       <span class="stage-field-label">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
       <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
-              [ngModel]="st.inspectionType" (ngModelChange)="ctx().setType(st, $event)">
+              [disabled]="!canChoose()" [ngModel]="st.inspectionType" (ngModelChange)="ctx().setType(st, $event)">
         @if (ctx().inspectionTypeRequired(st)) {
           <option [ngValue]="''">Select the inspection performed…</option>
         }
         @for (opt of options(); track opt.value) {
-          <option [ngValue]="opt.value">{{ opt.label }}</option>
+          <option [ngValue]="opt.value" [disabled]="!ctx().canChooseType(st, opt.value)">{{ opt.label }}</option>
         }
       </select>
     </label>
@@ -33,5 +33,6 @@ import { typesForAccessibleAnswer } from '../attribute-codes-logic/exception-eff
 export class SignoffTypeComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
+  canChoose = () => this.options().some(option => this.ctx().canChooseType(this.stage(), option.value));
   options = () => typesForAccessibleAnswer(this.stage());
 }

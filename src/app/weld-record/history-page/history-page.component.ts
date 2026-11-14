@@ -127,7 +127,7 @@ export class HistoryPageComponent {
   /* undo a job's most recent sign-off */
   deprogress(jobId: string, reason: string) {
     const job = this.jobById.get(jobId);
-    if (job && !this.viewer.isViewOnly()) this.wfService.deprogress(job, reason);
+    if (job && this.viewer.canUseLegacyWorkflowActions()) this.wfService.deprogress(job, reason);
   }
 
   clear() {
