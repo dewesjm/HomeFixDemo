@@ -37,4 +37,8 @@ test('Developer and Administrator share queues while Services requires Developer
 
   await page.goto('/admin/groups');
   await expect(page.getByRole('heading', { name: 'Groups' })).toBeVisible();
+  const group = (name: string) =>
+    page.getByRole('row').filter({ has: page.getByRole('cell', { name, exact: true }) });
+  await expect(group('Developer').getByText('API access', { exact: true })).toBeVisible();
+  await expect(group('Administrators').getByText('API access', { exact: true })).toHaveCount(0);
 });

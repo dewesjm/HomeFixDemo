@@ -19,8 +19,10 @@ export interface AdminGroup {
 }
 
 export const VIEW_PERMISSION = 'view';
+export const API_ACCESS_PERMISSION = 'api-access';
 
 const PERMISSIONS: Permission[] = [
+  { key: API_ACCESS_PERMISSION, label: 'API access', category: 'Access' },
   { key: VIEW_PERMISSION, label: 'Search records', category: 'Access' },
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
@@ -29,7 +31,9 @@ const PERMISSIONS: Permission[] = [
   { key: 'admin-tables', label: 'Maintain other admin tables', category: 'Administration' },
 ];
 
-export const ALL_GROUP_PERMISSIONS = PERMISSIONS.map(permission => permission.key);
+const ALL_GROUP_PERMISSIONS = PERMISSIONS.map(permission => permission.key);
+
+const WORKFLOW_PERMISSIONS = ALL_GROUP_PERMISSIONS.filter(key => key !== API_ACCESS_PERMISSION);
 
 export const PERMISSION_CATEGORIES = [...new Set(PERMISSIONS.map(p => p.category))];
 
@@ -55,7 +59,7 @@ const SAMPLE_GROUPS: AdminGroup[] = [
   { id: DEVELOPER_GROUP_ID, name: 'Developer', description: 'Full access to the demo.',
     personas: ROUTING_PERSONAS, allowed: ALL_GROUP_PERMISSIONS },
   { id: ADMINISTRATORS_GROUP_ID, name: 'Administrators', description: 'Full Weld Record workflow and administration access.',
-    personas: ROUTING_PERSONAS, allowed: ALL_GROUP_PERMISSIONS },
+    personas: ROUTING_PERSONAS, allowed: WORKFLOW_PERMISSIONS },
   { id: 'g2', name: 'Fitting', description: 'Fitters who handle Fit.',
     personas: ['Fitting'], allowed: ['edit-fabrication'] },
   { id: 'g3', name: 'Welding', description: 'Welders who handle welding routings.',
@@ -84,7 +88,8 @@ export function loadGroups(): AdminGroup[] {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE.adminGroups) ?? 'null');
     if (Array.isArray(saved)) return saved.map((group: AdminGroup) => isPrivilegedGroup(group.id)
-      ? { ...group, personas: ROUTING_PERSONAS, allowed: ALL_GROUP_PERMISSIONS }
+      ? { ...group, personas: ROUTING_PERSONAS,
+          allowed: group.id === DEVELOPER_GROUP_ID ? ALL_GROUP_PERMISSIONS : WORKFLOW_PERMISSIONS }
       : group);
   } catch { /* use the sample groups */ }
   return SAMPLE_GROUPS;

@@ -59,7 +59,7 @@
                   @for (p of permissionsIn(cat); track p.key) {
                     <label class="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" class="checkbox checkbox-sm"
-                             [ngModel]="row.allowed.includes(p.key)"
+                             [disabled]="p.key === apiAccessPermission" [ngModel]="row.allowed.includes(p.key)"
                              (ngModelChange)="togglePermission(row, p.key, $event)" />
                       {{ p.label }}
                     </label>

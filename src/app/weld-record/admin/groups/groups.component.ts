@@ -9,7 +9,7 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { AdminGroup, PERMISSION_CATEGORIES, isPrivilegedGroup, permissionSummary, permissionsIn } from '../../../data/admin-groups';
+import { AdminGroup, API_ACCESS_PERMISSION, PERMISSION_CATEGORIES, isPrivilegedGroup, permissionSummary, permissionsIn } from '../../../data/admin-groups';
 
 import { ROUTING_PERSONAS } from '../../../data/roles';
 import { GroupsStore } from '../../access-logic/groups.store';
@@ -79,7 +79,10 @@ export class AdminGroupsComponent {
     this.updateDraft({ [field]: value });
   }
 
+  readonly apiAccessPermission = API_ACCESS_PERMISSION;
+
   togglePermission(row: AdminGroup, key: string, on: boolean) {
+    if (key === API_ACCESS_PERMISSION) return;
     this.updateDraft({ allowed: on ? [...row.allowed, key] : row.allowed.filter(value => value !== key) });
   }
 
