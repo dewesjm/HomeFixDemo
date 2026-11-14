@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STORAGE } from '../src/app/data/storage-keys';
 import { FIT_JOINT, TACK_JOINT, jointUrl, fabricationInput, fillAndLeave, pipeWeldingRow, signAndConfirm, signoffPanel, typeSelect } from './support/joint-page';
 
 test('View as and saved group personas determine Pipe Welding queues', async ({ page }) => {
@@ -68,15 +69,14 @@ test('View can read joints and use each History permission independently', async
   await page.goto('/history');
   await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
   // Use the same persisted group rows that the in-app editor writes.
-  await page.evaluate(() => {
-    localStorage.setItem('welding:admin-groups:v8', JSON.stringify([
+  await page.evaluate(key => {
+    localStorage.setItem(key, JSON.stringify([
       { id: 'g10', name: 'View', description: '', personas: [], allowed: ['view', 'joint-details', 'joint-history'] },
     ]));
-  });
+  }, STORAGE.adminGroups);
   await page.reload();
   await expect(page).toHaveURL(/\/pipe-welding$/);
-  const weldRecord = page.locator('details').filter({ has: page.locator('summary[title="Weld Record"]') });
-  await expect(weldRecord.locator('a[href="/history"]')).toHaveCount(0);
+  await expect(page.locator('nav.topnav a[href="/history"]')).toHaveCount(0);
   await page.goto(scopedHistory);
   await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
   await expect(page.getByPlaceholder(/Search XREFID, drawing, joint or order/)).toHaveCount(0);
@@ -122,9 +122,9 @@ test('Welding can sign Weld Build-Up and Tack, with read-only History', async ({
   await page.getByRole('button', { name: 'User menu' }).click();
   await page.getByLabel('View as').selectOption({ label: 'Jordan (Welder)' });
   await expect(page.getByRole('combobox', { name: 'Role', exact: true }).locator('option:checked')).toHaveText('Welding');
-  const weldRecord = page.locator('details').filter({ has: page.locator('summary[title="Weld Record"]') });
-  await expect(weldRecord.getByText(/^(Admin|Makeup)( \(access required\))?$/, { exact: false })).toHaveCount(0);
-  await expect(weldRecord.locator('a[href="/history"]')).toHaveCount(1);
+  const nav = page.locator('nav.topnav');
+  await expect(nav.locator('summary[title="Admin"], a[href="/makeup"]')).toHaveCount(0);
+  await expect(nav.locator('a[href="/history"]')).toHaveCount(1);
 
   await page.goto(jointUrl(FIT_JOINT));
   const panel = signoffPanel(page);
