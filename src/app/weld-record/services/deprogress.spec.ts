@@ -217,15 +217,21 @@ describe('Deprogress', () => {
     expect(current(job)).toBe('root-ndt-utrt');
   });
 
-  it('Sold: deprogress reopens only Sold; Records Review stays signed', () => {
+  it('Deprogress at Sold reverses Records Review and returns the joint to review', () => {
     const job = weldingJob();
-    for (let i = 0; i < 40 && current(job); i++) signCurrent(job);
-    expect(current(job)).toBeNull();
-    expect(stage(job, 'sold').signed).toBeTrue();
+    for (let i = 0; i < 40 && current(job) && current(job) !== 'sold'; i++) {
+      signCurrent(job);
+    }
+    expect(current(job)).toBe('sold');
+    expect(stage(job, 'sold').signed).toBeFalse();
+    expect(stage(job, 'review-o04').signed).toBeTrue();
+    expect(offeredOn(job)).toBe('review-o04');
 
     deprogress(job, 'not sold yet');
+    expect(current(job)).toBe('review-o04');
+    expect(stage(job, 'review-o04').signed).toBeFalse();
+    expect(signCurrent(job)).toBe('review-o04');
     expect(current(job)).toBe('sold');
-    expect(stage(job, 'review-o04').signed).toBeTrue();
   });
 
   it('is saved: a new store reading localStorage sees the deprogressed joint and its remaining undo', () => {
