@@ -6,6 +6,13 @@
            findProcedures(filter, options) = every procedure matching a condition, header only unless fields are asked for;
            searchProcedures(query) = a list screen's rows: search text, column filters, sort, optional paging;
            getProcedurePdf(key, options) = the procedure's official PDF (answers asynchronously).
+   findProcedures vs searchProcedures, kept apart on purpose so each stays simple and can grow (and
+   scale) on its own:
+     findProcedures   = for another system's logic. Filters on any header or section field key (as
+                        section-service.ts getProcedureFields lists them), matched by the field's kind; one
+                        status; answers structured values tagged by kind. No search text, sort or paging.
+     searchProcedures = for a list screen (Procedure Lookup). Search text, filters on its columns only
+                        (several values per column, any matches), sort, paging and a total; answers flat rows.
    Writes: createProcedure(procedure), updateProcedure(key, changes, revisionNote), updateProcedureFields(key,
            values, revisionNote) (section values only), deleteProcedure(key), importProcedures(rows, revisionNote)
            (many at once, each row saved or refused on its own).

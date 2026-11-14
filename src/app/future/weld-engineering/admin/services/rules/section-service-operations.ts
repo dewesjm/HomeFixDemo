@@ -2,7 +2,7 @@
    operations. example: the section and field the inputs start filled in with. */
 import { type OperationParam, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
 import {
-  addSection, renameSection, shiftSection, removeSection, addField, renameField, shiftField, moveField, setFieldWidth, removeField,
+  getProcedureFields, addSection, renameSection, shiftSection, removeSection, addField, renameField, shiftField, moveField, setFieldWidth, removeField,
   type NewField,
 } from '../../../procedure-service/section-service';
 import { EXTRA_FIELD_TYPE_OPTIONS, type FieldWidth } from '../../../procedure-sections';
@@ -25,6 +25,15 @@ const placesParam: OperationParam = {
 
 export function sectionServiceOperations(example: SectionExample): ServiceOperation[] {
   return [
+    {
+      name: 'getProcedureFields',
+      signature: 'getProcedureFields()',
+      description: 'Every field key a caller can use: header fields, then each section\'s fields, with type, choices, how findProcedures filters it (filter) and whether getProcedure\'s fields option takes it (askable).',
+      writes: false,
+      params: [],
+      call: () => [],
+      fn: getProcedureFields,
+    },
     {
       name: 'addSection',
       signature: 'addSection(name)',

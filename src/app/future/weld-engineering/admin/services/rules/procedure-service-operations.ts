@@ -1,7 +1,10 @@
 /* Weld Engineering's procedure service calls as service tester operations. example: a procedure the
-   inputs start filled in with, so each call answers something the first time it's run. */
+   inputs start filled in with, so each call answers something the first time it's run. fields: every
+   field key (section-service.ts getProcedureFields), for the Filter and Fields droplists. */
 import { PROCEDURE_STATUS_OPTIONS, type ProcedureStatus } from '../../../../../data/procedures';
-import { sent, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
+import { sent, type ParamChoice, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
+import type { FieldDefinition } from '../../../procedure-service/section-service';
+import type { FilterMatch } from '../../../procedure-service/procedure-filter';
 import {
   getProcedure, getProcedurePdf, findProcedures, searchProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures,
 } from '../../../procedure-service/procedure-service';
@@ -19,17 +22,30 @@ const keyParams = (example: ProcedureKey) => [
   { name: 'gwp', label: 'GWP', type: 'text' as const, required: true, example: example.gwp },
   { name: 'wtn', label: 'WTN', type: 'text' as const, required: true, example: example.wtn },
 ];
-const fieldsParam = (example = '') => ({
-  name: 'fields', label: 'Fields', type: 'list' as const, example,
-  placeholder: 'e.g. phMin, phMax, requiredQuals',
-  help: 'Field keys, comma separated (Admin > Procedure Sections, Key column). Leave blank for every field.',
+const FILTER_HINTS: Record<FilterMatch, string> = {
+  equals: 'Value', contains: 'One of its values', inRange: 'A number', namesQual: 'A qualification',
+};
+
+/* a field as a droplist entry, under its section ('Header' for header fields) */
+function fieldChoice(f: FieldDefinition): ParamChoice {
+  const example = f.choices?.length ? `, e.g. ${f.choices[0]}` : '';
+  return {
+    value: f.key, label: `${f.label} (${f.key})`,
+    group: f.section ? `${f.section.number}. ${f.section.name}` : 'Header',
+    hint: f.filter ? `${FILTER_HINTS[f.filter]}${example}` : 'Value',
+  };
+}
+
+const fieldsParam = (fields: FieldDefinition[]) => ({
+  name: 'fields', label: 'Fields', type: 'picks' as const, choices: fields.filter(f => f.askable).map(fieldChoice),
+  help: 'Pick the fields to answer with. Leave empty for every field.',
 });
 const revisionNoteParam = { name: 'revisionNote', label: 'Revision note', type: 'text' as const, placeholder: 'What changed and why' };
 /* by: who the Revision Record names for a change made here */
 const BY = 'Services page';
 const statusParam = { name: 'status', label: 'Status', type: 'select' as const, options: STATUSES, help: 'Default: active.' };
 
-export function procedureServiceOperations(example: ProcedureKey): ServiceOperation[] {
+export function procedureServiceOperations(example: ProcedureKey, fields: FieldDefinition[]): ServiceOperation[] {
   return [
     {
       name: 'getProcedure',
@@ -37,7 +53,7 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
       description: 'One procedure (WTN): its header and sections, or only the fields asked for. Fields it doesn\'t have are listed under missing.',
       writes: false,
       params: [
-        ...keyParams(example), fieldsParam(), statusParam,
+        ...keyParams(example), fieldsParam(fields), statusParam,
         { name: 'revision', label: 'Revision', type: 'text', help: 'Default: the current revision. Older revisions aren\'t stored in this demo.' },
       ],
       call: a => [keyOf(a), sent({ fields: fieldsOf(a), status: statusOf(a), revision: str(a['revision']) || undefined })],
@@ -46,14 +62,15 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
     {
       name: 'findProcedures',
       signature: 'findProcedures(filter, { fields?, status? })',
-      description: 'Every procedure matching all the filter\'s conditions. Answers with headers only unless fields are asked for.',
+      description: 'For another system\'s logic: every procedure matching all the filter\'s conditions, on any header or section field. Answers headers only unless fields are asked for, with values tagged by kind. No search text, sort or paging (that\'s searchProcedures).',
       writes: false,
       params: [
         {
-          name: 'filter', label: 'Filter', type: 'json', example: '{ "baseMetal1Type": "02-CS", "fillerMetalTypes": "mil-70s-6" }',
-          help: 'Field key: value. A list field matches when it contains the value; a range when it includes the number; quals when it names the qual.',
+          name: 'filter', label: 'Filter', type: 'conditions', example: '{ "baseMetal1Type": "02-CS", "fillerMetalTypes": "mil-70s-6" }',
+          choices: fields.filter(f => f.filter).map(fieldChoice),
+          help: 'Every condition must hold. A list field matches when it has the value, a range when it includes the number, a qualification requirement when it names the qual.',
         },
-        fieldsParam(), statusParam,
+        fieldsParam(fields), statusParam,
       ],
       call: a => [(a['filter'] ?? {}) as ProcedureFilter, sent({ fields: fieldsOf(a), status: statusOf(a) })],
       fn: findProcedures,
@@ -61,7 +78,7 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
     {
       name: 'searchProcedures',
       signature: 'searchProcedures({ text?, filters?, sort?, page?, pageSize? })',
-      description: 'The rows for a list screen, as Procedure Lookup asks for them: search text, column filters, sort, and paging when page and pageSize are sent. Answers the total matched.',
+      description: 'For a list screen (Procedure Lookup): search text, filters on its columns only, sort, and paging when page and pageSize are sent. Answers flat rows and the total matched. To filter on any field, use findProcedures.',
       writes: false,
       params: [{
         name: 'query', label: 'Query', type: 'json',

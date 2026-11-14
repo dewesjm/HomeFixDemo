@@ -1,5 +1,7 @@
-/* Weld Engineering's section service: the calls that change the procedure section and field definitions
-   (Admin > Procedure Sections and Admin > Services both call them, so both run the same checks). Sections
+/* Weld Engineering's section service: the calls that read and change the procedure section and field
+   definitions. getProcedureFields() lists every field key a caller can use (with its section, type,
+   choices, and how findProcedures filters it). The writes come from Admin > Procedure Sections and
+   Admin > Services alike, so both run the same checks. Sections
    are named by id, fields by key; a field keeps its key through renames and moves. Each call answers
    { ok: true, data } or { ok: false, error, title } (service-result.ts); a change some procedures block
    also lists them under procedures, to fix first.
@@ -16,7 +18,9 @@ import {
 import { sectionRemoveBlock, fieldRemoveBlock, fieldMoveBlock, type UsageBlock } from '../procedure-section-usage';
 import { ADMIN_TABLE_SOURCES, type OptionSourceId } from '../procedure-option-sources';
 import { hasFixedFullWidth, parseWidth } from '../procedure-field-width';
+import { fieldChoices } from '../procedure-field-values';
 import { fail, type ServiceFailure, type ServiceResult } from './service-result';
+import { FILTER_HEADER_KEYS, filterMatch, type FilterMatch } from './procedure-filter';
 
 export interface NumberedSection extends ProcedureSection { number: number; }
 export interface SectionAnswer { section: NumberedSection; }
@@ -51,6 +55,42 @@ function placesProblem(name: string, kind: string, index: number, count: number,
   const to = index + (places as number);
   if (to < 0 || to >= count) return `${name} can't move that far: it's ${kind} ${index + 1} of ${count}.`;
   return '';
+}
+
+/* One field a caller can name by key. section is null for a header field. filter: how findProcedures
+   matches it, null when it can't be filtered on. askable: getProcedure's fields option takes it (section
+   fields only). choices: the allowed values of a list, multi or admin-table field. */
+export interface FieldDefinition {
+  key: string;
+  label: string;
+  type: ExtraFieldType | 'header';
+  section: { id: string; number: number; name: string } | null;
+  required: boolean;
+  filter: FilterMatch | null;
+  askable: boolean;
+  choices?: string[];
+}
+
+const HEADER_LABELS: Record<string, string> = {
+  gwp: 'GWP', wtn: 'WTN', title: 'Title', revision: 'Revision', effectiveDate: 'Effective Date',
+  weldProcess: 'Weld Process', processType: 'Process Type', application: 'Application',
+};
+
+/* ── Reads ── */
+/* every field key: the header fields, then each section's fields in order */
+export function getProcedureFields(): ServiceResult<{ fields: FieldDefinition[] }> {
+  const header: FieldDefinition[] = FILTER_HEADER_KEYS.map(key => ({
+    key, label: HEADER_LABELS[key], type: 'header', section: null,
+    required: key === 'gwp' || key === 'wtn', filter: 'equals', askable: false,
+  }));
+  const sectionFields = procedureSections().flatMap((s, i) => s.fields.map((f): FieldDefinition => {
+    const choices = f.source || f.options.length ? fieldChoices(f).map(o => o.value) : [];
+    return {
+      key: f.key, label: f.label, type: f.type, section: { id: s.id, number: i + 1, name: s.name },
+      required: f.required, filter: filterMatch(f), askable: true, ...(choices.length ? { choices } : {}),
+    };
+  }));
+  return { ok: true, data: { fields: [...header, ...sectionFields] } };
 }
 
 /* ── Sections ── */

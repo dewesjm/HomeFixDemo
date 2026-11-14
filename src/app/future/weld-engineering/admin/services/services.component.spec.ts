@@ -54,6 +54,23 @@ describe('Weld Engineering Services page', () => {
     expect(blocks[2].textContent).toContain('characters)');
   }, 20000);
 
+  it('findProcedures starts with condition rows from a field droplist and builds the filter from them', async () => {
+    const fixture = await render();
+    const el: HTMLElement = fixture.nativeElement;
+    const select = el.querySelector('select') as HTMLSelectElement;
+    select.value = 'findProcedures';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const firstRow = el.querySelector('#param-filter-0') as HTMLSelectElement;
+    expect(firstRow.value).toBe('baseMetal1Type');
+    expect(Array.from(firstRow.querySelectorAll('optgroup')).map(g => g.label)).toContain('Header');
+    expect(el.querySelector('pre.json-block')!.textContent).toContain('"baseMetal1Type": "02-CS"');
+    expect(el.querySelector('#param-fields')).not.toBeNull();
+  });
+
   it('marks the write call as changing data', async () => {
     const fixture = await render();
     const options = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('option')).map(o => o.textContent?.trim());

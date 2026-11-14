@@ -3,7 +3,7 @@ import { STORAGE } from '../../../data/storage-keys';
 import { procedureSections, findField, sectionOfField } from '../procedure-sections';
 import { keepProcedureStores, testProcedure } from '../testing/procedure-test-state';
 import {
-  addSection, renameSection, shiftSection, removeSection, addField, renameField, shiftField, moveField, setFieldWidth, removeField,
+  getProcedureFields, addSection, renameSection, shiftSection, removeSection, addField, renameField, shiftField, moveField, setFieldWidth, removeField,
 } from './section-service';
 
 const savedNames = () => (JSON.parse(localStorage.getItem(STORAGE.procedureSections)!) as { name: string }[]).map(s => s.name);
@@ -15,6 +15,23 @@ describe('section service', () => {
     testProcedure('SEC-1', { wtn: '01.1-1', extraFields: { grooveAngle: '60' } }),
     testProcedure('SEC-2', { wtn: '02.2-1', sectionIds: ['sec-base-metal'] }),
   ]));
+
+  describe('getProcedureFields', () => {
+    it('lists the header fields, then every section field with its section, type and how it filters', () => {
+      const r = getProcedureFields();
+      if (!r.ok) return fail(r.error);
+      const f = (key: string) => r.data.fields.find(x => x.key === key)!;
+      expect(r.data.fields[0]).toEqual(jasmine.objectContaining({ key: 'gwp', section: null, filter: 'equals', askable: false }));
+      expect(f('fillerMetalTypes').filter).toBe('contains');
+      expect(f('fillerMetalTypes').choices?.length).toBeGreaterThan(0);
+      expect(f('requiredQuals').filter).toBe('namesQual');
+      expect(f('override').filter).toBeNull();
+      expect(f('override').askable).toBeTrue();
+      const sections = procedureSections();
+      expect(f('grooveAngle').section?.number).toBe(sections.indexOf(sectionOfField('grooveAngle', sections)!) + 1);
+      expect(r.data.fields.length).toBe(8 + sections.flatMap(s => s.fields).length);
+    });
+  });
 
   describe('sections', () => {
     it('adds a section at the end, saved, and answers it with its number', () => {

@@ -1,4 +1,4 @@
-import { callText, readArgs, responseFile, sent, shownResponse, startingInputs, type ServiceOperation } from './service-operation';
+import { callText, choiceGroups, readArgs, responseFile, sent, shownResponse, startingInputs, type ServiceOperation } from './service-operation';
 
 const op: ServiceOperation = {
   name: 'demo', signature: 'demo()', description: '', writes: false, call: a => [a], fn: a => a,
@@ -45,5 +45,36 @@ describe('service operation file responses', () => {
     const shown = shownResponse(answer) as typeof answer;
     expect(shown.data.base64).toBe(`${'x'.repeat(40)}... (100 characters)`);
     expect(answer.data.base64.length).toBe(100);
+  });
+});
+
+describe('service operation picks and conditions', () => {
+  const pickOp: ServiceOperation = {
+    name: 'demo', signature: 'demo()', description: '', writes: false, call: a => [a], fn: a => a,
+    params: [
+      { name: 'fields', label: 'Fields', type: 'picks', example: 'a, b' },
+      { name: 'filter', label: 'Filter', type: 'conditions', example: '{ "x": "1" }' },
+    ],
+  };
+
+  it('starts picks and condition rows on their examples', () => {
+    expect(startingInputs(pickOp)).toEqual({ fields: ['a', 'b'], filter: [{ key: 'x', value: '1' }] });
+  });
+
+  it('reads picks as a list and condition rows as an object, leaving empty ones out', () => {
+    expect(readArgs(pickOp, { fields: ['a'], filter: [{ key: 'x', value: ' 1 ' }, { key: '', value: 'ignored' }] }))
+      .toEqual({ args: { fields: ['a'], filter: { x: '1' } } });
+    expect(readArgs(pickOp, { fields: [], filter: [] })).toEqual({ args: {} });
+  });
+
+  it('names a condition row without a value, or a field in two rows', () => {
+    expect(readArgs(pickOp, { filter: [{ key: 'x', value: ' ' }] })).toEqual({ problem: 'Filter: enter a value for x.' });
+    expect(readArgs(pickOp, { filter: [{ key: 'x', value: '1' }, { key: 'x', value: '2' }] }))
+      .toEqual({ problem: 'Filter: x is in more than one row.' });
+  });
+
+  it('groups choices under their headings in order', () => {
+    expect(choiceGroups([{ value: 'a', label: 'A', group: 'H' }, { value: 'b', label: 'B', group: 'H' }, { value: 'c', label: 'C', group: '1. S' }])
+      .map(g => [g.group, g.choices.length])).toEqual([['H', 2], ['1. S', 1]]);
   });
 });

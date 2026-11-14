@@ -3,7 +3,7 @@
    one value must equal it, a list must contain it, a Min / Max range must include it (a number) and a
    qualification requirement must name it. A procedure without the field's section never matches. */
 import type { Procedure } from '../../../data/procedures';
-import { findField, type ProcedureSection } from '../procedure-sections';
+import { findField, type ExtraField, type ProcedureSection } from '../procedure-sections';
 import { sectionValue, isQuals, isRange } from '../procedure-field-values';
 import { qualsIn } from '../../../weld-record/qualifications-logic/qual-requirements';
 import type { ProcedureHeader } from './procedure-record';
@@ -14,6 +14,20 @@ export type ProcedureFilter = Record<string, string>;
 export const FILTER_HEADER_KEYS: (keyof ProcedureHeader)[] =
   ['gwp', 'wtn', 'title', 'revision', 'effectiveDate', 'weldProcess', 'processType', 'application'];
 
+/* how a filter value matches a field: equals it, is one of its values, is a number in its Min / Max,
+   or is a qualification it names; null = the field can't be filtered on */
+export type FilterMatch = 'equals' | 'contains' | 'inRange' | 'namesQual';
+
+export function filterMatch(field: ExtraField): FilterMatch | null {
+  switch (field.type) {
+    case 'override': return null;
+    case 'multi': return 'contains';
+    case 'range': return 'inRange';
+    case 'quals': return 'namesQual';
+    default: return 'equals';
+  }
+}
+
 const same = (a: unknown, b: string) => String(a).trim().toLowerCase() === b.trim().toLowerCase();
 
 /* a message when a filter key can't be used, '' when every key can */
@@ -23,7 +37,7 @@ export function filterProblem(filter: ProcedureFilter, sections: ProcedureSectio
     if (FILTER_HEADER_KEYS.includes(key as keyof ProcedureHeader)) continue;
     const field = findField(key, sections);
     if (!field) return `No header or procedure field has the key ${key}.`;
-    if (field.type === 'override') return `${field.label} (${key}) can't be filtered on: it's a group of parts.`;
+    if (!filterMatch(field)) return `${field.label} (${key}) can't be filtered on: it's a group of parts.`;
     if (field.type === 'range' && isNaN(Number(filter[key]))) return `${field.label} (${key}) is a range: filter it with a number.`;
   }
   return '';
