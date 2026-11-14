@@ -29,11 +29,15 @@ const VIEW_PERMISSIONS = [...JOINT_READ_PERMISSIONS, HISTORY_PAGE_PERMISSION];
 
 export const EDIT_FABRICATION_PERMISSION = 'edit-fabrication';
 export const signoffPermission = (type: string) => `signoff:${type}`;
+export const SIGN_EXCAVATION_NDT_PERMISSION = 'sign-excavation-ndt';
+const NON_SIGNABLE_TYPE = 'sold';
 const SIGNOFF_CATEGORY = 'Signoff Types';
 // Preserve the existing signoff access of groups awaiting their role review.
-const EXISTING_SIGNOFF_PERMISSIONS = seededSignoffTypeIds
-  .filter(type => type !== 'fit' && type !== WELD_BUILDUP_TYPE)
-  .map(signoffPermission);
+const EXISTING_SIGNOFF_PERMISSIONS = [
+  ...seededSignoffTypeIds.filter(type => type !== 'fit' && type !== WELD_BUILDUP_TYPE && type !== NON_SIGNABLE_TYPE)
+    .map(signoffPermission),
+  SIGN_EXCAVATION_NDT_PERMISSION,
+];
 
 export const API_ACCESS_PERMISSION = 'api-access';
 
@@ -62,7 +66,11 @@ export const PERMISSION_CATEGORIES = [...new Set(PERMISSIONS.map(p => p.category
 
 export function permissionsIn(category: string): Permission[] {
   if (category === SIGNOFF_CATEGORY) {
-    return getSignoffTypes().map(type => ({ key: signoffPermission(type.value), label: `Sign ${type.label}`, category }));
+    return [
+      ...getSignoffTypes().filter(type => type.value !== NON_SIGNABLE_TYPE)
+        .map(type => ({ key: signoffPermission(type.value), label: `Sign ${type.label}`, category })),
+      { key: SIGN_EXCAVATION_NDT_PERMISSION, label: 'Sign Excavation NDT', category },
+    ];
   }
   return PERMISSIONS.filter(p => p.category === category);
 }

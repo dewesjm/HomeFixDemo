@@ -1,10 +1,11 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
-import { nqcStepId } from '../../data/welding-step-ids';
+import { isExcavationNdtStageId, nqcStepId } from '../../data/welding-step-ids';
 import { STORAGE } from '../../data/storage-keys';
+import { closesJoint } from '../routing-logic/current-routing';
 import { GroupsStore } from './groups.store';
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +47,11 @@ export class ViewerService {
   }
 
   canSignRouting(stageId: string, type: string): boolean {
+    if (closesJoint(stageId)) return false;
+    if (isExcavationNdtStageId(stageId)) {
+      return this.hasFullWorkflowAccess() ||
+        (!!findSignoffType(type) && this.permissions().has(SIGN_EXCAVATION_NDT_PERMISSION));
+    }
     if (!this.canSignType(type)) return false;
     if (stageId !== nqcStepId('fitup-insp') || this.hasFullWorkflowAccess()) return true;
     // Both Fit-Up Insp routings share a Type. The Foreman grant covers the regular routing.

@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Foremen can search Weld Record, open Joint Details and History, sign regular Fit-Up Insp and Repair, and use Release to Welding for Fit-Up Release.',
+    added: ['Groups lists Sign Excavation NDT as a separate permission and drops Sign Sold. Records Review still closes the joint automatically.',
+      'Foremen can search Weld Record, open Joint Details and History, sign regular Fit-Up Insp and Repair, and use Release to Welding for Fit-Up Release.',
       'Fitters can search Weld Record, open Joint Details and joint History, enter Fabrication values when routing allows it, and sign Fit.',
       'Admin > Groups automatically lists permissions for each Signoff Type. Fit and Weld Build-Up have separate grants.',
       'The View role can search Weld Record and read Joint Details and History. Admin > Groups has separate permissions for the joint History button and the full History page.',

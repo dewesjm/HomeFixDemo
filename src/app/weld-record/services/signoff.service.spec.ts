@@ -1,3 +1,4 @@
+import { permissionsIn } from '../../data/admin-groups';
 import { ViewerService } from '../access-logic/viewer.service';
 import { TestBed } from '@angular/core/testing';
 import { Job, JOBS } from '../../data/jobs';
@@ -607,6 +608,20 @@ describe('SignoffService', () => {
       service.signStage(job, 'fit');
       expect(stage(job, 'fit').signed).toBeTrue();
     });
+  });
+
+  it('lists Excavation NDT separately and leaves Sold unsigned', () => {
+    const viewer = TestBed.inject(ViewerService);
+    const labels = permissionsIn('Signoff Types').map(permission => permission.label);
+    expect(labels).toContain('Sign Excavation NDT');
+    expect(labels).not.toContain('Sign Sold');
+    expect(service.signStage(weldingJob(), 'sold')).toBeFalse();
+
+    viewer.select('inspector');
+    expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeTrue();
+    expect(viewer.canSignRouting('nqc-excavation-ndt-2', '5x')).toBeTrue();
+    viewer.select('foreman');
+    expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeFalse();
   });
 
   it('limits Foreman signoffs to regular Fit-Up Insp, Fit-Up Release and Repair', () => {
