@@ -1,12 +1,12 @@
 /* Weld Planning's Advanced Search: every searchable field, the rows it searches, and saved views
    (localStorage). Same model as Pipe Welding (weld-record/pipe-welding-page/filter-schema.ts):
    stacked conditions per field, matched by shared/filter-engine.ts. */
+import { getProcedureFillerMetalTypes } from '../weld-engineering/procedure-service/procedure-catalog-service';
 import { STORAGE } from '../../data/storage-keys';
 import { FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
 import {
   NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, type WeldJoint
 } from '../../data/weld-planning';
-import { FILLER_METAL_TYPE_OPTIONS } from '../../shared/filler-metal-options';
 import { getGwpDetails } from '../weld-engineering/procedure-service/procedure-usage';
 
 export interface SearchField extends MatchField {
@@ -75,7 +75,7 @@ export function buildRow(j: WeldJoint): SearchRow {
     processType: gwp?.processType ?? '',
     baseMetal1Type: gwp?.baseMetal1Type ?? '',
     baseMetal2Type: gwp?.baseMetal2Type ?? '',
-    fillerMetalTypes: (gwp?.fillerMetalTypes ?? []).map(v => label(FILLER_METAL_TYPE_OPTIONS, v)),
+    fillerMetalTypes: (gwp?.fillerMetalTypes ?? []).map(v => label(getProcedureFillerMetalTypes(), v)),
   };
 }
 

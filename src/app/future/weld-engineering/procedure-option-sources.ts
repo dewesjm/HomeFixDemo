@@ -2,10 +2,8 @@
    (ExtraField.source, procedure-sections.ts). Admin tables can be picked for a new "Pick from another
    admin table" field in Admin > Procedure Sections; the code lists are only used by the seeded locked
    fields, whose values other systems match against those same lists. */
+import { getBaseMaterialCodes, getProcedureFillerMetalTypes, getProcedureFillerMetalSizes } from './procedure-service/procedure-catalog-service';
 import { getWeldPositions } from '../../weld-record/reference-data-service/reference-data-service';
-import { MATERIAL_TYPES } from '../../shared/material-types';
-import { FILLER_METAL_TYPES } from '../../data/procedures';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../shared/filler-metal-options';
 
 export type OptionSourceId = 'weldPositions' | 'materialTypes' | 'fillerMetalTypes' | 'fillerMetalSizes' | 'fillerClassifications';
 
@@ -28,10 +26,10 @@ const SOURCES: Record<OptionSourceId, OptionSource> = {
       .filter(p => p.active !== false || picked.includes(p.code))
       .map(p => ({ label: `${p.code} - ${p.description}${p.active === false ? ' (inactive)' : ''}`, value: p.code })),
   },
-  materialTypes: { label: 'Material Types', adminTable: false, options: () => plain(MATERIAL_TYPES) },
-  fillerMetalTypes: { label: 'Filler Metal Types', adminTable: false, options: () => FILLER_METAL_TYPE_OPTIONS },
-  fillerMetalSizes: { label: 'Filler Metal Sizes', adminTable: false, options: () => FILLER_METAL_SIZE_OPTIONS },
-  fillerClassifications: { label: 'Filler Metal Classifications', adminTable: false, options: () => plain(FILLER_METAL_TYPES) },
+  materialTypes: { label: 'Material Types', adminTable: false, options: () => plain(getBaseMaterialCodes()) },
+  fillerMetalTypes: { label: 'Filler Metal Types', adminTable: false, options: () => getProcedureFillerMetalTypes() },
+  fillerMetalSizes: { label: 'Filler Metal Sizes', adminTable: false, options: () => getProcedureFillerMetalSizes() },
+  fillerClassifications: { label: 'Filler Metal Classifications', adminTable: false, options: () => plain(getProcedureFillerMetalTypes().map(option => option.label)) },
 };
 
 /* the admin tables a new field can take its choices from */

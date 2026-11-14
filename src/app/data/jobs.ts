@@ -1,5 +1,5 @@
-import { MATERIAL_TYPES } from '../shared/material-types';
 /* mock Job model + seeded generator, stands in for a backend */
+import { getBaseMaterialCodes } from '../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { TECHNICIAN_NAMES } from './people';
 import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
 import { attributeDemoJobs } from './attribute-demo-jobs';
@@ -21,8 +21,8 @@ export interface Job {
   weldType: string;          /* one of WELD_TYPES, e.g. Butt, Fillet, Socket */
   pipeSize: string;          /* pipe size */
   wallThickness: string;     /* wall thickness */
-  materialType1: string;     /* one of MATERIAL_TYPES, the base material on one side of the joint */
-  materialType2: string;     /* one of MATERIAL_TYPES, the other side; same or different */
+  materialType1: string;     /* one of getBaseMaterialCodes(), the base material on one side of the joint */
+  materialType2: string;     /* one of getBaseMaterialCodes(), the other side; same or different */
   mcl1: string;              /* MCL 1 */
   mcl2: string;              /* MCL 2 */
   joiningItem: string;       /* joining item */
@@ -235,8 +235,8 @@ function generateJobs(count = 480): Job[] {
       weldType: pick(WELD_TYPES),
       pipeSize: pick(PIPE_SIZES),
       wallThickness: pick(WALL_THICKNESSES),
-      materialType1: pick(MATERIAL_TYPES),
-      materialType2: pick(MATERIAL_TYPES),
+      materialType1: pick(getBaseMaterialCodes()),
+      materialType2: pick(getBaseMaterialCodes()),
       mcl1: pick(MCL_POOL),
       mcl2: pick(MCL_POOL),
       joiningItem: pick(JOINING_ITEMS),

@@ -7,16 +7,15 @@
    identifies a row. Other systems (Weld Record, Weld
    Planning) read these rows only through future/weld-engineering/procedure-service/procedure-usage.ts -- see
    docs/ARCHITECTURE.md. */
+import { getProcedureFillerMetalTypes, getProcedureFillerMetalSizes, getBaseMaterialCodes } from '../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../shared/filler-metal-options';
 import { getWeldPositions } from '../weld-record/reference-data-service/reference-data-service';
-import { MATERIAL_TYPES } from '../shared/material-types';
 import {
   SEEDED_SECTION_IDS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type ExtraFields, type OverrideValue
 } from '../future/weld-engineering/procedure-sections';
-import type { QualGroup } from '../shared/qualifications-logic/qual-requirements';
+import type { QualGroup } from '../future/weld-engineering/qualifications-logic/qual-requirements';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -33,13 +32,8 @@ export const PROCESS_TYPES = ['Manual', 'Semiautomatic', 'Machine', 'Automatic']
 const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping', 'Pressure Piping', 'Storage Tanks', 'Equipment Supports', 'Heat Exchangers'];
 /* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
-export const BASE_METAL_1_TYPES = MATERIAL_TYPES;
-export const BASE_METAL_2_TYPES = MATERIAL_TYPES;
-/* MIL-spec filler metal designations, e.g. MIL-80S-50 -- the choices of the Classification field.
-   Distinct from the shared FILLER_METAL_TYPE_OPTIONS, which are the same designations in Weld Record's
-   AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WTN's
-   fillerMetalTypes/fillerMetalSizes section fields list which of those option VALUES are valid for it. */
-export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
+export const BASE_METAL_1_TYPES = getBaseMaterialCodes();
+export const BASE_METAL_2_TYPES = getBaseMaterialCodes();
 interface RevisionNote {
   revision: string;
   date: string;    /* ISO date */
@@ -170,6 +164,8 @@ function seedRequiredQuals(key: string): QualGroup {
 }
 
 function generateProcedures(): Procedure[] {
+  const fillerTypes = getProcedureFillerMetalTypes();
+  const fillerSizes = getProcedureFillerMetalSizes();
   const rand = seeded(777);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const seedOverride = (): OverrideValue => ({
@@ -213,7 +209,7 @@ function generateProcedures(): Procedure[] {
               by: 'System',
             }))
           : [];
-        const fillerMetalTypes = pickSome(FILLER_METAL_TYPE_OPTIONS.map(o => o.value), rand, 1, 3);
+        const fillerMetalTypes = pickSome(fillerTypes.map(o => o.value), rand, 1, 3);
         out.push({
           title: `${weldProcess} procedure for ${application.toLowerCase()}`,
           status,
@@ -237,8 +233,8 @@ function generateProcedures(): Procedure[] {
             weldProgression: pick(WELD_PROGRESSIONS),
             fillerMetalTypes,
             /* matches the first allowed filler type, so the description names a filler this WTN allows */
-            fillerMetalClassification: FILLER_METAL_TYPE_OPTIONS.find(o => o.value === fillerMetalTypes[0])!.label,
-            fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
+            fillerMetalClassification: fillerTypes.find(o => o.value === fillerMetalTypes[0])!.label,
+            fillerMetalSizes: pickSome(fillerSizes.map(o => o.value), rand, 1, 3),
             requiredQuals: seedRequiredQuals(`${gwp}-${n + 1}`),
             /* round values only (real limits are clean numbers like 60, 200, 300); every min pool
                value is below every max pool value */

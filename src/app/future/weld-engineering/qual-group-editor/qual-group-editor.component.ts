@@ -1,0 +1,54 @@
+/* Edits the AND/OR qualification requirement on a weld procedure. */
+import { Component, input, output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { LucideX } from '@lucide/angular';
+import { QualGroup, QualTerm } from '../qualifications-logic/qual-requirements';
+
+@Component({
+  selector: 'app-procedure-qual-group-editor',
+  standalone: true,
+  imports: [FormsModule, LucideX],
+  templateUrl: './qual-group-editor.component.html'
+})
+export class ProcedureQualGroupEditorComponent {
+  group = input.required<QualGroup>();
+  allQuals = input.required<readonly string[]>();
+  nested = input(false);
+  changed = output<QualGroup>();
+  removed = output<void>();
+
+  asGroup(t: QualTerm): QualGroup | null {
+    return typeof t === 'string' ? null : t;
+  }
+
+  asQual(t: QualTerm): string {
+    return typeof t === 'string' ? t : '';
+  }
+
+  /* quals not already directly in this group */
+  addable(): string[] {
+    return this.allQuals().filter(q => !this.group().items.includes(q));
+  }
+
+  setOp(op: 'all' | 'any') {
+    this.changed.emit({ ...this.group(), op });
+  }
+
+  addQual(q: string) {
+    if (q) this.changed.emit({ ...this.group(), items: [...this.group().items, q] });
+  }
+
+  /* a new group starts as the opposite operator, since a group of the same kind adds nothing */
+  addGroup() {
+    const op = this.group().op === 'all' ? 'any' : 'all';
+    this.changed.emit({ ...this.group(), items: [...this.group().items, { op, items: [] }] });
+  }
+
+  setItem(i: number, g: QualGroup) {
+    this.changed.emit({ ...this.group(), items: this.group().items.map((t, j) => j === i ? g : t) });
+  }
+
+  removeItem(i: number) {
+    this.changed.emit({ ...this.group(), items: this.group().items.filter((_, j) => j !== i) });
+  }
+}

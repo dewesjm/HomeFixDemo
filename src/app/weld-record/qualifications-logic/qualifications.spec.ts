@@ -1,6 +1,6 @@
 import { QUALIFICATIONS, qualCheck } from './qualifications';
 import { conditionWhenText, heldQuals, qualConditions, userOf } from './qual-conditions';
-import { QualGroup, termMet } from '../../shared/qualifications-logic/qual-requirements';
+import { QualGroup, termMet } from './qual-requirements';
 
 const all = (...items: string[]): QualGroup => ({ op: 'all', items });
 

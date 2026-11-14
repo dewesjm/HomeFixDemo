@@ -1,9 +1,8 @@
 /* Weld Engineering's GWP/WTN reads used by Weld Record and Weld Planning. These calls preserve
    the workflow's lookup behavior across procedure statuses. Section values read as blank when the
    procedure has not selected that section. */
+import { getProcedureFillerMetalTypes, getProcedureFillerMetalSizes } from './procedure-catalog-service';
 import { Procedure, procedures, getProcedure } from '../../../data/procedures';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../shared/filler-metal-options';
-import type { QualGroup } from '../../../shared/qualifications-logic/qual-requirements';
 import { procedureSections } from '../procedure-sections';
 import { sectionValue, textValue, listValue, isOverride, isQuals, isBlank } from '../procedure-field-values';
 
@@ -121,9 +120,15 @@ export function getWtnFillValue(gwp: string, wtn: string, key: string): string {
   return key === 'weldProcess' ? proc.weldProcess.toLowerCase() : text(proc, key);
 }
 
+/* Qualification requirement returned to procedure consumers. */
+export interface ProcedureQualificationRequirement {
+  op: 'all' | 'any';
+  items: (string | ProcedureQualificationRequirement)[];
+}
+
 /* the quals a welder needs to weld to the WTN a GWP+WTN pair matches (5. Welder Qualifications);
    an empty group (requires nothing) when it matches none */
-export function getRequiredQuals(gwp: string, wtn: string): QualGroup {
+export function getRequiredQuals(gwp: string, wtn: string): ProcedureQualificationRequirement {
   const p = getProcedure(gwp, wtn);
   const v = p && sectionValue(p, 'requiredQuals', procedureSections());
   return isQuals(v) ? structuredClone(v) : { op: 'all', items: [] };
@@ -134,10 +139,10 @@ export function getRequiredQuals(gwp: string, wtn: string): QualGroup {
    weld-assignment-mock.ts) picks one of these; a Foreman Override opens the full lists. */
 export function getFillerMetalTypeOptions(gwp: string, wtn: string): { label: string; value: string }[] {
   const p = getProcedure(gwp, wtn);
-  return p ? FILLER_METAL_TYPE_OPTIONS.filter(o => list(p, 'fillerMetalTypes').includes(o.value)) : [];
+  return p ? getProcedureFillerMetalTypes().filter(o => list(p, 'fillerMetalTypes').includes(o.value)) : [];
 }
 
 export function getFillerMetalSizeOptions(gwp: string, wtn: string): { label: string; value: string }[] {
   const p = getProcedure(gwp, wtn);
-  return p ? FILLER_METAL_SIZE_OPTIONS.filter(o => list(p, 'fillerMetalSizes').includes(o.value)) : [];
+  return p ? getProcedureFillerMetalSizes().filter(o => list(p, 'fillerMetalSizes').includes(o.value)) : [];
 }

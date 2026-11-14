@@ -12,8 +12,8 @@ import {
   getProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES, type Procedure
 } from '../../../../data/procedures';
 import { getQualifications } from '../../../../weld-record/reference-data-service/reference-data-service';
-import type { QualGroup } from '../../../../shared/qualifications-logic/qual-requirements';
-import { QualGroupEditorComponent } from '../../../../shared/qual-group-editor/qual-group-editor.component';
+import type { QualGroup } from '../../qualifications-logic/qual-requirements';
+import { ProcedureQualGroupEditorComponent } from '../../qual-group-editor/qual-group-editor.component';
 import {
   procedureSections, sectionsOnProcedure, OVERRIDE_PARTS,
   type ExtraField, type OverrideValue, type RangeValue
@@ -38,7 +38,7 @@ const EMPTY_FORM: Procedure = {
 @Component({
   selector: 'app-procedure-form',
   standalone: true,
-  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX, QualGroupEditorComponent],
+  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX, ProcedureQualGroupEditorComponent],
   templateUrl: './procedure-form.component.html'
 })
 export class ProcedureFormComponent implements OnInit {

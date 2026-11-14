@@ -4,14 +4,14 @@
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
    on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
+import { getProcedureFillerMetalTypes, getProcedureFillerMetalSizes } from '../../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { formInputFields } from '../signoff-forms-logic/form-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { DeviationItem } from '../model/deviation';
 import { ACTUAL_REQUIREMENT } from '../signoff-forms-logic/weld-fields';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
 import { labelFor } from '../signoff-forms-logic/stage-display';
-import { QualGroup, missingText, requirementText } from '../../shared/qualifications-logic/qual-requirements';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../shared/filler-metal-options';
+import { QualGroup, missingText, requirementText } from '../qualifications-logic/qual-requirements';
 import {
   getFillerMetalTypeOptions, getFillerMetalSizeOptions, getGwpOptions, hasProcedure,
 } from '../../future/weld-engineering/procedure-service/procedure-usage';
@@ -83,7 +83,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
     if (!value || !f || !visibleKeys.has(key) || isFilledByRule(stage, key)) continue;
     const allowed = key === 'fillerMetalType' ? getFillerMetalTypeOptions(gwp, wtn) : getFillerMetalSizeOptions(gwp, wtn);
     if (allowed.some(o => o.value === value)) continue;
-    const all = key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS;
+    const all = key === 'fillerMetalType' ? getProcedureFillerMetalTypes() : getProcedureFillerMetalSizes();
     items.push({
       kind: 'off-list', label: f.label,
       entered: all.find(o => o.value === value)?.label ?? value,

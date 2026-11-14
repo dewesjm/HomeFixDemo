@@ -1,3 +1,4 @@
+import { getProcedureFillerMetalTypes } from '../../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { isRoutingLockedField } from '../signoff-forms-logic/stage-rules';
 import { setDefectCodes } from '../../data/defect-codes';
 import { setWeldPositions } from '../../data/weld-positions';
@@ -10,7 +11,6 @@ import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routi
 import { WorkflowStage } from '../model/workflow-types';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 import { procedures } from '../../data/procedures';
-import { FILLER_METAL_TYPE_OPTIONS } from '../../shared/filler-metal-options';
 import { getFillerMetalTypeOptions } from '../../future/weld-engineering/procedure-service/procedure-usage';
 import { getGwpOptions } from '../../future/weld-engineering/procedure-service/procedure-usage';
 import {
@@ -204,7 +204,7 @@ describe('joint-form stage-form', () => {
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: proc.gwp, wtn: proc.wtn } });
     expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j)).options!.map(o => o.value)).toEqual(
       getFillerMetalTypeOptions(proc.gwp, proc.wtn).map(o => o.value));
-    expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j, true)).options).toBe(FILLER_METAL_TYPE_OPTIONS);
+    expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j, true)).options).toEqual(getProcedureFillerMetalTypes());
   });
 
   it('engineering override turns the assigned fields and PH/IP requirements into text boxes', () => {

@@ -6,7 +6,7 @@
    (procedure-save-checks.ts). */
 import { OVERRIDE_PARTS, type ExtraField, type ExtraFieldValue, type OverrideValue } from '../procedure-sections';
 import { emptyValue } from '../procedure-field-values';
-import type { QualGroup, QualTerm } from '../../../shared/qualifications-logic/qual-requirements';
+import type { QualGroup, QualTerm } from '../qualifications-logic/qual-requirements';
 
 type Parsed = { value: ExtraFieldValue } | { problem: string };
 

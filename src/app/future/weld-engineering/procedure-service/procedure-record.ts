@@ -9,7 +9,7 @@ import {
   type ExtraField, type ExtraFieldType, type ExtraFieldValue, type ProcedureSection,
 } from '../procedure-sections';
 import { extraValueText, isOverride, isQuals, isRange } from '../procedure-field-values';
-import { requirementText, type QualGroup } from '../../../shared/qualifications-logic/qual-requirements';
+import { requirementText, type QualGroup } from '../qualifications-logic/qual-requirements';
 
 export interface ProcedureKey { gwp: string; wtn: string; }
 

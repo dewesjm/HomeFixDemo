@@ -1,8 +1,8 @@
+import { getProcedureFillerMetalTypes } from '../../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { buildStages } from '../routing-logic/build-stages';
 import { WorkflowStage } from '../model/workflow-types';
 import { JOBS } from '../../data/jobs';
 import { procedures } from '../../data/procedures';
-import { FILLER_METAL_TYPE_OPTIONS } from '../../shared/filler-metal-options';
 import { detectDeviations, isActualOutOfRange } from './deviations';
 import { getFillerMetalTypeOptions, getGwpDetails } from '../../future/weld-engineering/procedure-service/procedure-usage';
 
@@ -10,13 +10,13 @@ const allowedFillers = (gwp: string, wtn: string) => getFillerMetalTypeOptions(g
 
 /* a Tack stage on the first seeded WTN that doesn't allow every filler type */
 function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; offListType: string; quals: string[] } {
-  const proc = procedures().find(p => allowedFillers(p.gwp, p.wtn).length < FILLER_METAL_TYPE_OPTIONS.length)!;
+  const proc = procedures().find(p => allowedFillers(p.gwp, p.wtn).length < getProcedureFillerMetalTypes().length)!;
   const tack = buildStages({ ...JOBS[0], nInd: '1' }).find(s => s.id === 'tack')!;
   const stage: WorkflowStage = {
     ...tack,
     inputs: { weldProcedure: proc.gwp, wtn: proc.wtn, phMin: '50', phMax: '300', ipMin: '50', ipMax: '300', ...extra },
   };
-  const offListType = FILLER_METAL_TYPE_OPTIONS.find(o => !allowedFillers(proc.gwp, proc.wtn).includes(o.value))!.value;
+  const offListType = getProcedureFillerMetalTypes().find(o => !allowedFillers(proc.gwp, proc.wtn).includes(o.value))!.value;
   /* quals are only required through conditions passed to detectDeviations, so none are needed here */
   return { stage, offListType, quals: [] };
 }

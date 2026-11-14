@@ -85,7 +85,8 @@ describe('Weld Engineering Services page', () => {
     const el: HTMLElement = fixture.nativeElement;
     const picker = el.querySelector('select') as HTMLSelectElement;
     const calls = Array.from(picker.options, option => option.value);
-    expect(calls).toEqual(jasmine.arrayContaining(['getProcedure', 'findProcedures', 'searchProcedures', 'getProcedurePdf']));
+    expect(calls).toEqual(jasmine.arrayContaining(['getProcedure', 'findProcedures', 'searchProcedures', 'getProcedurePdf',
+      'getBaseMaterialCodes', 'getProcedureFillerMetalTypes', 'getProcedureFillerMetalSizes']));
     expect(calls).not.toContain('getWtnFillValue');
     expect(calls).not.toContain('getGwpOptions');
     expect(calls).not.toContain('getRequiredQuals');

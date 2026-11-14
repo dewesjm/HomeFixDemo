@@ -19,7 +19,7 @@ import { getProcedureFields } from '../../procedure-service/section-service';
     <div class="table-page-wrap" style="max-width: 72rem">
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
-        Try the main procedure reads, download files, or look up procedure field definitions.
+        Read procedures, look up field definitions and material choices, or download files.
         Run a call to see its inputs and response.
       </p>
       <app-service-tester-panel [operations]="operations" />

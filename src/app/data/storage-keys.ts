@@ -39,7 +39,7 @@ export const STORAGE = {
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).
-   procedures is included because its seeded GWP/WTN rows are generated from MATERIAL_TYPES
+   procedures is included because its seeded GWP/WTN rows are generated from the procedure catalog’s base-material codes
    (jobs.ts) -- a change to those codes without a matching cache clear leaves the GWP/WTN cascade
    silently blank (see storage-keys history, and the v4->v5 bump this line was added for). */
 const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.inspectionProcedures, STORAGE.defectCodes, STORAGE.signoffTypeRouting, STORAGE.signoffTypes, STORAGE.attributeCodeExceptions, STORAGE.shipLocations, STORAGE.weldPositions, STORAGE.procedures];

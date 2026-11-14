@@ -6,6 +6,7 @@ const app = resolve(import.meta.dirname, '../src/app');
 const engineering = 'future/weld-engineering/';
 const procedureStore = 'data/procedures';
 const procedureReads = engineering + 'procedure-service/procedure-usage';
+const procedureCatalog = engineering + 'procedure-service/procedure-catalog-service';
 const recordReferences = 'weld-record/reference-data-service/reference-data-service';
 const violations = [];
 
@@ -22,7 +23,7 @@ for (const entry of readdirSync(app, { recursive: true, withFileTypes: true })) 
     const target = relative(app, resolve(dirname(file), specifier.text)).split(sep).join('/').replace(/\.ts$/, '');
     const isShellRoute = source === 'app.routes.ts';
     if (!isEngineering && !isShellRoute &&
-        (target === procedureStore || (target.startsWith(engineering) && target !== procedureReads))) {
+        (target === procedureStore || (target.startsWith(engineering) && target !== procedureReads && target !== procedureCatalog))) {
       violations.push(`${source} imports ${target}. Use Weld Engineering's procedure reads.`);
     }
     if (isEngineering && (

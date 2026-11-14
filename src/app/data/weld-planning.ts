@@ -2,7 +2,7 @@
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
-import { MATERIAL_TYPES } from '../shared/material-types';
+import { getBaseMaterialCodes } from '../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { STORAGE } from './storage-keys';
 import {
   jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES,
@@ -190,8 +190,8 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     /* same rule as the weld record's seed: no RT degree for a phase whose NDT is UT */
     const ndtRoot = pick(NDT_REQUIREMENT_VALUES);
     const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
-    const materialType1 = pick(MATERIAL_TYPES);
-    const materialType2 = pick(MATERIAL_TYPES);
+    const materialType1 = pick(getBaseMaterialCodes());
+    const materialType2 = pick(getBaseMaterialCodes());
 
     const hull = pick(HULLS);
     const codes = seedAttributeCodes(codeRand);

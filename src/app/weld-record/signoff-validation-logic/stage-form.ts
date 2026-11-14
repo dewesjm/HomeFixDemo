@@ -1,4 +1,5 @@
 /* A step's fields on the joint page: which show, and the options each offers */
+import { getProcedureFillerMetalTypes, getProcedureFillerMetalSizes } from '../../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { repairCodeOptions } from '../signoff-forms-logic/repair-code-options';
 import { weldPositionOptions } from '../../data/weld-positions';
 import { formInputFields } from '../signoff-forms-logic/form-fields';
@@ -16,7 +17,6 @@ import { definedFields } from '../signoff-forms-logic/shown-fields';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment-logic/weld-assignment-rules';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../shared/filler-metal-options';
 import {
   getGwpOptions, getAllGwpOptions, getWtnOptions, getGwpDescription,
   getWtnDescription, getProcedureOverride, getFillerMetalTypeOptions, getFillerMetalSizeOptions,
@@ -109,7 +109,7 @@ export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: Stage
     /* Prepopulated (e.g. from Fit's Consumable Insert) or opened by a Foreman Override: the full
        option set, so a copied value always has a matching <option> */
     if (isFilledByRule(stage, f.key) || ctx.offListUnlocked) {
-      return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
+      return { ...f, options: f.key === 'fillerMetalType' ? getProcedureFillerMetalTypes() : getProcedureFillerMetalSizes() };
     }
     const wtn = stage.inputs?.['wtn'] ?? '';
     return { ...f, options: f.key === 'fillerMetalType' ? getFillerMetalTypeOptions(gwp, wtn) : getFillerMetalSizeOptions(gwp, wtn) };

@@ -4,8 +4,8 @@
      previous - one bad date
      live     - two new joints, two updated, one removed, one protected joint missing, two status
                 changes, one truncated line and one bad number */
+import { getBaseMaterialCodes } from '../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { HULLS, PIPE_SIZES, jointNumbers } from './jobs';
-import { MATERIAL_TYPES } from '../shared/material-types';
 import { FieldKey, LAYOUT, LINE_WIDTH, USED_WIDTH, recordKey } from '../future/weld-planning/external-loads/layout';
 import { RawLine } from '../future/weld-planning/external-loads/convert';
 
@@ -37,8 +37,8 @@ function baseRecords(): SeedRecord[] {
       description: pick(DESCRIPTIONS),
       status: i === 7 ? 'SP' : 'AC',
       workBy: [4, 18, 25].includes(i) ? 'V' : 'Y',
-      materialType1: pick(MATERIAL_TYPES),
-      materialType2: pick(MATERIAL_TYPES),
+      materialType1: pick(getBaseMaterialCodes()),
+      materialType2: pick(getBaseMaterialCodes()),
       pipeSize: i % 3 === 0 ? '' : pick(PIPE_SIZES),
       weldLength: (1 + Math.floor(rand() * 400) / 4).toFixed(2).padStart(7, '0'),
       plannedDate: `202611${String(1 + (i % 28)).padStart(2, '0')}`,

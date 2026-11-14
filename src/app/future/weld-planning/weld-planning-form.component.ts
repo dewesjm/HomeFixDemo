@@ -1,4 +1,5 @@
 /* Weld Planning - the Create Joint and Edit Joint form. */
+import { getBaseMaterialCodes } from '../weld-engineering/procedure-service/procedure-catalog-service';
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,6 @@ import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../../shared/toast.service';
 import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, HULLS } from '../../data/jobs';
-import { MATERIAL_TYPES } from '../../shared/material-types';
 import {
   addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
@@ -51,7 +51,7 @@ export class WeldPlanningFormComponent implements OnInit {
   jointTypeOptions = JOINT_TYPE_OPTIONS;
   pipeSizes = PIPE_SIZES;
   wallThicknesses = WALL_THICKNESSES;
-  materialTypes = MATERIAL_TYPES;
+  materialTypes = getBaseMaterialCodes();
   weldTypes = WELD_TYPES;
   hulls = HULLS;
 

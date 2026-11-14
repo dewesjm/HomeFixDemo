@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     added: ['Weld Record can provide MWQ with a Joint Details link by hull, drawing, and joint number.',
       'Weld Record Admin > Services demonstrates signoff, corrections, Deprogress, Routing Override, reference changes, and configuration reads for developers.',
       'Weld Record Admin > Services can edit Fabrication fields and release joints to welding using the same calls as Joint Details and Pipe Welding.',
+      'Weld Engineering Admin > Services can show the base-material codes and filler-metal types and sizes used by the apps.',
       'Weld Engineering Admin > Services can download a filtered procedure export and the current Load Procedures template.',
       'Weld Engineering Admin > Services can run the procedure reads used by Weld Record and Weld Planning, including GWP and WTN options, filler choices, routing field values, and required welder qualifications.',
       'Weld Record Admin > Services can show the Weld Positions and Qualifications lists used by Weld Engineering.',

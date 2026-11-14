@@ -3,6 +3,7 @@
    field key (section-service.ts getProcedureFields), for the Filter and Fields droplists. */
 import { PROCEDURE_STATUS_OPTIONS, type ProcedureStatus } from '../../../../../data/procedures';
 import { sent, type ParamChoice, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
+import { getBaseMaterialCodes, getProcedureFillerMetalTypes, getProcedureFillerMetalSizes } from '../../../procedure-service/procedure-catalog-service';
 import type { FieldDefinition } from '../../../procedure-service/section-service';
 import type { FilterMatch } from '../../../procedure-service/procedure-filter';
 import {
@@ -193,6 +194,24 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       params: keyParams(example),
       call: a => [keyOf(a)],
       fn: deleteProcedure,
+    },
+    {
+      name: 'getBaseMaterialCodes',
+      signature: 'getBaseMaterialCodes()',
+      description: 'Lists the base-material codes available for procedures.',
+      writes: false, params: [], call: () => [], fn: getBaseMaterialCodes,
+    },
+    {
+      name: 'getProcedureFillerMetalTypes',
+      signature: 'getProcedureFillerMetalTypes()',
+      description: 'Lists the filler-metal types available for procedures with their labels and stored values.',
+      writes: false, params: [], call: () => [], fn: getProcedureFillerMetalTypes,
+    },
+    {
+      name: 'getProcedureFillerMetalSizes',
+      signature: 'getProcedureFillerMetalSizes()',
+      description: 'Lists the filler-metal sizes available for procedures with their labels and stored values.',
+      writes: false, params: [], call: () => [], fn: getProcedureFillerMetalSizes,
     },
   ];
 }

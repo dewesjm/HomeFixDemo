@@ -100,7 +100,7 @@
               @if (f.label !== s.name) {
                 <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
               }
-              <app-qual-group-editor [group]="quals(f.key)" [allQuals]="allQuals"
+              <app-procedure-qual-group-editor [group]="quals(f.key)" [allQuals]="allQuals"
                                      (changed)="form.extraFields[f.key] = $event" />
             </div>
           }

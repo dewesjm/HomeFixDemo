@@ -19,7 +19,7 @@ import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
 import { ConditionCatalogField, StageAnswers } from '../catalogs/field-catalog';
 import { JOINT_AND_FABRICATION_FIELDS, allStepAnswerFields, routingsInOrder, routingAnswerFields } from '../catalogs/field-choices';
-import { QualGroup, cloneGroup, qualsIn, requirementText } from '../../shared/qualifications-logic/qual-requirements';
+import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
 
 /* the step being checked; its fields are blank until filled in */

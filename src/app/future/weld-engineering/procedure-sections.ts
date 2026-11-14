@@ -11,7 +11,7 @@
    Value rules (blank, text, validation) are in procedure-field-values.ts. */
 import { signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
-import type { QualGroup } from '../../shared/qualifications-logic/qual-requirements';
+import type { QualGroup } from './qualifications-logic/qual-requirements';
 import type { OptionSourceId } from './procedure-option-sources';
 
 export type ExtraFieldType = 'text' | 'number' | 'range' | 'list' | 'multi' | 'table' | 'limit' | 'override' | 'quals';

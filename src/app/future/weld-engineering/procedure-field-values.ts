@@ -6,7 +6,7 @@ import {
   type ExtraField, type ExtraFields, type ExtraFieldValue, type OverrideValue, type ProcedureSection, type RangeValue
 } from './procedure-sections';
 import { sourceOptions } from './procedure-option-sources';
-import { cloneGroup, pruneGroup, requirementText, type QualGroup } from '../../shared/qualifications-logic/qual-requirements';
+import { cloneGroup, pruneGroup, requirementText, type QualGroup } from './qualifications-logic/qual-requirements';
 
 /* ── Value shapes ── */
 export function isRange(v: ExtraFieldValue | undefined): v is RangeValue {

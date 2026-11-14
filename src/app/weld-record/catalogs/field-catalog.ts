@@ -3,6 +3,7 @@
    The catalog says what a field is; other code decides when it is used. Which fields each admin screen
    offers, and the per-routing fields generated from these rows, are in field-choices.ts. The Fabrication
    form builds its fields from fabrication-logic/fabrication-fields.ts; this list only maps them in. */
+import { getProcedureFillerMetalSizes, getProcedureFillerMetalTypes } from '../../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -12,7 +13,6 @@ import { hasMaterialFlag, MaterialFlag } from '../../data/material-classificatio
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { NDT_LABELS } from '../../data/ndt-labels';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
-import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../shared/filler-metal-options';
 import { isShipboardLocation, locationOptions } from '../../data/locations';
 import { weldColorOptions } from '../../data/weld-colors';
 import { weldPositionOptions } from '../../data/weld-positions';
@@ -357,9 +357,9 @@ const SIGNOFF_FORM_ROWS: SignoffFormRow[] = [
 
   /* ── Fit / Pre-Fit ── */
   { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfInsert, options: FILLER_METAL_TYPE_OPTIONS, ownFormSteps: FIT_STEPS },
+    defaultShowIf: showIfInsert, options: getProcedureFillerMetalTypes(), ownFormSteps: FIT_STEPS },
   { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfInsert, options: FILLER_METAL_SIZE_OPTIONS, ownFormSteps: FIT_STEPS },
+    defaultShowIf: showIfInsert, options: getProcedureFillerMetalSizes(), ownFormSteps: FIT_STEPS },
   { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', defaultRequired: true,
     defaultRequiredIf: ifTraceability, defaultShowIf: showIfInsert, ownFormSteps: FIT_STEPS },
   { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', defaultRequired: true,
