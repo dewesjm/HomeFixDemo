@@ -3,6 +3,7 @@
    only for now; which writes Weld Record offers is still open (Tasks.md). */
 import { Component, inject } from '@angular/core';
 
+import { ViewerService } from '../../access-logic/viewer.service';
 import { JOBS } from '../../../data/jobs';
 import { ServiceTesterPanelComponent } from '../../../shared/service-tester-panel/service-tester-panel.component';
 import { JointService } from '../../joint-service/joint-service';
@@ -19,11 +20,16 @@ import { jointServiceOperations } from './rules/joint-service-operations';
         Every call made to Weld Record, both the ones this application uses internally and the ones other
         systems can call: joints, their fields, routing and History. Run one to see its exact response.
       </p>
-      <app-service-tester-panel [operations]="operations" />
+      @if (canAccessApi()) {
+        <app-service-tester-panel [operations]="operations" />
+      } @else {
+        <p>Switch to Developer to run service calls.</p>
+      }
     </div>
   `
 })
 export class AdminServicesComponent {
+  readonly canAccessApi = inject(ViewerService).canAccessApi;
   /* the inputs start on the first joint */
   private example = JOBS[0];
   private svc = inject(JointService);

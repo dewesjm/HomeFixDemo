@@ -29,6 +29,8 @@ const PERMISSIONS: Permission[] = [
   { key: 'admin-tables', label: 'Maintain other admin tables', category: 'Administration' },
 ];
 
+export const ALL_GROUP_PERMISSIONS = PERMISSIONS.map(permission => permission.key);
+
 export const PERMISSION_CATEGORIES = [...new Set(PERMISSIONS.map(p => p.category))];
 
 export function permissionsIn(category: string): Permission[] {
@@ -46,13 +48,14 @@ export function permissionSummary(allowed: readonly string[]): { category: strin
 }
 
 export const DEVELOPER_GROUP_ID = 'developer';
+export const ADMINISTRATORS_GROUP_ID = 'g1';
 export const VIEW_GROUP_ID = 'g10';
 
 const SAMPLE_GROUPS: AdminGroup[] = [
   { id: DEVELOPER_GROUP_ID, name: 'Developer', description: 'Full access to the demo.',
-    personas: ROUTING_PERSONAS, allowed: PERMISSIONS.map(p => p.key) },
-  { id: 'g1', name: 'Administrators', description: 'Maintain groups and the other admin tables.',
-    personas: [], allowed: ['admin-groups', 'admin-tables'] },
+    personas: ROUTING_PERSONAS, allowed: ALL_GROUP_PERMISSIONS },
+  { id: ADMINISTRATORS_GROUP_ID, name: 'Administrators', description: 'Full Weld Record workflow and administration access.',
+    personas: ROUTING_PERSONAS, allowed: ALL_GROUP_PERMISSIONS },
   { id: 'g2', name: 'Fitting', description: 'Fitters who handle Fit.',
     personas: ['Fitting'], allowed: ['edit-fabrication'] },
   { id: 'g3', name: 'Welding', description: 'Welders who handle welding routings.',
@@ -73,10 +76,16 @@ const SAMPLE_GROUPS: AdminGroup[] = [
     personas: [], allowed: [VIEW_PERMISSION] },
 ];
 
+export function isPrivilegedGroup(id: string): boolean {
+  return id === DEVELOPER_GROUP_ID || id === ADMINISTRATORS_GROUP_ID;
+}
+
 export function loadGroups(): AdminGroup[] {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE.adminGroups) ?? 'null');
-    if (Array.isArray(saved)) return saved;
+    if (Array.isArray(saved)) return saved.map((group: AdminGroup) => isPrivilegedGroup(group.id)
+      ? { ...group, personas: ROUTING_PERSONAS, allowed: ALL_GROUP_PERMISSIONS }
+      : group);
   } catch { /* use the sample groups */ }
   return SAMPLE_GROUPS;
 }

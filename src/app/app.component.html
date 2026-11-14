@@ -92,7 +92,9 @@
                   <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
                   <li><a routerLink="/admin/routing-override" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Override</a></li>
                   <li><a routerLink="/admin/routing-settings" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing Settings</a></li>
-                  <li><a routerLink="/admin/services" routerLinkActive="menu-active"><svg lucidePlug class="size-4"></svg> Services</a></li>
+                  @if (canAccessWeldRecordApi()) {
+                    <li><a routerLink="/admin/services" routerLinkActive="menu-active"><svg lucidePlug class="size-4"></svg> Services</a></li>
+                  }
                   <li><a routerLink="/admin/ship-locations" routerLinkActive="menu-active"><svg lucideMap class="size-4"></svg> Ship Locations</a></li>
                   <li><a routerLink="/admin/signoff-types" routerLinkActive="menu-active"><svg lucideListChecks class="size-4"></svg> Signoff Types</a></li>
                   <li><a routerLink="/admin/signoff-type-routing" routerLinkActive="menu-active"><svg lucideListChecks class="size-4"></svg> Signoff Type to Routing</a></li>
@@ -210,7 +212,9 @@
                     <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
                     <li><a routerLink="/admin/routing-override" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Override</a></li>
                     <li><a routerLink="/admin/routing-settings" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing Settings</a></li>
-                    <li><a routerLink="/admin/services" routerLinkActive="menu-active"><svg lucidePlug class="size-4"></svg> Services</a></li>
+                    @if (canAccessWeldRecordApi()) {
+                      <li><a routerLink="/admin/services" routerLinkActive="menu-active"><svg lucidePlug class="size-4"></svg> Services</a></li>
+                    }
                     <li><a routerLink="/admin/ship-locations" routerLinkActive="menu-active"><svg lucideMap class="size-4"></svg> Ship Locations</a></li>
                     <li><a routerLink="/admin/signoff-types" routerLinkActive="menu-active"><svg lucideListChecks class="size-4"></svg> Signoff Types</a></li>
                     <li><a routerLink="/admin/signoff-type-routing" routerLinkActive="menu-active"><svg lucideListChecks class="size-4"></svg> Signoff Type to Routing</a></li>

@@ -2,6 +2,7 @@
 import { AdminRepairCodesComponent } from './weld-record/admin/repair-codes/repair-codes.component';
 import { AdminWeldColorsComponent } from './weld-record/admin/weld-colors/weld-colors.component';
 import { AdminServicesComponent } from './weld-record/admin/services/services.component';
+import { ViewerService } from './weld-record/access-logic/viewer.service';
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
@@ -82,7 +83,8 @@ export const routes: Routes = [
   { path: 'admin/signoff-type-forms', component: AdminSignoffTypeFormsComponent, title: 'EWR - Signoff Type Forms' },
   { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes' },
   { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors' },
-  { path: 'admin/services', component: AdminServicesComponent, title: 'EWR - Services' },
+  { path: 'admin/services', component: AdminServicesComponent, title: 'EWR - Services',
+    canActivate: [() => inject(ViewerService).canAccessApi() || inject(Router).parseUrl('/pipe-welding')] },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs' },

@@ -20,3 +20,21 @@ test('View as and saved group personas determine Pipe Welding queues', async ({ 
   await expect(role.locator('option')).toHaveText(['Fitting', 'Welding', 'View All']);
   await expect(role.locator('option:checked')).toHaveText('Fitting');
 });
+
+test('Developer and Administrator share queues while Services requires Developer', async ({ page }) => {
+  await page.goto('/admin/services');
+  const tester = page.locator('app-service-tester-panel');
+  await expect(tester).toBeVisible();
+
+  await page.getByRole('button', { name: 'User menu' }).click();
+  await page.getByLabel('View as').selectOption({ label: 'Alex (Administrator)' });
+  await expect(tester).toHaveCount(0);
+  await page.goto('/admin/services');
+  await expect(page).toHaveURL(/\/pipe-welding$/);
+  const role = page.getByRole('combobox', { name: 'Role', exact: true });
+  await expect(role.locator('option')).toHaveCount(9);
+  await expect(role.locator('option:checked')).toHaveText('View All');
+
+  await page.goto('/admin/groups');
+  await expect(page.getByRole('heading', { name: 'Groups' })).toBeVisible();
+});

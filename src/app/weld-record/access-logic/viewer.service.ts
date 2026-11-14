@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { VIEW_PERMISSION } from '../../data/admin-groups';
+import { DEVELOPER_GROUP_ID, isPrivilegedGroup, VIEW_PERMISSION } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { STORAGE } from '../../data/storage-keys';
@@ -13,6 +13,8 @@ export class ViewerService {
   readonly people = DEMO_PEOPLE;
   readonly person = computed(() => this.people.find(person => person.id === this.currentId()) ?? DEFAULT_DEMO_PERSON);
   readonly memberships = computed(() => this.groups().filter(group => this.person().groupIds.includes(group.id)));
+  readonly canAccessApi = computed(() => this.memberships().some(group => group.id === DEVELOPER_GROUP_ID));
+  readonly hasFullWorkflowAccess = computed(() => this.memberships().some(group => isPrivilegedGroup(group.id)));
   readonly permissions = computed(() => new Set(this.memberships().flatMap(group => group.allowed)));
   readonly isAdmin = computed(() => this.permissions().has('admin-tables') || this.permissions().has('admin-groups'));
   readonly roles = computed(() => {
@@ -22,7 +24,7 @@ export class ViewerService {
 
   readonly defaultRole = computed<Role | null>(() => {
     const roles = this.roles();
-    if (this.person() === DEFAULT_DEMO_PERSON && roles.includes('View')) return 'View';
+    if (this.hasFullWorkflowAccess() && roles.includes('View')) return 'View';
     return roles[0] ?? null;
   });
 

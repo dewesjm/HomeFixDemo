@@ -37,7 +37,7 @@
           }
         </td>
         <td>
-          @if (draft()?.id === row.id) {
+          @if (draft()?.id === row.id && !isPrivilegedGroup(row.id)) {
             @for (persona of personas; track persona) {
               <label class="flex items-center gap-2 mb-1">
                 <input type="checkbox" class="checkbox checkbox-sm" [ngModel]="row.personas.includes(persona)"
@@ -51,7 +51,7 @@
           }
         </td>
         <td class="align-top">
-          @if (draft()?.id === row.id) {
+          @if (draft()?.id === row.id && !isPrivilegedGroup(row.id)) {
             @for (cat of categories; track cat) {
               <div class="mb-2 last:mb-0">
                 <div class="font-semibold mb-1">{{ cat }}</div>
@@ -91,7 +91,7 @@
               <button type="button" class="btn btn-ghost btn-xs" title="Edit" [disabled]="!!draft()" (click)="startEdit(row)">
                 <svg lucidePencil class="size-4"></svg>
               </button>
-              <button type="button" class="btn btn-ghost btn-xs text-error" title="Delete" [disabled]="!!draft()" (click)="deleteRow(row)">
+              <button type="button" class="btn btn-ghost btn-xs text-error" title="Delete" [disabled]="!!draft() || isPrivilegedGroup(row.id)" (click)="deleteRow(row)">
                 <svg lucideTrash2 class="size-4"></svg>
               </button>
             }

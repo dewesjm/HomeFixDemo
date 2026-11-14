@@ -9,7 +9,7 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { AdminGroup, PERMISSION_CATEGORIES, permissionSummary, permissionsIn } from '../../../data/admin-groups';
+import { AdminGroup, PERMISSION_CATEGORIES, isPrivilegedGroup, permissionSummary, permissionsIn } from '../../../data/admin-groups';
 
 import { ROUTING_PERSONAS } from '../../../data/roles';
 import { GroupsStore } from '../../access-logic/groups.store';
@@ -30,6 +30,7 @@ export class AdminGroupsComponent {
   permissionsIn = permissionsIn;
   summary = permissionSummary;
 
+  isPrivilegedGroup = isPrivilegedGroup;
   personas = ROUTING_PERSONAS;
   draft = signal<AdminGroup | null>(null);
   groups = computed(() => {

@@ -20,6 +20,7 @@ import {
     LucideBug, LucideClipboardCheck, LucideDroplet, LucideMap, LucideListChecks, LucidePlug
 } from '@lucide/angular';
 import { getQuickLinks, QuickLink } from './data/quick-links';
+import { ViewerService } from './weld-record/access-logic/viewer.service';
 import { featureToggles } from './data/feature-toggles';
 
 // check for version updates periodically, only full refresh will check
@@ -51,6 +52,7 @@ function systemForUrl(url: string): string {
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  readonly canAccessWeldRecordApi = inject(ViewerService).canAccessApi;
   title = 'welding-inspection';
 
   private swUpdate = inject(SwUpdate);

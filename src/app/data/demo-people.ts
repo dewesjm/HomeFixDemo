@@ -1,8 +1,8 @@
-import { DEVELOPER_GROUP_ID, VIEW_GROUP_ID } from './admin-groups';
+import { ADMINISTRATORS_GROUP_ID, DEVELOPER_GROUP_ID, VIEW_GROUP_ID } from './admin-groups';
 
 export const DEMO_PEOPLE = [
   { id: 'developer', label: 'Developer', groupIds: [DEVELOPER_GROUP_ID] },
-  { id: 'administrator', label: 'Alex (Administrator)', groupIds: ['g1', VIEW_GROUP_ID] },
+  { id: 'administrator', label: 'Alex (Administrator)', groupIds: [ADMINISTRATORS_GROUP_ID] },
   { id: 'view', label: 'Casey (View)', groupIds: [VIEW_GROUP_ID] },
   { id: 'welder', label: 'Jordan (Welder)', groupIds: ['g3', VIEW_GROUP_ID] },
   { id: 'fitter', label: 'Bob (Fitter)', groupIds: ['g2', VIEW_GROUP_ID] },
