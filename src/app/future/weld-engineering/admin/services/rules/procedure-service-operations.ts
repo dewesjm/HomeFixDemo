@@ -3,10 +3,11 @@
 import { PROCEDURE_STATUS_OPTIONS, type ProcedureStatus } from '../../../../../data/procedures';
 import { sent, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
 import {
-  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures,
+  getProcedure, findProcedures, searchProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures,
 } from '../../../procedure-service/procedure-service';
 import type { ProcedureKey } from '../../../procedure-service/procedure-record';
 import type { ProcedureFilter } from '../../../procedure-service/procedure-filter';
+import { SEARCH_COLUMNS, type ProcedureSearch } from '../../../procedure-service/procedure-search';
 
 const STATUSES = PROCEDURE_STATUS_OPTIONS.map(o => o.value);
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
@@ -56,6 +57,19 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
       ],
       call: a => [(a['filter'] ?? {}) as ProcedureFilter, sent({ fields: fieldsOf(a), status: statusOf(a) })],
       fn: findProcedures,
+    },
+    {
+      name: 'searchProcedures',
+      signature: 'searchProcedures({ text?, filters?, sort?, page?, pageSize? })',
+      description: 'The rows for a list screen, as Procedure Lookup asks for them: search text, column filters, sort, and paging when page and pageSize are sent. Answers the total matched.',
+      writes: false,
+      params: [{
+        name: 'query', label: 'Query', type: 'json',
+        example: '{ "text": "steel", "filters": { "status": ["active", "draft"] }, "sort": { "by": "gwp", "order": "asc" }, "page": 1, "pageSize": 10 }',
+        help: `Columns: ${SEARCH_COLUMNS.join(', ')}. Status is active unless filtered. Leave blank for every Active procedure.`,
+      }],
+      call: a => [(a['query'] ?? {}) as ProcedureSearch],
+      fn: searchProcedures,
     },
     {
       name: 'updateProcedureFields',

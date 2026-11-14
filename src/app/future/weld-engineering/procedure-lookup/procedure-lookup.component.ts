@@ -1,8 +1,10 @@
 /* Weld Engineering - Procedure Lookup. Every procedure (one per GWP+WTN pair) shown at once
    (no pager) with sort/search, mirroring an admin list screen rather than a paginated search screen.
-   Every column has a filter: text boxes for typed values, droplists for fixed lists. The base metal
-   and filler columns are section fields (Admin > Procedure Sections): their headings and choices come
-   from the field definitions, and a procedure without that section shows them blank. */
+   Every column has a filter: text boxes for typed values, droplists for fixed lists. The rows come from
+   the procedure service's searchProcedures call, sent the search text, filters and sort on every change
+   (the table only holds them). With no Status picked it asks for every status. The base metal and filler
+   columns are section fields (Admin > Procedure Sections): their headings and choices come from the field
+   definitions, and a procedure without that section shows them blank. */
 import { Component, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,26 +12,16 @@ import { Router } from '@angular/router';
 import { LucideSearch, LucideFileText, LucideX } from '@lucide/angular';
 
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { TableState, inArray } from '../../../shared/table-state';
-import {
-  procedures, Procedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES
-} from '../../../data/procedures';
+import { TableState } from '../../../shared/table-state';
+import { PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES } from '../../../data/procedures';
 import { procedureSections, findField } from '../procedure-sections';
-import { fieldChoices, fieldLabel, listValue, textValue } from '../procedure-field-values';
-import { AppDatePipe, formatDate } from '../../../shared/date-format';
-
-/* a procedure with the section values the table shows */
-type LookupRow = Procedure & { baseMetal1Type: string; baseMetal2Type: string; fillerMetalTypes: string[] };
+import { fieldChoices, fieldLabel } from '../procedure-field-values';
+import { AppDatePipe } from '../../../shared/date-format';
+import { searchProcedures } from '../procedure-service/procedure-service';
+import type { ProcedureSearch, ProcedureSearchRow, SearchColumn } from '../procedure-service/procedure-search';
 
 const asOptions = (list: string[]) => list.map(v => ({ label: v, value: v }));
-
-/* a procedure lists several filler types: it matches when any of them is picked */
-const anyPicked = (rowValue: unknown, picked: string | string[]) =>
-  (rowValue as string[]).some(v => (picked as string[]).includes(v));
-
-/* Effective Date is stored ISO but shown formatted, so the filter matches the shown text */
-const shownDateContains = (rowValue: unknown, typed: string | string[]) =>
-  formatDate(rowValue as string).toLowerCase().includes(String(typed).trim().toLowerCase());
+const ALL_STATUSES = PROCEDURE_STATUS_OPTIONS.map(o => o.value);
 
 @Component({
   selector: 'app-procedure-lookup',
@@ -38,13 +30,7 @@ const shownDateContains = (rowValue: unknown, typed: string | string[]) =>
   templateUrl: './procedure-lookup.component.html'
 })
 export class ProcedureLookupComponent {
-  table = new TableState<LookupRow>(
-    ['title', 'wtn', 'gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalTypes'],
-    {
-      status: inArray, weldProcess: inArray, processType: inArray, baseMetal1Type: inArray, baseMetal2Type: inArray,
-      fillerMetalTypes: anyPicked, effectiveDate: shownDateContains
-    }
-  );
+  table = new TableState<ProcedureSearchRow>([], {}, true);
   statusOptions = PROCEDURE_STATUS_OPTIONS;
   weldProcessOptions = asOptions(WELD_PROCESSES);
   processTypeOptions = asOptions(PROCESS_TYPES);
@@ -66,19 +52,28 @@ export class ProcedureLookupComponent {
     return values.map(v => this.fillerTypeOptions.find(o => o.value === v)?.label ?? v).join(', ');
   }
 
+  /* the call the table's search, filters and sort make */
+  query(): ProcedureSearch {
+    const filters: NonNullable<ProcedureSearch['filters']> = { ...this.table.columnFilters() };
+    const status = filters.status;
+    if (!status || !status.length) filters.status = ALL_STATUSES;
+    const by = this.table.sortField() as SearchColumn | null;
+    return {
+      text: this.table.globalFilter(),
+      filters,
+      ...(by ? { sort: { by, order: this.table.sortOrder() === 1 ? 'asc' : 'desc' } } : {}),
+    };
+  }
+
   constructor(private router: Router) {
+    /* runs again when the query or the procedures change */
     effect(() => {
-      const sections = procedureSections();
-      this.table.setRows(procedures().map(p => ({
-        ...p,
-        baseMetal1Type: textValue(p, 'baseMetal1Type', sections),
-        baseMetal2Type: textValue(p, 'baseMetal2Type', sections),
-        fillerMetalTypes: listValue(p, 'fillerMetalTypes', sections),
-      })));
+      const result = searchProcedures(this.query());
+      this.table.setRows(result.ok ? result.data.procedures : []);
     });
   }
 
-  openProcedure(row: Procedure) {
+  openProcedure(row: ProcedureSearchRow) {
     this.router.navigate(['/weld-engineering/procedures', row.gwp, row.wtn]);
   }
 }

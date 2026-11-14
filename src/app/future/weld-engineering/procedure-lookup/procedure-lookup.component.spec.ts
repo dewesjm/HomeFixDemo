@@ -34,11 +34,16 @@ describe('Procedure Lookup', () => {
     TestBed.flushEffects();
   });
 
-  const ids = () => page.table.filtered().map(r => r.gwp);
+  /* the rows searchProcedures answered for the table's current search, filters and sort */
+  const ids = () => {
+    TestBed.flushEffects();
+    return page.table.sorted().map(r => r.gwp);
+  };
 
   it('lists every procedure with its section values, blank when the section is not ticked', () => {
     expect(ids()).toEqual(['LK-1', 'LK-2', 'LK-3']);
     const row = (gwp: string) => page.table.rows().find(r => r.gwp === gwp)!;
+    expect(row('LK-2').status).toBe('draft');
     expect(row('LK-1').baseMetal1Type).toBe('02-CS');
     expect(row('LK-1').fillerMetalTypes).toEqual(['mil-70s-3', 'mil-70s-6']);
     expect(row('LK-3').baseMetal1Type).toBe('');
@@ -69,13 +74,26 @@ describe('Procedure Lookup', () => {
     expect(ids()).toEqual(['LK-1', 'LK-2']);
   });
 
-  it('filters Effective Date by the date as shown, not as stored', () => {
+  it('filters Effective Date by the date as shown or as stored', () => {
     page.table.setColumnFilter('effectiveDate', '2026-03-01');
-    expect(ids()).toEqual([]);
+    expect(ids()).toEqual(['LK-2']);
     page.table.setColumnFilter('effectiveDate', '03/01/2026');
     expect(ids()).toEqual(['LK-2']);
     page.table.setColumnFilter('effectiveDate', '2026');
     expect(ids()).toEqual(['LK-1', 'LK-2', 'LK-3']);
+  });
+
+  it('sorts through the service, either way', () => {
+    page.table.toggleSort('title');
+    expect(ids()).toEqual(['LK-2', 'LK-3', 'LK-1']);
+    page.table.toggleSort('title');
+    expect(ids()).toEqual(['LK-1', 'LK-3', 'LK-2']);
+  });
+
+  it('shows a procedure added or changed elsewhere straight away', () => {
+    procedures.update(list => list.map(p => p.gwp === 'LK-1' ? { ...p, title: 'Renamed' } : p));
+    page.table.setGlobalFilter('renamed');
+    expect(ids()).toEqual(['LK-1']);
   });
 
   it('shows filler types by their labels', () => {
@@ -89,7 +107,7 @@ describe('Procedure Lookup', () => {
   });
 
   it('opens a procedure\'s detail page', () => {
-    page.openProcedure(alloy);
+    page.openProcedure(page.table.rows().find(r => r.gwp === 'LK-2')!);
     expect(router.navigate).toHaveBeenCalledWith(['/weld-engineering/procedures', 'LK-2', '02.2-1']);
   });
 });

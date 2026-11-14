@@ -3,7 +3,8 @@
    Services alike, so they all run the same checks. Every call answers { ok: true, data } or
    { ok: false, error, title } with a message saying what's wrong, never throws.
    Reads:  getProcedure(key, options) = everything on a WTN, or only the fields asked for;
-           findProcedures(filter, options) = every procedure matching a condition, header only unless fields are asked for.
+           findProcedures(filter, options) = every procedure matching a condition, header only unless fields are asked for;
+           searchProcedures(query) = a list screen's rows: search text, column filters, sort, optional paging.
    Writes: createProcedure(procedure), updateProcedure(key, changes, revisionNote), updateProcedureFields(key,
            values, revisionNote) (section values only), deleteProcedure(key), importProcedures(rows, revisionNote)
            (many at once, each row saved or refused on its own).
@@ -23,6 +24,7 @@ import {
   type MissingField, type ProcedureHeader, type ProcedureKey, type ProcedureRecord,
 } from './procedure-record';
 import { filterProblem, matchesFilter, type ProcedureFilter } from './procedure-filter';
+import { searchProblem, searchRow, searchRows, type ProcedureSearch, type ProcedureSearchRow } from './procedure-search';
 import { parseFieldInput } from './procedure-field-input';
 import { choiceProblem, procedureSaveProblem } from './procedure-save-checks';
 import { changesProblem, type ProcedureChanges } from './procedure-changes';
@@ -105,6 +107,22 @@ export function findProcedures(filter: ProcedureFilter = {}, options: ReadOption
       return { header: procedure.header, sections: procedure.sections, missing };
     });
   return { ok: true, data: { count: found.length, procedures: found } };
+}
+
+/* A list screen's rows (Procedure Lookup): search text, column filters, sort and optional paging
+   (procedure-search.ts). Status is Active unless filtered. Answers the total matched and that page's rows. */
+export function searchProcedures(
+  query: ProcedureSearch = {}
+): ServiceResult<{ total: number; page?: number; pageSize?: number; procedures: ProcedureSearchRow[] }> {
+  const q = query ?? {};
+  const problem = searchProblem(q);
+  if (problem) return fail(problem);
+  const sections = procedureSections();
+  const found = searchRows(procedures().map(p => searchRow(p, sections)), q);
+  if (!q.pageSize) return { ok: true, data: { total: found.length, procedures: found } };
+  const page = q.page ?? 1;
+  const start = (page - 1) * q.pageSize;
+  return { ok: true, data: { total: found.length, page, pageSize: q.pageSize, procedures: found.slice(start, start + q.pageSize) } };
 }
 
 /* ── Writes ── */

@@ -1,6 +1,8 @@
 /* Client-side sort/paginate/filter helper shared by every table screen.
    Sorting, global filter, column filters, paging. Each screen owns one instance,
-   feeds it rows via setRows(), and reads paged()/total()/etc in its template. */
+   feeds it rows via setRows(), and reads paged()/total()/etc in its template.
+   remote: a service filters and sorts (e.g. Procedure Lookup); this then only holds the search, filter
+   and sort the screen sends, and setRows() gets the rows already filtered and sorted. */
 import { computed, signal } from '@angular/core';
 
 type SortOrder = 1 | -1;
@@ -23,7 +25,8 @@ export class TableState<T> {
 
   constructor(
     private globalFilterFields: (keyof T & string)[] = [],
-    private filterPredicates: Record<string, FilterPredicate<T>> = {}
+    private filterPredicates: Record<string, FilterPredicate<T>> = {},
+    private remote = false
   ) {}
 
   setRows(rows: T[]) {
@@ -76,14 +79,14 @@ export class TableState<T> {
     });
   };
 
-  filtered = computed(() => this.allRows().filter(r => this.matchesGlobal(r) && this.matchesColumnFilters(r)));
+  filtered = computed(() => this.remote ? this.allRows() : this.allRows().filter(r => this.matchesGlobal(r) && this.matchesColumnFilters(r)));
   /* any rows at all, before filtering: lets an empty table say "none yet" vs "none match" */
   hasRows = computed(() => this.allRows().length > 0);
 
   sorted = computed(() => {
     const field = this.sortField();
     const rows = this.filtered();
-    if (!field) return rows;
+    if (!field || this.remote) return rows;
     const order = this.sortOrder();
     return [...rows].sort((a, b) => {
       const av = cell(a, field) as string | number | null | undefined;
