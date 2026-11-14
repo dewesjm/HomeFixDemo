@@ -71,15 +71,13 @@ describe('Weld Engineering Services page', () => {
     expect(el.querySelector('#param-fields')).not.toBeNull();
   });
 
-  it('marks the write call as changing data', async () => {
+  it('lists read calls only', async () => {
     const fixture = await render();
     const options = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('option')).map(o => o.textContent?.trim());
-    expect(options).toContain('updateProcedureFields (Write)');
+    expect(options.some(option => option?.endsWith('(Write)'))).toBeFalse();
     expect(options).toContain('getProcedure (Read)');
     expect(options).toContain('exportProcedures (Read)');
     expect(options).toContain('getLoadTemplate (Read)');
-    expect(options).toContain('importProcedures (Write)');
-    expect(options).toContain('removeField (Write)');
   });
 
   it('lists the three main procedure reads and hides workflow helper reads', async () => {
