@@ -42,3 +42,35 @@ test('Developer and Administrator share queues while Services requires Developer
   await expect(group('Developer').getByText('API access', { exact: true })).toBeVisible();
   await expect(group('Administrators').getByText('API access', { exact: true })).toHaveCount(0);
 });
+
+test('View can read joints and use each History permission independently', async ({ page }) => {
+  await page.goto('/pipe-welding');
+  await page.getByRole('button', { name: 'User menu' }).click();
+  await page.getByLabel('View as').selectOption({ label: 'Casey (View)' });
+  await page.getByRole('button', { name: 'User menu' }).click();
+
+  await page.getByRole('button', { name: 'Details' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Joint details' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Signoff', exact: true })).toHaveCount(0);
+
+  await page.goto('/admin/groups');
+  await expect(page).toHaveURL(/\/pipe-welding$/);
+  await page.getByRole('button', { name: 'History' }).first().click();
+  await expect(page).toHaveURL(/jointHistory=/);
+  await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Deprogress', exact: true })).toHaveCount(0);
+  const scopedHistory = page.url();
+
+  await page.goto('/history');
+  await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
+  // Use the same persisted group rows that the in-app editor writes.
+  await page.evaluate(() => {
+    localStorage.setItem('welding:admin-groups:v2', JSON.stringify([
+      { id: 'g10', name: 'View', description: '', personas: [], allowed: ['view', 'joint-details', 'joint-history'] },
+    ]));
+  });
+  await page.reload();
+  await expect(page).toHaveURL(/\/pipe-welding$/);
+  await page.goto(scopedHistory);
+  await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
+});

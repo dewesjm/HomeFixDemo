@@ -2,7 +2,7 @@
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
 import { AdminTableScopeDirective } from './shared/admin-table-scope.directive';
-import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, effect, signal, inject, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
@@ -52,7 +52,8 @@ function systemForUrl(url: string): string {
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  readonly canAccessWeldRecordApi = inject(ViewerService).canAccessApi;
+  readonly viewer = inject(ViewerService);
+  readonly canAccessWeldRecordApi = this.viewer.canAccessApi;
   title = 'welding-inspection';
 
   private swUpdate = inject(SwUpdate);
@@ -112,6 +113,11 @@ export class AppComponent {
   }
 
   constructor() {
+    effect(() => {
+      if (this.viewer.isViewOnly() && /^\/(admin\/|makeup(?:[/?#]|$)|assignments(?:[/?#]|$)|pipe-welding-classic(?:[/?#]|$))/.test(this.router.url)) {
+        void this.router.navigateByUrl('/pipe-welding');
+      }
+    });
     document.addEventListener('click', (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       /* close on outside click, or when a real (non-disabled) menu link is chosen */

@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Weld Record Administrators have the same workflow queues and group permissions as Developer. Groups lists API access separately. Developer has it and can open the Weld Record Services tester.',
+    added: ['The View role can search Weld Record and read Joint Details and History. Admin > Groups has separate permissions for the joint History button and the full History page.',
+      'Weld Record Administrators have the same workflow queues and group permissions as Developer. Groups lists API access separately. Developer has it and can open the Weld Record Services tester.',
       'Use View as in the avatar menu to switch demo viewers. Pipe Welding offers the queues assigned to that viewer and remembers the selected queue in saved views.',
       'Weld Record > Admin > Groups saves group personas and permissions across reloads. Routing Settings defines which personas sign each routing.',
       'Weld Record > Admin > Services: try the calls made to Weld Record and see each exact response: get one joint, its routing path, or its History (all of it or one section). Read-only so far.',

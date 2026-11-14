@@ -1,3 +1,4 @@
+@if (viewer.canViewJoint()) {
 @if (job; as j) {
 @if (wf; as wfSig) {
 @if (wfSig(); as w) {
@@ -30,4 +31,7 @@
 }
 } @else {
         <div class="empty">No hull found for that id.</div>
+}
+} @else {
+  <p>Joint Details is unavailable for this viewer.</p>
 }

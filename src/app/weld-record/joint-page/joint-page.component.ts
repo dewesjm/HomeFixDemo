@@ -1,3 +1,4 @@
+import { ViewerService } from '../access-logic/viewer.service';
 //This is the job details page
 
 /* The joint page: page state, wiring to the sign-off panel, and signing. A value changing on the
@@ -66,6 +67,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
   templateUrl: './joint-page.component.html'
 })
 export class JointPageComponent implements OnDestroy {
+  readonly viewer = inject(ViewerService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private store = inject(WorkflowStore);
@@ -145,7 +147,7 @@ export class JointPageComponent implements OnDestroy {
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
   soldSigned = computed(() => !!this.wf?.().stages.some(s => closesJoint(s.id) && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing Settings) */
-  fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.wf().stages));
+  fabLocked = computed(() => this.viewer.isViewOnly() || !!this.wf && !!this.job && !fabricationEditable(this.wf().stages));
   /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
   rejectedCount = computed(() =>
@@ -174,7 +176,7 @@ export class JointPageComponent implements OnDestroy {
   fabFieldRequired = (f: FabricationField): boolean => !!this.wf && fabricationFieldRequired(f, this.fab());
 
   fabInputBlur(key: string, value: string) {
-    if (this.job && this.wf && value !== (this.fab()[key] ?? '')) {
+    if (!this.viewer.isViewOnly() && this.job && this.wf && value !== (this.fab()[key] ?? '')) {
       this.fabricationService.setFabricationData(this.job, key, value);
     }
   }
@@ -233,7 +235,7 @@ export class JointPageComponent implements OnDestroy {
   /* ── The sign-off panel ── */
 
   signoffCtx = computed<SignoffContext | null>(() => {
-    if (!this.job || !this.wf) return null;
+    if (this.viewer.isViewOnly() || !this.job || !this.wf) return null;
     const w = this.wf();
     const job = this.job;
     const ov = this.overrides;

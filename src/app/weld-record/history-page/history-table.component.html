@@ -64,9 +64,11 @@
         </td>
         @if (all) {
           <td>
+            @if (viewer.canViewJoint()) {
             <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
               <svg lucideArrowUpRight class="size-3"></svg>
             </button>
+            }
           </td>
         }
       </tr>
@@ -158,4 +160,4 @@
   </tbody>
 </table>
 
-<app-correct-stage-dialog [target]="correctTarget()" (closed)="closeCorrect()" />
+<app-correct-stage-dialog [target]="viewer.isViewOnly() ? null : correctTarget()" (closed)="closeCorrect()" />

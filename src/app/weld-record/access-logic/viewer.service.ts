@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, isPrivilegedGroup, VIEW_PERMISSION } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, HISTORY_PAGE_PERMISSION, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { STORAGE } from '../../data/storage-keys';
@@ -15,6 +15,11 @@ export class ViewerService {
   readonly memberships = computed(() => this.groups().filter(group => this.person().groupIds.includes(group.id)));
   readonly hasFullWorkflowAccess = computed(() => this.memberships().some(group => isPrivilegedGroup(group.id)));
   readonly permissions = computed(() => new Set(this.memberships().flatMap(group => group.allowed)));
+  readonly isViewOnly = computed(() => this.memberships().every(group => group.id === VIEW_GROUP_ID));
+  readonly canSearch = computed(() => this.permissions().has(VIEW_PERMISSION));
+  readonly canViewJoint = computed(() => this.permissions().has(JOINT_DETAILS_PERMISSION));
+  readonly canViewJointHistory = computed(() => this.permissions().has(JOINT_HISTORY_PERMISSION));
+  readonly canViewHistoryPage = computed(() => this.permissions().has(HISTORY_PAGE_PERMISSION));
   readonly canAccessApi = computed(() => this.permissions().has(API_ACCESS_PERMISSION));
   readonly isAdmin = computed(() => this.permissions().has('admin-tables') || this.permissions().has('admin-groups'));
   readonly roles = computed(() => {

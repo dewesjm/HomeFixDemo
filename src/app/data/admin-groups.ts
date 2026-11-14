@@ -19,11 +19,20 @@ export interface AdminGroup {
 }
 
 export const VIEW_PERMISSION = 'view';
+export const JOINT_DETAILS_PERMISSION = 'joint-details';
+export const JOINT_HISTORY_PERMISSION = 'joint-history';
+export const HISTORY_PAGE_PERMISSION = 'history-page';
+
+const VIEW_PERMISSIONS = [VIEW_PERMISSION, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, HISTORY_PAGE_PERMISSION];
+
 export const API_ACCESS_PERMISSION = 'api-access';
 
 const PERMISSIONS: Permission[] = [
   { key: API_ACCESS_PERMISSION, label: 'API access', category: 'Access' },
   { key: VIEW_PERMISSION, label: 'Search records', category: 'Access' },
+  { key: JOINT_DETAILS_PERMISSION, label: 'View Joint Details', category: 'Access' },
+  { key: JOINT_HISTORY_PERMISSION, label: 'Joint History button', category: 'Access' },
+  { key: HISTORY_PAGE_PERMISSION, label: 'View History page', category: 'Access' },
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
   { key: 'edit-fabrication', label: 'Edit fabrication fields', category: 'Data Entry' },
@@ -77,7 +86,7 @@ const SAMPLE_GROUPS: AdminGroup[] = [
   { id: 'g9', name: 'Engineering', description: 'Engineers who handle Engineering Hold and routing overrides.',
     personas: ['Engineering'], allowed: ['manage-routing', 'force-routing'] },
   { id: VIEW_GROUP_ID, name: 'View', description: 'Search Weld Record.',
-    personas: [], allowed: [VIEW_PERMISSION] },
+    personas: [], allowed: VIEW_PERMISSIONS },
 ];
 
 export function isPrivilegedGroup(id: string): boolean {

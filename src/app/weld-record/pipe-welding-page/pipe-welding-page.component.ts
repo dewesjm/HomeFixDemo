@@ -61,7 +61,7 @@ export class PipeWeldingPageComponent {
 
   readonly STANDARD = STANDARD_VARIANT;
   banner = signal(bannerFor('pipe-welding'));
-  private viewer = inject(ViewerService);
+  readonly viewer = inject(ViewerService);
   roleOptions = computed(() => this.viewer.roles().map(role => ({
     label: role === 'View' ? 'View All' : role,
     value: role,
@@ -151,7 +151,7 @@ export class PipeWeldingPageComponent {
   /* role droplist: jobs whose current step routes to that role (same as Pipe Welding) */
   private roleRows = computed<SearchRow[]>(() => {
     const role = this.selectedRole();
-    if (!role || role === 'View') return this.allRows();
+    if (!role || role === 'View') return this.viewer.canSearch() ? this.allRows() : [];
     return this.allRows().filter(r => {
       const current = activeStage(this.store.workflowFor(r)().stages);
       return (current?.role ?? '').split('|').includes(role);
@@ -382,7 +382,7 @@ export class PipeWeldingPageComponent {
   }
 
   canReleaseSelected = computed(() => {
-    if (this.selectedRole() !== 'Foreman') return false;
+    if (this.viewer.isViewOnly() || this.selectedRole() !== 'Foreman') return false;
     const ids = this.selectedIds();
     if (ids.size === 0) return false;
     return this.table.paged().filter(r => ids.has(r.id)).every(r => r.currentRouting === 'Fit-Up Release');
@@ -397,7 +397,7 @@ export class PipeWeldingPageComponent {
   }
 
   openDetails(row: SearchRow) { this.router.navigate(jointRoute(row)); }
-  openHistory(row: SearchRow) { this.router.navigate(['/history'], { queryParams: { job: row.id } }); }
+  openHistory(row: SearchRow) { this.router.navigate(['/history'], { queryParams: { job: row.id, jointHistory: row.id } }); }
 
   /* column header filter kind: list = multiselect, text = box; numbers and dates sort only */
   headerFilter(f: SearchField): 'text' | 'select' | 'none' {

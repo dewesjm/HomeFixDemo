@@ -1,3 +1,4 @@
+import { ViewerService } from '../access-logic/viewer.service';
 /* The History table: one row per History entry, expandable to the fields recorded, with Deprogress
    and Correct. Used by the History screen (every joint) and Records Review (one joint). The parent
    owns the HistoryTableState (rows, search, paging, expanded rows); this owns the row actions. */
@@ -32,6 +33,7 @@ export class HistoryTableComponent {
   private confirmSvc = inject(ConfirmService);
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
+  readonly viewer = inject(ViewerService);
   table = input.required<HistoryTableState>();
   hasDetail = historyRowHasDetail;
   /* one joint's history: leaves out the XREFID, Hull, Drawing, Joint and Order columns and the open-joint button */
@@ -78,11 +80,11 @@ export class HistoryTableComponent {
   });
 
   isDeprogressable(r: HistoryRow): boolean {
-    return this.actionKeys().deprogress.has(r.key);
+    return !this.viewer.isViewOnly() && this.actionKeys().deprogress.has(r.key);
   }
 
   isCorrectable(r: HistoryRow): boolean {
-    return this.actionKeys().correct.has(r.key);
+    return !this.viewer.isViewOnly() && this.actionKeys().correct.has(r.key);
   }
 
   confirmDeprogress(jobId: string) {
@@ -99,7 +101,7 @@ export class HistoryTableComponent {
 
   openCorrect(r: HistoryRow) {
     const job = this.jobById.get(r.jobId);
-    if (job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
+    if (!this.viewer.isViewOnly() && job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
   }
 
   closeCorrect() {

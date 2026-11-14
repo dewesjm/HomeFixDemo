@@ -1,3 +1,4 @@
+import { ViewerService } from '../access-logic/viewer.service';
 /* work history screen, activity log across jobs */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -31,6 +32,9 @@ import { HistoryTableState } from './history-table-state';
   templateUrl: './history-page.component.html'
 })
 export class HistoryPageComponent {
+  readonly viewer = inject(ViewerService);
+  readonly jointHistory = signal<string | null>(null);
+  readonly canView = computed(() => this.jointHistory() !== null ? this.viewer.canViewJointHistory() : this.viewer.canViewHistoryPage());
   private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
   private route = inject(ActivatedRoute);
@@ -49,7 +53,8 @@ export class HistoryPageComponent {
   constructor() {
     /* seed filters from url for deep links (person by name or identifier) */
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(pm => {
-      this.jobQuery.set(pm.get('job') ?? '');
+      this.jointHistory.set(pm.get('jointHistory'));
+      this.jobQuery.set(this.jointHistory() ?? pm.get('job') ?? '');
       const p = pm.get('person');
       this.person.set(p ? PEOPLE.find(x => x.id === p || fullName(x) === p) ?? null : null);
       this.table.setGlobalFilter(pm.get('q') ?? '');
@@ -79,6 +84,7 @@ export class HistoryPageComponent {
 
   private saveFiltersToUrl() {
     this.router.navigate([], { relativeTo: this.route, replaceUrl: true, queryParams: {
+      ...(this.jointHistory() !== null ? { jointHistory: this.jointHistory() } : {}),
       job: this.jobQuery() || null,
       person: this.person()?.id ?? null,
       q: this.table.globalFilter() || null,
@@ -109,8 +115,11 @@ export class HistoryPageComponent {
   private preFiltered = computed<HistoryRow[]>(() => {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
+    if (!this.canView()) return [];
+    const jointHistory = this.jointHistory();
     return this.allActivity().filter(r =>
-      (!jq || [r.jobId, r.xrefid, r.drawing, r.joint, r.order].some(v => v.toLowerCase().includes(jq))) &&
+      (jointHistory === null || r.jobId === jointHistory) &&
+      (jointHistory !== null || !jq || [r.jobId, r.xrefid, r.drawing, r.joint, r.order].some(v => v.toLowerCase().includes(jq))) &&
       (!p || r.whoId === p.id || r.who === fullName(p))
     );
   });
@@ -118,12 +127,12 @@ export class HistoryPageComponent {
   /* undo a job's most recent sign-off */
   deprogress(jobId: string, reason: string) {
     const job = this.jobById.get(jobId);
-    if (job) this.wfService.deprogress(job, reason);
+    if (job && !this.viewer.isViewOnly()) this.wfService.deprogress(job, reason);
   }
 
   clear() {
     this.person.set(null);
-    this.jobQuery.set('');
+    this.jobQuery.set(this.jointHistory() ?? '');
     this.table.clearFilters();
     this.saveFiltersToUrl();
   }
