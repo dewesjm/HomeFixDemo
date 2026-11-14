@@ -17,7 +17,7 @@ import { jointServiceOperations } from './rules/joint-service-operations';
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
         Every call made to Weld Record, both the ones this application uses internally and the ones other
-        systems can call: a joint, its routing and its History. Run one to see its exact response.
+        systems can call: joints, their fields, routing and History. Run one to see its exact response.
       </p>
       <app-service-tester-panel [operations]="operations" />
     </div>
@@ -26,5 +26,8 @@ import { jointServiceOperations } from './rules/joint-service-operations';
 export class AdminServicesComponent {
   /* the inputs start on the first joint */
   private example = JOBS[0];
-  operations = jointServiceOperations(inject(JointService), { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint });
+  private svc = inject(JointService);
+  /* the Filter droplist comes from getJointFields, as another system would get it */
+  private fields = (r => (r.ok ? r.data.fields : []))(this.svc.getJointFields());
+  operations = jointServiceOperations(this.svc, { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint }, this.fields);
 }

@@ -7,6 +7,9 @@
      findJoints(filter, opts) = for another system's logic: every joint matching all conditions (exact
                                 values on any joint field or routing); whole records, no sort or paging;
      searchJoints(query)      = for a list screen: search text, column filters, sort, optional paging;
+     getJointFields()         = every key a findJoints condition can name, with its label, group, type,
+                                whether searchJoints has it as a column, and the values joints have
+                                (choices) for fields picked from a list;
      getRouting(key)          = every routing on its path in order, signed or not, and which is current;
      getHistory(key, options) = its History entries, newest first, optionally one section only.
    In real life these are Weld Record's OData service; here they read the demo's joints and the saved
@@ -17,8 +20,9 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import { activeStageId, closesJoint, currentRoutingLabel } from '../routing-logic/current-routing';
 import type { HistoryEntry } from '../model/history';
 import { jointUrl } from '../joint-page/joint-route';
+import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
 import {
-  filterProblem, matchesFilter, searchProblem, searchRow, searchRows,
+  SEARCH_COLUMNS, filterProblem, matchesFilter, searchProblem, searchRow, searchRows,
   type JointFilter, type JointRecord, type JointSearch, type JointSearchRow,
 } from './joint-search';
 
@@ -41,6 +45,21 @@ export interface RoutingRow {
 
 /* the keys a findJoints condition can name: every joint field (never the internal id) plus routing */
 export const JOINT_FIELDS: string[] = [...Object.keys(JOBS[0] ?? {}).filter(k => k !== 'id' && k !== '_fresh'), 'routing'];
+
+export interface JointFieldDefinition {
+  key: string;
+  label: string;
+  group: string;
+  type: 'text' | 'number';
+  /* searchJoints has it as a column (filters, sort) */
+  searchColumn: boolean;
+  /* fields picked from a list: the values joints have now, sorted */
+  choices?: string[];
+}
+
+/* labels for joint fields Joint Details doesn't show; the catalog's currentRouting is routing here */
+const OTHER_FIELDS: Record<string, { label: string; group: string }> = { technician: { label: 'Technician', group: 'Job' } };
+const catalogKey = (key: string) => (key === 'routing' ? 'currentRouting' : key);
 
 export const HISTORY_SECTIONS: HistoryEntry['section'][] = [
   'Stages', 'Sign-off', 'Correction', 'References', 'Fabrication', 'Release', 'Refit', 'Routing',
@@ -112,6 +131,26 @@ export class JointService {
     const page = q.page ?? 1;
     const start = (page - 1) * q.pageSize;
     return { ok: true, data: { total: found.length, page, pageSize: q.pageSize, joints: found.slice(start, start + q.pageSize) } };
+  }
+
+  getJointFields(): JointResult<{ fields: JointFieldDefinition[] }> {
+    const records = this.records();
+    const position = (key: string) => {
+      const i = JOINT_FIELD_CATALOG.findIndex(c => c.key === catalogKey(key));
+      return i < 0 ? JOINT_FIELD_CATALOG.length : i;
+    };
+    const fields = [...JOINT_FIELDS].sort((a, b) => position(a) - position(b)).map((key): JointFieldDefinition => {
+      const entry = JOINT_FIELD_CATALOG.find(c => c.key === catalogKey(key));
+      const { label, group } = entry ?? OTHER_FIELDS[key] ?? { label: key, group: 'Job' };
+      const choices = entry?.kind === 'list'
+        ? [...new Set(records.map(r => String(r[key as keyof JointRecord] ?? '')).filter(Boolean))].sort()
+        : [];
+      return {
+        key, label, group, type: entry?.kind === 'number' ? 'number' : 'text',
+        searchColumn: (SEARCH_COLUMNS as string[]).includes(key), ...(choices.length ? { choices } : {}),
+      };
+    });
+    return { ok: true, data: { fields } };
   }
 
   getRouting(key: JointKey): JointResult<{ current: string; routings: RoutingRow[] }> {

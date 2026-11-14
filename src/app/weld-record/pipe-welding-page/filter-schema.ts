@@ -10,8 +10,8 @@ import { jointDesignOptions } from '../../data/joint-designs';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields } from '../catalogs/field-choices';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details-logic/joint-details-values';
-import { FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
-import { NDT_LABELS } from '../../data/ndt-labels';
+import { FilterValues, MatchField } from '../../shared/filter-engine';
+import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
 
 export interface SearchField extends MatchField {
   key: string;            /* row key: a Job field, 'currentRouting', 'fab.<key>' or a step answer key */
@@ -21,61 +21,13 @@ export interface SearchField extends MatchField {
 
 /* ── Fields ── */
 
-const job = (key: keyof Job, label: string, group: string, kind: FieldKind = 'text', width = 'min-w-24'): SearchField =>
-  ({ key, label, group, kind, width });
+/* list column widths that aren't the usual min-w-24 */
+const WIDTHS: Record<string, string> = {
+  xrefid: 'min-w-16', ship: 'min-w-16', joint: 'min-w-20', currentRouting: 'min-w-36', engineeringNotes: 'min-w-32', order: 'min-w-28',
+};
 
-/* Joint Details fields under the labels the Joint Details panel uses, plus NDT, PWHT and the
-   planning fields. UT and VT read the NDT requirement the way Joint Details shows them. */
-const JOB_FIELDS: SearchField[] = [
-  job('xrefid', 'XREFID', 'Job', 'text', 'min-w-16'),
-  job('ship', 'Ship', 'Job', 'text', 'min-w-16'),
-  job('hull', 'Hull', 'Job', 'text', 'min-w-24'),
-  job('drawing', 'Drawing', 'Job'),
-  job('drawingRev', 'Drawing Rev', 'Job'),
-  job('joint', 'Joint', 'Job', 'text', 'min-w-20'),
-  { key: 'currentRouting', label: 'Routing', group: 'Job', kind: 'list', width: 'min-w-36' },
-  job('jointDesign', 'Joint Design', 'Welding', 'list'),
-  job('weldType', 'Weld Type', 'Welding', 'list'),
-  job('materialType1', 'Material Type 1', 'Welding', 'list'),
-  job('materialType2', 'Material Type 2', 'Welding', 'list'),
-  job('pipeSize', 'Pipe Size', 'Welding'),
-  job('wallThickness', 'Wall Thickness', 'Welding'),
-  job('mcl1', 'MCL 1', 'Welding', 'list'),
-  job('mcl2', 'MCL 2', 'Welding', 'list'),
-  job('joiningItem', 'Joining Item', 'Welding'),
-  job('joinToItem', 'Join To Item', 'Welding'),
-  job('sequenceNumber', 'Sequence #', 'Welding'),
-  job('nInd', 'Nuclear Indicator', 'Welding', 'list'),
-  job('engineeringNotes', 'Engineering Notes', 'Welding', 'text', 'min-w-32'),
-  job('ndt', 'NDT', 'NDT'),
-  job('rtRoot', NDT_LABELS.rtRoot, 'NDT', 'list'),
-  job('rtFinal', NDT_LABELS.rtFinal, 'NDT', 'list'),
-  job('ndtRoot', NDT_LABELS.ndtRoot, 'NDT', 'list'),
-  job('ndtEach', NDT_LABELS.ndtEach, 'NDT', 'list'),
-  job('ndtFinal', NDT_LABELS.ndtFinal, 'NDT', 'list'),
-  job('ut', NDT_LABELS.ut, 'NDT', 'list'),
-  { key: 'vt', label: NDT_LABELS.vt, group: 'NDT', kind: 'list', width: 'min-w-24' },
-  job('pwht', 'PWHT', 'NDT'),
-  job('order', 'Order', 'Additional', 'text', 'min-w-28'),
-  job('workPackage', 'Work Package', 'Additional'),
-  job('workPermit', 'Work Permit', 'Additional'),
-  job('waff', 'WAFF', 'Additional'),
-  job('serialNumber', 'Serial Number', 'Additional'),
-  job('refitNumber', 'Refit #', 'Additional'),
-  job('repairNumber', 'Repair #', 'Additional'),
-  job('ss', 'SS', 'Additional'),
-  job('sfff', 'SFCC', 'Additional'),
-  job('dssAaa', 'DSS-SOC', 'Additional'),
-  job('er1', 'ER1', 'Additional'),
-  job('er2', 'ER2', 'Additional'),
-  job('er3', 'ER3', 'Additional'),
-  job('er4', 'ER4', 'Additional'),
-  job('attributeCode1', 'Attribute Code 1', 'Additional'),
-  job('attributeCode2', 'Attribute Code 2', 'Additional'),
-  job('attributeCode3', 'Attribute Code 3', 'Additional'),
-  job('attributeCode4', 'Attribute Code 4', 'Additional'),
-  job('estimatedHours', 'Estimated Hours', 'Additional', 'number'),
-];
+/* the joint's own fields (catalogs/joint-fields.ts), with their column widths */
+const JOB_FIELDS: SearchField[] = JOINT_FIELD_CATALOG.map(f => ({ ...f, width: WIDTHS[f.key] ?? 'min-w-24' }));
 
 const FAB_KEY = 'fab.';
 const fabFields = (): SearchField[] => FABRICATION_FIELDS.map(f => ({

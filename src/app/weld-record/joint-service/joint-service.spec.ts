@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { JOBS, type Job } from '../../data/jobs';
-import { JointService, findJoint } from './joint-service';
+import { JOINT_FIELDS, JointService, findJoint } from './joint-service';
 import { jointUrl } from '../joint-page/joint-route';
 
 const job = (o: Partial<Job>): Job => ({ ...JOBS[0], ...o });
@@ -135,6 +135,28 @@ describe('JointService', () => {
     it('refuses a bad query', () => {
       expect(svc.searchJoints({ page: 1 })).toEqual({ ok: false, error: 'Send pageSize with page.', title: 'Wrong value' });
       expect(svc.searchJoints({ filters: { nope: 'x' } as never })).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+    });
+  });
+
+  describe('getJointFields', () => {
+    const fields = () => { const r = svc.getJointFields(); return r.ok ? r.data.fields : []; };
+    it('lists exactly the keys findJoints takes, never the internal id', () => {
+      const keys = fields().map(f => f.key).sort();
+      expect(keys).toEqual([...JOINT_FIELDS].sort());
+      expect(keys).not.toContain('id');
+    });
+    it('labels fields as Joint Details does and marks searchJoints columns', () => {
+      const routing = fields().find(f => f.key === 'routing')!;
+      expect(routing.label).toBe('Routing');
+      expect(routing.searchColumn).toBeTrue();
+      expect(fields().find(f => f.key === 'drawingRev')!.searchColumn).toBeFalse();
+      expect(fields().find(f => f.key === 'technician')!.label).toBe('Technician');
+      expect(fields().find(f => f.key === 'estimatedHours')!.type).toBe('number');
+    });
+    it('gives list fields the values joints have, sorted', () => {
+      const weldType = fields().find(f => f.key === 'weldType')!;
+      expect(weldType.choices).toEqual([...new Set(JOBS.map(j => j.weldType))].filter(Boolean).sort());
+      expect(fields().find(f => f.key === 'drawing')!.choices).toBeUndefined();
     });
   });
 });

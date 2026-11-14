@@ -2,11 +2,17 @@
    operations. example: a joint the inputs start filled in with, so each call answers something the
    first time it's run. */
 import { sent, type OperationParam, type ServiceOperation } from '../../../../shared/service-tester-panel/service-operation';
-import { HISTORY_SECTIONS, JOINT_FIELDS, type JointFilter, type JointKey, type JointSearch, type JointService } from '../../../joint-service/joint-service';
+import { HISTORY_SECTIONS, type JointFieldDefinition, type JointFilter, type JointKey, type JointSearch, type JointService } from '../../../joint-service/joint-service';
 import { SEARCH_COLUMNS } from '../../../joint-service/joint-search';
 import type { HistoryEntry } from '../../../model/history';
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
+/* a field as a droplist entry, under its group */
+const fieldChoice = (f: JointFieldDefinition) => ({
+  value: f.key, label: `${f.label} (${f.key})`, group: f.group,
+  hint: f.choices?.length ? `Value, e.g. ${f.choices[0]}` : 'Value',
+});
+
 /* blank parts are left out of the key, so the call shown is the call made */
 const keyOf = (a: Record<string, unknown>): JointKey =>
   sent({ hull: str(a['hull']) || undefined, drawing: str(a['drawing']) || undefined, joint: str(a['joint']) || undefined, xrefid: str(a['xrefid']) || undefined });
@@ -23,7 +29,8 @@ const openOnlyParam: OperationParam = {
 };
 const openOnlyOf = (a: Record<string, unknown>) => (a['openOnly'] === 'true' ? true : a['openOnly'] === 'false' ? false : undefined);
 
-export function jointServiceOperations(svc: JointService, example: JointKey): ServiceOperation[] {
+/* fields: every key findJoints takes (getJointFields), for the Filter droplist */
+export function jointServiceOperations(svc: JointService, example: JointKey, fields: JointFieldDefinition[]): ServiceOperation[] {
   return [
     {
       name: 'getJoint',
@@ -43,7 +50,7 @@ export function jointServiceOperations(svc: JointService, example: JointKey): Se
         {
           name: 'filter', label: 'Filter', type: 'conditions',
           example: JSON.stringify({ hull: example.hull ?? '', drawing: example.drawing ?? '' }),
-          choices: JOINT_FIELDS.map(f => ({ value: f, label: f })),
+          choices: fields.map(fieldChoice),
           help: 'Every condition must hold.',
         },
         openOnlyParam,
@@ -63,6 +70,15 @@ export function jointServiceOperations(svc: JointService, example: JointKey): Se
       }],
       call: a => [(a['query'] ?? {}) as JointSearch],
       fn: q => svc.searchJoints(q),
+    },
+    {
+      name: 'getJointFields',
+      signature: 'getJointFields()',
+      description: 'Every field a findJoints condition can name: key, label, group, type, whether searchJoints has it as a column, and for fields picked from a list the values joints have now. This page\'s Filter droplist comes from it.',
+      writes: false,
+      params: [],
+      call: () => [],
+      fn: () => svc.getJointFields(),
     },
     {
       name: 'getRouting',
