@@ -82,25 +82,14 @@ describe('Weld Engineering Services page', () => {
     expect(options).toContain('removeField (Write)');
   });
 
-  it('shows the call and routing field value for getWtnFillValue', async () => {
+  it('lists the three main procedure reads and hides workflow helper reads', async () => {
     const fixture = await render();
     const el: HTMLElement = fixture.nativeElement;
-    const operation = el.querySelector('select') as HTMLSelectElement;
-    operation.value = 'getWtnFillValue';
-    operation.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const field = el.querySelector('#param-field') as HTMLSelectElement;
-    field.value = 'phMin';
-    field.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-
-    (el.querySelector('button[type=submit]') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    const blocks = el.querySelectorAll('pre.json-block');
-    expect(blocks[1].textContent).toBe(`getWtnFillValue("SVC-PAGE", "${TEST_WTN}", "phMin")`);
-    expect(blocks[2].textContent).toBe('"100"');
+    const picker = el.querySelector('select') as HTMLSelectElement;
+    const calls = Array.from(picker.options, option => option.value);
+    expect(calls).toEqual(jasmine.arrayContaining(['getProcedure', 'findProcedures', 'searchProcedures', 'getProcedurePdf']));
+    expect(calls).not.toContain('getWtnFillValue');
+    expect(calls).not.toContain('getGwpOptions');
+    expect(calls).not.toContain('getRequiredQuals');
   });
 });

@@ -8,7 +8,6 @@ import { procedures } from '../../../../data/procedures';
 import { ServiceTesterPanelComponent } from '../../../../shared/service-tester-panel/service-tester-panel.component';
 import { procedureSections } from '../../procedure-sections';
 import { procedureServiceOperations } from './rules/procedure-service-operations';
-import { procedureUsageOperations } from './rules/procedure-usage-operations';
 import { sectionServiceOperations } from './rules/section-service-operations';
 import { getProcedureFields } from '../../procedure-service/section-service';
 
@@ -20,8 +19,8 @@ import { getProcedureFields } from '../../procedure-service/section-service';
     <div class="table-page-wrap" style="max-width: 72rem">
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
-        Every call made to Weld Engineering, both the ones this application uses internally and the ones other
-        systems can call: procedures, and the procedure section and field definitions. Run one to see its exact response.
+        Try the main procedure reads and the calls for files, procedure edits, and section definitions.
+        Run a call to see its inputs and response.
       </p>
       <app-service-tester-panel [operations]="operations" />
     </div>
@@ -37,7 +36,6 @@ export class ServicesComponent {
   private fields = (r => (r.ok ? r.data.fields : []))(getProcedureFields());
   operations = [
     ...procedureServiceOperations(this.exampleKey, this.fields),
-    ...procedureUsageOperations(this.exampleKey),
     ...sectionServiceOperations({
       sectionId: this.section?.id ?? '', sectionName: this.section?.name ?? '',
       fieldKey: this.field?.key ?? '', fieldLabel: this.field?.label ?? '',
