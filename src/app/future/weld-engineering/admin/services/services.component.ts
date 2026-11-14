@@ -19,8 +19,8 @@ import { getProcedureFields } from '../../procedure-service/section-service';
     <div class="table-page-wrap" style="max-width: 72rem">
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
-        The calls made to Weld Engineering: procedures, and the procedure section and field definitions.
-        Run one to see its exact response. Calls marked Changes data really change the data.
+        Every call made to Weld Engineering, both the ones this application uses internally and the ones other
+        systems can call: procedures, and the procedure section and field definitions. Run one to see its exact response.
       </p>
       <app-service-tester-panel [operations]="operations" />
     </div>
