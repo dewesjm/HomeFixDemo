@@ -3,6 +3,9 @@
 <!-- Title, saved views and filter actions on one line -->
 <div class="page-header search-head">
   <h2 class="section-title">Pipe Welding</h2>
+  @if (viewer.actingLabel(); as capacity) {
+    <p class="text-sm mb-sm">Acting as {{ capacity }}</p>
+  }
   <app-banner-pill [banner]="banner()" />
   <span class="spacer"></span>
   <span class="fw-bold">View</span>

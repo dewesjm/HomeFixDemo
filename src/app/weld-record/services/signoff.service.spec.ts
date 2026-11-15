@@ -4,6 +4,9 @@ import { ViewerService } from '../access-logic/viewer.service';
 import { TestBed } from '@angular/core/testing';
 import { Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
+import { MakeupService } from './makeup.service';
+import { saveMakeupGrants } from '../../data/makeup-grants';
+import { makeupDate } from '../makeup-logic/makeup-rules';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 import { HistoryEntry } from '../model/history';
@@ -714,6 +717,49 @@ describe('SignoffService', () => {
     expect(store.workflowFor(nqc)().stages.find(s => s.id === 'nqc-fitup-insp')?.signed).toBeFalse();
     service.releaseFitUp(regular);
     expect(store.workflowFor(regular)().stages.find(s => s.id === 'fitup-release')?.signed).toBeTrue();
+  });
+
+  it('attributes Makeup signoffs and release to the delegate and preserves them after revocation', () => {
+    const viewer = TestBed.inject(ViewerService);
+    const makeup = TestBed.inject(MakeupService);
+    const job = weldingJob();
+    const today = makeupDate();
+    saveMakeupGrants([]);
+    try {
+      viewer.select('fitter');
+      expect(makeup.addMakeupGrant('E10238', today, today).ok).toBeFalse();
+      viewer.select('foreman');
+      expect(makeup.addMakeupGrant('E20411', today, today).ok).toBeFalse();
+      expect(makeup.addMakeupGrant('E10238', today, '2026-02-31').ok).toBeFalse();
+      const grant = makeup.addMakeupGrant('E10238', today, today);
+      if (!grant.ok) throw new Error(grant.message);
+      const id = grant.data.id;
+
+      viewer.select('E10238');
+      expect(service.signStage(job, 'fitup-insp')).toBeFalse();
+      viewer.selectActingGrant(id);
+      expect(viewer.canManageMakeup()).toBeFalse();
+      expect(viewer.canSignRouting('fit', 'fit')).toBeFalse();
+      expect(viewer.canSignRouting('nqc-fitup-insp', 'fitup-insp')).toBeFalse();
+      expect(viewer.roles()).toContain('Foreman');
+      expect(service.signStage(job, 'fitup-insp')).toBeTrue();
+      expect(service.releaseFitUp(job)).toBeTrue();
+      const attribution = {
+        signerId: 'E10238', signerName: 'Riley Chen', foremanId: 'foreman', foremanName: 'Morgan', makeupGrantId: id,
+      };
+      expect(store.workflowFor(job)().stages.find(stage => stage.id === 'fitup-release')?.attribution).toEqual(attribution);
+
+      viewer.select('foreman');
+      expect(makeup.revokeMakeupGrant(id).ok).toBeTrue();
+      viewer.select('E10238');
+      viewer.selectActingGrant(id);
+      expect(viewer.actingGrant()).toBeUndefined();
+      expect(service.releaseFitUp(job)).toBeFalse();
+      expect(signoffEntries(store.workflowFor(job)(), 'fitup-insp').at(-1)?.attribution).toEqual(attribution);
+      expect(store.workflowFor(job)().history.find(entry => entry.section === 'Release')?.attribution).toEqual(attribution);
+    } finally {
+      saveMakeupGrants([]);
+    }
   });
 
   it('releaseFitUp signs the Fit-Up Release stage and logs a Release entry', () => {

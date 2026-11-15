@@ -12,6 +12,14 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-15',
+    added: [
+      'Foremen can grant and revoke temporary Makeup authority for fitters and welders. Search by name, ID, or PERNR.',
+      'People with an active grant can choose Myself or Foreman for the granting foreman. Signed records and History show who signed and whom they represented.',
+      'Foremen can run Makeup grant calls from the Services link on the Makeup page. Try acting as Foreman with Riley Chen (Makeup) in the avatar menu.',
+    ],
+  },
+  {
     date: '2026-11-14',
     added: ['The MWQ simulator and Weld Record Admin > Services can save read-only Joint Details for offline use.',
       'The MWQ simulator can send an offline preparation request and confirm receipt on a deployed Weld Record preview or locally.',

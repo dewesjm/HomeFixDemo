@@ -4,6 +4,7 @@
       <svg lucideArrowLeft class="size-4"></svg> Back
     </button>
     <h2 class="section-title m-0">Makeup</h2>
+    <a class="btn btn-ghost btn-sm" routerLink="/admin/services">Services</a>
   </div>
 
   <app-table-toolbar [table]="table" searchPlaceholder="Search by name, ID or title…" addLabel="Add makeup"
@@ -34,8 +35,9 @@
         <tr>
           <td>
             <app-person-search-input mode="picker" size="xs" placeholder="Search by name, PERNR or ID…"
-              excludeTitle="Foreman" emptyHint="below foreman level"
+              [includeTitles]="eligibleTitles"
               [selected]="newPerson()" (select)="newPerson.set($event)" (clear)="newPerson.set(null)" />
+            <button type="button" class="btn btn-xs mt-1" disabled>From crew</button>
           </td>
           <td></td>
           <td>

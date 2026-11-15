@@ -75,9 +75,13 @@ export const PEOPLE: Person[] = [
   p('E40634', '40063459', 'Omar', 'Santos', 'Welder'),
   p('E40635', '40063560', 'Tina', 'Baxter', 'NQC Inspector'),
   p('E40636', '40063661', 'Sam', 'Okafor', 'Fitter'),
+  p('E10238', '10023808', 'Riley', 'Chen', 'Fitter'),
+  p('fitter', '10024010', 'Bob', '', 'Fitter'),
+  p('welder', '10024111', 'Jordan', '', 'Welder'),
+  p('fitter-welder', '10024212', 'Robin', '', 'Fitter and Welder'),
 ];
 
-export const fullName = (x: Person) => `${x.first} ${x.last}`;
+export const fullName = (x: Person) => `${x.first}${x.last ? " " + x.last : ""}`;
 
 export const TECHNICIAN_NAMES = PEOPLE.slice(0, 7).map(fullName);
 export const SEEDED_INSPECTOR_NAMES = PEOPLE.slice(7, 15).map(fullName);
@@ -95,11 +99,12 @@ export function stampWho(name: string): { whoId?: string; whoTitle?: string } {
    "smith, john", "smith j", "smith 2004", "PERNR 20041108", or a saved "First Last · PERNR" label.
    Every word must start a first name, last name, id or PERNR (the words "pern"/"pernr"/"id" and punctuation
    are ignored). Last-name matches rank first. */
-export function searchPeople(query: string, limit = 8): Person[] {
+export function searchPeople(query: string, limit = 8, includeTitles: readonly string[] = []): Person[] {
   const words = query.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ')
     .filter(w => w && w !== 'pern' && w !== 'pernr' && w !== 'id');
   if (!words.length) return [];
   const hits = PEOPLE.filter(x => {
+    if (includeTitles.length && !includeTitles.includes(x.title)) return false;
     const parts = [x.first.toLowerCase(), x.last.toLowerCase(), x.id.toLowerCase(), x.pern.toLowerCase()];
     return words.every(w => parts.some(part => part.startsWith(w)));
   });

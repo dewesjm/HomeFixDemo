@@ -174,3 +174,39 @@ test('a new Signoff Type generates a grant that can be saved and renamed', async
   await page.goto('/admin/groups');
   await expect(fitting.getByText('Sign Fit Review', { exact: true })).toBeVisible();
 });
+
+test('Foreman can manage Makeup through Services and Riley can switch capacity', async ({ page }) => {
+  await page.goto('/pipe-welding');
+  const avatar = page.getByRole('button', { name: 'User menu' });
+  await avatar.click();
+  await page.getByLabel('View as').selectOption('foreman');
+  await page.goto('/makeup');
+  await expect(page.getByRole('heading', { name: 'Makeup' })).toBeVisible();
+  await page.getByRole('button', { name: 'Add makeup' }).click();
+  await expect(page.getByRole('button', { name: 'From crew' })).toBeDisabled();
+  await page.getByRole('link', { name: 'Services', exact: true }).click();
+  const operations = page.getByLabel('Operation');
+  await expect(operations.locator('option')).toHaveText([
+    'getMakeupGrants (Read)', 'addMakeupGrant (Write)', 'updateMakeupGrant (Write)', 'revokeMakeupGrant (Write)',
+  ]);
+  await operations.selectOption('revokeMakeupGrant');
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await operations.selectOption('addMakeupGrant');
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await operations.selectOption('getMakeupGrants');
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await expect(page.locator('pre').filter({ hasText: '"foremanId": "foreman"' })).toContainText('E10238');
+
+  await avatar.click();
+  await page.getByLabel('View as').selectOption('E10238');
+  await expect(page).toHaveURL(/\/pipe-welding$/);
+  const actingAs = page.getByLabel('Acting as');
+  const role = page.getByRole('combobox', { name: 'Role', exact: true });
+  await expect(actingAs.locator('option:checked')).toHaveText('Myself');
+  await expect(role.locator('option')).toHaveText(['Fitting', 'View All']);
+  await actingAs.selectOption({ index: 1 });
+  await expect(role.locator('option:checked')).toHaveText('Foreman');
+  await expect(page.getByText('Acting as Foreman for Morgan')).toBeVisible();
+  await actingAs.selectOption('');
+  await expect(role.locator('option:checked')).toHaveText('Fitting');
+});

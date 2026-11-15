@@ -34,6 +34,18 @@ import { ThemePickerComponent } from './theme-picker.component';
           }
         </select>
       </label>
+      @if (viewer.activeMakeupGrants().length) {
+        <label class="block px-2 py-2">
+          <span class="block mb-1 text-sm font-semibold">Acting as</span>
+          <select class="select select-sm w-full" [ngModel]="viewer.actingGrant()?.id ?? ''"
+                  (ngModelChange)="viewer.selectActingGrant($event)">
+            <option value="">Myself</option>
+            @for (grant of viewer.activeMakeupGrants(); track grant.id) {
+              <option [value]="grant.id">Foreman for {{ viewer.personName(grant.foremanId) }} (through {{ grant.endDate }})</option>
+            }
+          </select>
+        </label>
+      }
       <app-theme-picker />
     </div>
   `,

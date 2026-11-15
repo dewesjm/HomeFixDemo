@@ -149,6 +149,7 @@ export class HistoryPageComponent {
     downloadCsv(name, [
       { header: 'When',       value: (l: Line) => formatDateTime(l.row.when) },
       { header: 'Who',        value: (l: Line) => l.row.who },
+      { header: 'On behalf of', value: (l: Line) => l.row.attribution?.foremanName ?? '' },
       { header: 'Identifier', value: (l: Line) => l.row.whoId ?? '' },
       { header: 'Title',      value: (l: Line) => l.row.whoTitle ?? '' },
       { header: 'Action',     value: (l: Line) => l.row.action },

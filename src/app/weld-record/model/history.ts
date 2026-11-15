@@ -4,7 +4,16 @@ import type { WorkflowStage } from './workflow-types';
 /* one editable field as it stood at sign-off; an empty value means it was left blank */
 export interface SignoffInput { label: string; value: string }
 
+export interface SignoffAttribution {
+  signerId: string;
+  signerName: string;
+  foremanId?: string;
+  foremanName?: string;
+  makeupGrantId?: string;
+}
+
 export interface HistoryEntry {
+  attribution?: SignoffAttribution;
   when: string;          /* ISO string */
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */

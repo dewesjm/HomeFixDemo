@@ -1,7 +1,9 @@
 /* Admin > Services: try the calls made to Weld Record and see each response. The calls are
    defined in joint-service/ and reference-data-service/. The rules/ folder lists them for the shared tester. */
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
+import { MakeupService } from '../../services/makeup.service';
+import { makeupServiceOperations } from './rules/makeup-service-operations';
 import { ViewerService } from '../../access-logic/viewer.service';
 import { JOBS } from '../../../data/jobs';
 import { ServiceTesterPanelComponent } from '../../../shared/service-tester-panel/service-tester-panel.component';
@@ -25,8 +27,8 @@ import { OfflinePreparationService } from '../../offline-logic/offline-preparati
         Run Weld Record demo calls and see their inputs and responses. Use these examples as a
         design reference for the production services.
       </p>
-      @if (canAccessApi()) {
-        <app-service-tester-panel [operations]="operations" />
+      @if (operations().length) {
+        <app-service-tester-panel [operations]="operations()" />
       } @else {
         <p>Switch to Developer to run service calls.</p>
       }
@@ -34,7 +36,8 @@ import { OfflinePreparationService } from '../../offline-logic/offline-preparati
   `
 })
 export class AdminServicesComponent {
-  readonly canAccessApi = inject(ViewerService).canAccessApi;
+  private readonly viewer = inject(ViewerService);
+  private readonly makeupOperations = makeupServiceOperations(inject(MakeupService));
   /* the inputs start on the first joint */
   private example = JOBS[0];
   private svc = inject(JointService);
@@ -44,11 +47,16 @@ export class AdminServicesComponent {
   private offline = inject(OfflinePreparationService);
   /* the Filter droplist comes from getJointFields, as another system would get it */
   private fields = (r => (r.ok ? r.data.fields : []))(this.svc.getJointFields());
-  operations = [
+  private readonly apiOperations = [
     ...jointServiceOperations(this.svc, { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint }, this.fields),
     ...jointRoutingOperations(this.routing, this.signoff, this.example),
     ...jointRecordOperations(this.edits, this.example),
     ...offlineServiceOperations(this.offline, this.example),
     ...referenceDataServiceOperations,
   ];
+
+  readonly operations = computed(() => {
+    if (this.viewer.canAccessApi()) return [...this.apiOperations, ...this.makeupOperations];
+    return this.viewer.canManageMakeup() ? this.makeupOperations : [];
+  });
 }

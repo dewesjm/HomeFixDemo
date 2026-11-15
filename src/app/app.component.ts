@@ -117,7 +117,7 @@ export class AppComponent {
       const url = this.router.url;
       const adminPage = url.split(/[?#]/, 1)[0];
       const adminAccess = adminPage === '/admin/groups' ? this.viewer.canManageGroups()
-        : adminPage === '/admin/services' ? this.viewer.canAccessApi()
+        : adminPage === '/admin/services' ? this.viewer.canAccessWeldRecordServices()
         : this.viewer.canMaintainAdminTables();
       if ((!adminAccess && adminPage.startsWith('/admin/')) ||
           (!this.viewer.canManageMakeup() && /^\/makeup(?:[/?#]|$)/.test(url)) ||

@@ -21,7 +21,7 @@ import { ViewerService } from '../access-logic/viewer.service';
 import { SignoffService } from '../services/signoff.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { fabricationFieldsShown } from '../fabrication-logic/fabrication-form';
-import type { HistoryEntry } from '../model/history';
+import type { HistoryEntry, SignoffAttribution } from '../model/history';
 import { jointUrl } from '../joint-link-logic/joint-route';
 import { findJoint, jointFailure as fail, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
@@ -38,6 +38,7 @@ export interface RoutingRow {
   required: boolean;
   signed: boolean;
   signedAt: string | null;
+  attribution?: SignoffAttribution;
   signoffType: string;
   result: string | null;
   current: boolean;
@@ -84,7 +85,9 @@ export class JointService {
     if (activeStageId(workflow().stages) !== 'fitup-release') {
       return fail('The joint must be at Fit-Up Release.', 'Wrong routing');
     }
-    this.signoff.releaseFitUp(job);
+    if (!this.signoff.releaseFitUp(job)) {
+      return fail('Release to Welding is no longer available in your current capacity.', 'Access denied');
+    }
     return { ok: true, data: { routing: currentRoutingLabel(workflow().stages) } };
   }
 
@@ -183,6 +186,7 @@ export class JointService {
         current: currentRoutingLabel(stages),
         routings: stages.map(s => ({
           id: s.id, label: s.displayName || s.label, required: s.required, signed: s.signed, signedAt: s.signedAt,
+          attribution: s.attribution,
           signoffType: s.signoffType, result: s.result, current: s.id === currentId,
         })),
       },

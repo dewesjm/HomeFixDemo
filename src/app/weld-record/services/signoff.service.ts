@@ -6,7 +6,7 @@ import { formInputFields, formSignoffFields } from '../signoff-forms-logic/form-
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput } from '../model/history';
+import { SignoffAttribution, SignoffInput } from '../model/history';
 import { WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { activeStage } from '../routing-logic/current-routing';
 import { signoffUndo } from '../routing-logic/route-changes';
@@ -60,10 +60,11 @@ export class SignoffService {
   signStage(job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
     const workflow = this.store.workflowFor(job)();
     const stage = workflow.stages.find(s => s.id === stageId);
-    if (!stage || !this.viewer.canSignRouting(stage.id, stage.signoffType)) return false;
+    const attribution = this.viewer.signoffAttribution();
+    if (!attribution || !stage || !this.viewer.canSignRouting(stage.id, stage.signoffType)) return false;
     let r: ReturnType<SignoffService['applySignoff']>;
     try {
-      r = this.applySignoff(workflow, job, stageId, inputs, engineeringHold);
+      r = this.applySignoff(workflow, job, stageId, inputs, engineeringHold, attribution);
     } catch (error) {
       if (!(error instanceof RoutingConfigurationError)) throw error;
       this.messages.add({ severity: 'error', summary: 'Routing configuration blocks signoff', detail: error.message, life: 6000 });
@@ -92,17 +93,21 @@ export class SignoffService {
   }
 
   /* the sign-off itself, without saving: the new workflow plus what signStage() reports/stamps on the job */
-  private applySignoff(wf: JobWorkflow, job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
+  private applySignoff(wf: JobWorkflow, job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false, attribution?: SignoffAttribution) {
     const undo = signoffUndo(wf, job, stageId);
     const { stages, fabricationData, recordedId, signed: st, routedBack, refitNumber, repairNumber, reasons } =
       routeSignoff(wf, job, stageId, engineeringHold);
     const signedLabel = st.label;
     const decision = (st.result ?? '').toUpperCase();
 
-    const who = st.signoffInputs['inspectorName'] || wf.technician;
-    let signed: JobWorkflow = this.store.withHistory(wf, { ...wf, stages, fabricationData, ...(repairNumber ? { repairNumber } : {}) }, {
+    const who = attribution?.signerName ?? (st.signoffInputs['inspectorName'] || wf.technician);
+    const signer = attribution ? { attribution, whoId: attribution.signerId } : {};
+    const attributedStages = attribution ? stages.map(stage =>
+      stage.id === recordedId && stage.signed ? { ...stage, attribution } : stage) : stages;
+    let signed: JobWorkflow = this.store.withHistory(wf, { ...wf, stages: attributedStages, fabricationData, ...(repairNumber ? { repairNumber } : {}) }, {
       section: 'Sign-off',
       who,
+      ...signer,
       action: `${signedActionLabel(st)} - Signed off`,
       to: hasDecision(st) ? decision : '',
       inputs,
@@ -129,9 +134,9 @@ export class SignoffService {
     const source = wf.stages.find(s => s.id === stageId)!;
     if (!engineeringHold && !routedBack && signed.stages.find(s => s.id === recordedId)?.signed) {
       for (const extra of additionalSignoffs(source, signed.stages, job, signed.fabricationData)) {
-        const target = { ...extra.stage, ...typeValues(extra.type), result: 'sat' as const, signed: true, signedAt: st.signedAt };
+        const target = { ...extra.stage, ...typeValues(extra.type), result: 'sat' as const, signed: true, signedAt: st.signedAt, attribution };
         signed = this.store.withHistory(signed, { ...signed, stages: signed.stages.map(s => s.id === target.id ? target : s) }, {
-          section: 'Sign-off', who, stageId: target.id, action: `${target.label} - Signed off`, to: 'SAT',
+          section: 'Sign-off', who, ...signer, stageId: target.id, action: `${target.label} - Signed off`, to: 'SAT',
           reason: `Also signed with ${signedLabel}`,
           inputs: snapshotInputs(target, fieldsShown(target, job, signed.stages, signed.fabricationData), visibleSignoffFields(target, job, signed.fabricationData)),
         });
@@ -194,18 +199,22 @@ export class SignoffService {
 
   /* Release a job past the Fit-Up Release stage */
   releaseFitUp(job: Job) {
-    if (!this.viewer.canSignType(FITUP_RELEASE) || !this.viewer.roles().includes('Foreman')) return;
+    const attribution = this.viewer.signoffAttribution();
+    if (!attribution || !this.viewer.canSignType(FITUP_RELEASE) || !this.viewer.roles().includes('Foreman')) return false;
     this.store.update(job, wf => {
       const undo = signoffUndo(wf, job, FITUP_RELEASE);
       const stages = wf.stages.map(s =>
-        s.id === FITUP_RELEASE ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
+        s.id === FITUP_RELEASE ? { ...s, signed: true, signedAt: new Date().toISOString(), attribution } : s);
       const next = this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Release',
-        who: wf.technician,
+        who: attribution.signerName,
+        whoId: attribution.signerId,
+        attribution,
         action: 'Fit-Up Release - Released to Welding'
       });
       return { ...next, undo: [...(wf.undo ?? []), { ...undo, historyWhen: next.history.at(-1)!.when }] };
     });
     this.messages.add({ severity: 'success', summary: 'Released to Welding', life: 3000 });
+    return true;
   }
 }

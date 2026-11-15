@@ -1,6 +1,6 @@
 /* One routing's sign-off on the joint page: the frame (Type, Inspecting, Comments, Signoff, overrides)
    around the routing's definition-form. */
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
@@ -13,6 +13,7 @@ import { inspectingLabel } from './rules/inspecting-label';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
 import { EngineeringReleasePanelComponent } from '../engineering-release-panel/engineering-release-panel.component';
+import { ViewerService } from '../access-logic/viewer.service';
 import { SignoffContext } from './signoff-context';
 
 @Component({
@@ -23,6 +24,7 @@ import { SignoffContext } from './signoff-context';
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {
+  readonly viewer = inject(ViewerService);
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
   stageIndex = input.required<number>();

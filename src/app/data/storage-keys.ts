@@ -1,7 +1,7 @@
 /* Every localStorage key the app uses, in one place. */
 export const STORAGE = {
   appVersion: 'welding:app-version',
-  workflows: 'welding:workflows:v5',
+  workflows: 'welding:workflows:v6',
   offlineJointPrefix: 'welding:offline-joint:v1:',
   stageTemplates: 'welding:stage-templates:v7',
   signoffTypeRouting: 'welding:signoff-type-routing:v1',
@@ -32,7 +32,7 @@ export const STORAGE = {
   quickLinks: 'welding:quick-links:v1',
   procedures: 'welding:procedures:v13',
   procedureSections: 'welding:procedure-sections:v2',
-  makeup: 'welding:makeup:v3',
+  makeup: 'welding:makeup:v4',
   qualConditions: 'welding:qual-conditions:v8',
   featureToggles: 'welding:feature-toggles:v1',
   stepFieldConfig: 'welding:step-field-config:v18',

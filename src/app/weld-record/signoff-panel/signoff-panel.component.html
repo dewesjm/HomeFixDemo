@@ -3,6 +3,10 @@
 <section class="panel signoff-panel">
   <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Signoff</h3>
 
+  @if (viewer.actingLabel(); as capacity) {
+    <p class="text-sm mb-sm">Acting as {{ capacity }}</p>
+  }
+
   @if (ctx().jobComplete()) {
     <div class="alert alert-success mb-sm">
       <svg lucideBadgeCheck class="size-4"></svg>
@@ -80,7 +84,7 @@
               {{ (st.result || '') | uppercase }}
             </span>
           }
-          <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '-' }} on {{ st.signedAt | appDateTime }}</span>
+          <span class="meta">Signed by {{ st.attribution?.signerName || st.signoffInputs['inspectorName'] || '-' }}@if (st.attribution?.foremanName; as foreman) { on behalf of {{ foreman }} } on {{ st.signedAt | appDateTime }}</span>
         }
       </div>
 

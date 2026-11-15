@@ -14,6 +14,7 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
 ];
 
 export interface WorkflowStage {
+  attribution?: import('./history').SignoffAttribution;
   /* what Admin > Attribute Code Exceptions left on this routing for the joint (accessible rules, minimum RT) */
   attributeRules?: AttributeStageRules;
   /* Frozen insertion settings/context; later configuration edits affect future instances. */

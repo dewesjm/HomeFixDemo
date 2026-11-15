@@ -1,6 +1,8 @@
 import { ADMINISTRATORS_GROUP_ID, DEVELOPER_GROUP_ID, FITTING_GROUP_ID, FOREMAN_GROUP_ID, INSPECTOR_GROUP_ID, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, VIEW_GROUP_ID, WELDING_GROUP_ID } from './admin-groups';
 
-export const DEMO_PEOPLE = [
+import { PEOPLE, fullName } from './people';
+
+const namedViewers = [
   { id: 'developer', label: 'Developer', groupIds: [DEVELOPER_GROUP_ID] },
   { id: 'administrator', label: 'Alex (Administrator)', groupIds: [ADMINISTRATORS_GROUP_ID] },
   { id: 'view', label: 'Casey (View)', groupIds: [VIEW_GROUP_ID] },
@@ -14,5 +16,19 @@ export const DEMO_PEOPLE = [
   { id: 'engineering', label: 'Cameron (Engineering)', groupIds: ['g9', VIEW_GROUP_ID] },
   { id: 'fitter-welder', label: 'Robin (Fitter and Welder)', groupIds: [FITTING_GROUP_ID, WELDING_GROUP_ID] },
 ];
+
+export const DEMO_PEOPLE = [
+  ...namedViewers,
+  ...PEOPLE.filter(person => ['Fitter', 'Welder'].includes(person.title) &&
+    !namedViewers.some(viewer => viewer.id === person.id)).map(person => ({
+    id: person.id,
+    label: `${fullName(person)} (${person.id === 'E10238' ? 'Makeup' : person.title})`,
+    groupIds: [person.title === 'Fitter' ? FITTING_GROUP_ID : WELDING_GROUP_ID],
+  })),
+];
+
+export function demoPersonName(person: typeof DEMO_PEOPLE[number]): string {
+  return person.label.split(' (')[0];
+}
 
 export const DEFAULT_DEMO_PERSON = DEMO_PEOPLE[0];

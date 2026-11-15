@@ -103,7 +103,7 @@ export const routes: Routes = [
   { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/services', component: AdminServicesComponent, title: 'EWR - Services',
-    canActivate: [() => inject(ViewerService).canAccessApi() || inject(Router).parseUrl('/pipe-welding')] },
+    canActivate: [() => inject(ViewerService).canAccessWeldRecordServices() || inject(Router).parseUrl('/pipe-welding')] },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs', canActivate: [requireAdminTablesAccess] },

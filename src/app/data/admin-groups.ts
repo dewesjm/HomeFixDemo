@@ -129,7 +129,7 @@ const SAMPLE_GROUPS: AdminGroup[] = [
   { id: O04_RECORDS_GROUP_ID, name: 'O04 Records', description: 'O04 records reviewers.',
     personas: ['O04 Records'], allowed: [...VIEW_PERMISSIONS, signoffPermission('review-o04')] },
   { id: 'g9', name: 'Engineering', description: 'Engineers who handle Engineering Hold and routing overrides.',
-    personas: ['Engineering'], allowed: [MANAGE_MAKEUP_PERMISSION, 'force-routing', ...EXISTING_SIGNOFF_PERMISSIONS] },
+    personas: ['Engineering'], allowed: ['force-routing', ...EXISTING_SIGNOFF_PERMISSIONS] },
   { id: VIEW_GROUP_ID, name: 'View', description: 'Search Weld Record.',
     personas: [], allowed: VIEW_PERMISSIONS },
 ];

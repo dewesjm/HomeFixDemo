@@ -1,8 +1,3 @@
-/* Makeup — grant someone below the foreman level temporary "makeup" (acting-foreman) status.
-   UI-only, see makeup.ts's header comment: nothing else in the app reads this yet. A row-edit table
-   with the same toolbar as the admin tables (search, Export, Add), but its own nav entry outside the
-   Admin menu, since this is routine foreman use, not admin configuration. Ended grants are hidden
-   unless Show inactive is checked. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,13 +12,10 @@ import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { downloadCsv } from '../../shared/export-csv';
 import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { PEOPLE, Person, fullName } from '../../data/people';
-import {
-  makeupGrants, addMakeupGrant, removeMakeupGrant, updateMakeupGrant, grantStatus, GrantStatus,
-  daySpan, daysRemaining, MakeupGrant
-} from './makeup-grants';
+import { MakeupService } from '../services/makeup.service';
+import { daySpan, grantStatus, MAKEUP_TITLES, makeupDate, type GrantStatus } from '../makeup-logic/makeup-rules';
 
 interface GrantRow {
-  grant: MakeupGrant;
   id: string;
   person: string;
   status: GrantStatus;
@@ -47,8 +39,10 @@ export class MakeupPageComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
 
-  grants = makeupGrants;
-  today = new Date().toISOString().slice(0, 10);
+  private makeup = inject(MakeupService);
+  readonly grants = this.makeup.grants;
+  readonly eligibleTitles = MAKEUP_TITLES;
+  today = makeupDate();
   showInactive = signal(false);
 
   personById = new Map<string, Person>(PEOPLE.map(p => [p.id, p]));
@@ -63,7 +57,6 @@ export class MakeupPageComponent {
     const all = this.grants();
     return all
       .map(g => ({
-        grant: g,
         id: g.id,
         person: this.personLabel(g.personId),
         status: grantStatus(g, this.today),
@@ -71,7 +64,7 @@ export class MakeupPageComponent {
         endDate: g.endDate,
         used: daySpan(g.startDate, g.endDate),
         /* the person's whole balance for the grant's year, this grant's own days included */
-        remaining: daysRemaining(g.personId, this.yearOf(g.startDate), all),
+        remaining: this.makeup.remaining(g.personId, g.startDate),
         changedBy: g.changedBy,
       }))
       .filter(r => this.showInactive() || r.status !== 'Inactive')
@@ -85,10 +78,6 @@ export class MakeupPageComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  private yearOf(isoDate: string): number {
-    return new Date(isoDate + 'T00:00:00').getFullYear();
-  }
-
   /* Add: a blank row at the top of the table with the person picker and dates */
   adding = signal(false);
   newPerson = signal<Person | null>(null);
@@ -99,7 +88,7 @@ export class MakeupPageComponent {
   newPersonRemaining = computed(() => {
     const p = this.newPerson();
     if (!p) return null;
-    return daysRemaining(p.id, this.yearOf(this.newStartDate()), this.grants());
+    return this.makeup.remaining(p.id, this.newStartDate());
   });
 
   addRow() {
@@ -115,30 +104,16 @@ export class MakeupPageComponent {
   }
 
   saveAdd() {
-    const person = this.newPerson();
-    const start = this.newStartDate();
-    const end = this.newEndDate();
-    if (!person || !end) {
-      this.messages.add({ severity: 'warn', summary: 'Person and end date are required', life: 3000 });
-      return;
-    }
-    if (start < this.today) {
-      this.messages.add({ severity: 'warn', summary: "Start date can't be in the past", life: 3000 });
-      return;
-    }
-    const remaining = daysRemaining(person.id, this.yearOf(start), this.grants());
-    if (daySpan(start, end) > remaining) {
-      this.messages.add({ severity: 'warn', summary: `Only ${remaining} makeup day${remaining === 1 ? '' : 's'} remaining this year for ${fullName(person)}`, life: 4000 });
-      return;
-    }
-    addMakeupGrant(person.id, start, end);
+    const result = this.makeup.addMakeupGrant(this.newPerson()?.id ?? '', this.newStartDate(), this.newEndDate());
+    if (!result.ok) return this.warn(result.message);
     this.adding.set(false);
     this.messages.add({ severity: 'success', summary: 'Makeup status granted', life: 3000 });
   }
 
   removeGrant(row: GrantRow) {
     this.confirm.confirmDelete(`makeup for ${row.person}`, () => {
-      removeMakeupGrant(row.id);
+      const result = this.makeup.revokeMakeupGrant(row.id);
+      if (!result.ok) return this.warn(result.message);
       if (this.editingId() === row.id) this.editingId.set(null);
       this.messages.add({ severity: 'info', summary: 'Makeup status removed', life: 3000 });
     });
@@ -163,26 +138,13 @@ export class MakeupPageComponent {
   }
 
   confirmEdit(row: GrantRow) {
-    const g = row.grant;
-    const startDate = this.editStart();
-    const endDate = this.editEnd();
-    if (!endDate) {
-      this.messages.add({ severity: 'warn', summary: 'End date is required', life: 3000 });
-      return;
-    }
-    /* only block a start date that's actively being moved into the past -- an untouched historical
-       grant's original start date shouldn't stop the end date (or anything else) from being edited */
-    if (startDate !== g.startDate && startDate < this.today) {
-      this.messages.add({ severity: 'warn', summary: "Start date can't be in the past", life: 3000 });
-      return;
-    }
-    const remaining = daysRemaining(g.personId, this.yearOf(startDate), this.grants(), g.id);
-    if (daySpan(startDate, endDate) > remaining) {
-      this.messages.add({ severity: 'warn', summary: `Only ${remaining} makeup day${remaining === 1 ? '' : 's'} remaining this year`, life: 4000 });
-      return;
-    }
-    updateMakeupGrant(g.id, { startDate, endDate });
+    const result = this.makeup.updateMakeupGrant(row.id, this.editStart(), this.editEnd());
+    if (!result.ok) return this.warn(result.message);
     this.editingId.set(null);
+  }
+
+  private warn(summary: string): void {
+    this.messages.add({ severity: 'warn', summary, life: 4000 });
   }
 
   exportCsv() {

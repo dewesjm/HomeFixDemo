@@ -25,9 +25,7 @@ export class PersonSearchInputComponent {
   disabled = input<boolean>(false);
   hasError = input<boolean>(false);
   placeholder = input<string>('Search: name, PERNR or ID');
-  /* skip candidates with this title, e.g. 'Foreman' for Makeup -- a Foreman doesn't need to be
-     granted makeup as one */
-  excludeTitle = input<string | null>(null);
+  includeTitles = input<readonly string[]>([]);
   /* appended to the "no match" line, e.g. "below foreman level" -- blank for a plain "No one matches" */
   emptyHint = input<string>('');
 
@@ -53,9 +51,7 @@ export class PersonSearchInputComponent {
   suggestOpen = signal(false);
   suggestions = computed(() => {
     const q = this.mode() === 'text' ? this.text() : this.query();
-    const hits = searchPeople(q);
-    const ex = this.excludeTitle();
-    return ex ? hits.filter(p => p.title !== ex) : hits;
+    return searchPeople(q, 8, this.includeTitles());
   });
 
   constructor() {
