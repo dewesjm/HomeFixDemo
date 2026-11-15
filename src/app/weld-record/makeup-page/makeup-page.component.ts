@@ -12,6 +12,7 @@ import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { downloadCsv } from '../../shared/export-csv';
 import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { PEOPLE, Person, fullName } from '../../data/people';
+import { ViewerService } from '../access-logic/viewer.service';
 import { MakeupService } from '../services/makeup.service';
 import { daySpan, grantStatus, MAKEUP_TITLES, makeupDate, type GrantStatus } from '../makeup-logic/makeup-rules';
 
@@ -39,6 +40,7 @@ export class MakeupPageComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
 
+  readonly viewer = inject(ViewerService);
   private makeup = inject(MakeupService);
   readonly grants = this.makeup.grants;
   readonly eligibleTitles = MAKEUP_TITLES;
@@ -107,7 +109,7 @@ export class MakeupPageComponent {
     const result = this.makeup.addMakeupGrant(this.newPerson()?.id ?? '', this.newStartDate(), this.newEndDate());
     if (!result.ok) return this.warn(result.message);
     this.adding.set(false);
-    this.messages.add({ severity: 'success', summary: 'Makeup status granted', life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Makeup status set', life: 3000 });
   }
 
   removeGrant(row: GrantRow) {

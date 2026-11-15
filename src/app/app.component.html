@@ -74,7 +74,7 @@
             @if (viewer.canViewHistoryPage()) {
               <li><a title="History" routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
             }
-            @if (viewer.canManageMakeup()) {
+            @if (viewer.canViewMakeup()) {
               <li><a title="Makeup" routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
             }
             @if (viewer.canAccessAdmin()) {
@@ -203,7 +203,7 @@
               @if (viewer.canViewHistoryPage()) {
                 <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> History</a></li>
               }
-              @if (viewer.canManageMakeup()) {
+              @if (viewer.canViewMakeup()) {
                 <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg> Makeup</a></li>
               }
               @if (viewer.canAccessAdmin()) {

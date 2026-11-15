@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, NgZone, computed, effect, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, DEVELOPER_GROUP_ID, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE, demoPersonName } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
@@ -47,6 +47,9 @@ export class ViewerService {
   readonly canUseLegacyWorkflowActions = computed(() =>
     this.memberships().some(group => !GROUPS_WITHOUT_LEGACY_ACTIONS.includes(group.id)));
   readonly canManageMakeup = computed(() => this.isMakeupForeman(this.person().id));
+  readonly canReviewAllMakeup = computed(() => this.memberships().some(group => group.id === DEVELOPER_GROUP_ID));
+  readonly hasMakeupStatus = computed(() => makeupGrants().some(grant => grant.personId === this.person().id));
+  readonly canViewMakeup = computed(() => this.canReviewAllMakeup() || this.canManageMakeup() || this.hasMakeupStatus());
   readonly canEditFabrication = computed(() => this.permissions().has(EDIT_FABRICATION_PERMISSION));
   readonly canManageGroups = computed(() => this.permissions().has(MANAGE_GROUPS_PERMISSION));
   readonly canMaintainAdminTables = computed(() =>

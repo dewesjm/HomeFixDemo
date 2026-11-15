@@ -14,9 +14,11 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-15',
     added: [
-      'Foremen can grant and revoke temporary Makeup authority for fitters and welders. Search by name, ID, or PERNR.',
+      'Foremen can set and remove temporary Makeup status for fitters and welders. Search by name, ID, or PERNR.',
       'People with an active grant can choose Myself or Foreman for the granting foreman. Signed records and History show who signed and whom they represented.',
-      'Foremen can run Makeup grant calls from the Services link on the Makeup page. Try acting as Foreman with Riley Chen (Makeup) in the avatar menu.',
+      'Makeup calls are available in Weld Record Admin > Services.',
+      'Developer can view all Makeup status records, and recipients can view their own status from the Makeup menu.',
+      'Switch between Myself and Foreman from Pipe Welding when you have active Makeup authority. Try it with Riley Chen (Makeup) in the shorter View as menu.',
     ],
   },
   {

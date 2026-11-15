@@ -4,10 +4,9 @@
       <svg lucideArrowLeft class="size-4"></svg> Back
     </button>
     <h2 class="section-title m-0">Makeup</h2>
-    <a class="btn btn-ghost btn-sm" routerLink="/admin/services">Services</a>
   </div>
 
-  <app-table-toolbar [table]="table" searchPlaceholder="Search by name, ID or title…" addLabel="Add makeup"
+  <app-table-toolbar [table]="table" searchPlaceholder="Search by name, ID or title…" [addLabel]="viewer.canManageMakeup() ? 'Add makeup' : ''"
                      (exportCsv)="exportCsv()" (add)="addRow()">
     <label class="label cursor-pointer gap-2">
       <input type="checkbox" class="checkbox checkbox-sm"
@@ -31,7 +30,7 @@
       </tr>
     </thead>
     <tbody>
-      @if (adding()) {
+      @if (viewer.canManageMakeup() && adding()) {
         <tr>
           <td>
             <app-person-search-input mode="picker" size="xs" placeholder="Search by name, PERNR or ID…"
@@ -72,7 +71,7 @@
           <td class="font-medium">{{ row.person }}</td>
           <td>{{ row.status }}</td>
           <td>
-            @if (editingId() === row.id) {
+            @if (viewer.canManageMakeup() && editingId() === row.id) {
               <input type="date" class="input input-bordered input-xs" [attr.min]="today"
                      [ngModel]="editStart()" (ngModelChange)="editStart.set($event)" />
             } @else {
@@ -80,7 +79,7 @@
             }
           </td>
           <td>
-            @if (editingId() === row.id) {
+            @if (viewer.canManageMakeup() && editingId() === row.id) {
               <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()"
                      [ngModel]="editEnd()" (ngModelChange)="editEnd.set($event)" />
             } @else {
@@ -92,14 +91,14 @@
           <td>{{ row.changedBy || '-' }}</td>
           <td>
             <div class="row-tight">
-              @if (editingId() === row.id) {
+              @if (viewer.canManageMakeup() && editingId() === row.id) {
                 <button type="button" class="btn btn-ghost btn-xs" (click)="confirmEdit(row)" title="Save">
                   <svg lucideCheck class="size-4"></svg>
                 </button>
                 <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit()" title="Cancel">
                   <svg lucideX class="size-4"></svg>
                 </button>
-              } @else {
+              } @else if (viewer.canManageMakeup()) {
                 <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)" title="Edit dates">
                   <svg lucidePencil class="size-4"></svg>
                 </button>
@@ -111,8 +110,8 @@
           </td>
         </tr>
       } @empty {
-        @if (!adding()) {
-          <tr><td colspan="8" class="empty">{{ grants().length ? 'No makeup grants to show.' : 'No makeup grants yet.' }}</td></tr>
+        @if (!viewer.canManageMakeup() || !adding()) {
+          <tr><td colspan="8" class="empty">{{ grants().length ? 'No makeup status records to show.' : 'No makeup status has been set.' }}</td></tr>
         }
       }
     </tbody>

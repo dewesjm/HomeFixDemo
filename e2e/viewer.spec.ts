@@ -176,15 +176,21 @@ test('a new Signoff Type generates a grant that can be saved and renamed', async
 });
 
 test('Foreman can manage Makeup through Services and Riley can switch capacity', async ({ page }) => {
-  await page.goto('/pipe-welding');
+  await page.goto('/makeup');
+  await expect(page.getByRole('heading', { name: 'Makeup' })).toBeVisible();
+  await expect(page.getByRole('row', { name: /Riley Chen/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add makeup' })).toHaveCount(0);
   const avatar = page.getByRole('button', { name: 'User menu' });
   await avatar.click();
-  await page.getByLabel('View as').selectOption('foreman');
+  const viewAs = page.getByLabel('View as');
+  await expect(viewAs.locator('option')).toHaveCount(13);
+  await viewAs.selectOption('foreman');
   await page.goto('/makeup');
   await expect(page.getByRole('heading', { name: 'Makeup' })).toBeVisible();
   await page.getByRole('button', { name: 'Add makeup' }).click();
   await expect(page.getByRole('button', { name: 'From crew' })).toBeDisabled();
-  await page.getByRole('link', { name: 'Services', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Services', exact: true })).toHaveCount(0);
+  await page.goto('/admin/services');
   const operations = page.getByLabel('Operation');
   await expect(operations.locator('option')).toHaveText([
     'getMakeupGrants (Read)', 'addMakeupGrant (Write)', 'updateMakeupGrant (Write)', 'revokeMakeupGrant (Write)',
@@ -200,13 +206,19 @@ test('Foreman can manage Makeup through Services and Riley can switch capacity',
   await avatar.click();
   await page.getByLabel('View as').selectOption('E10238');
   await expect(page).toHaveURL(/\/pipe-welding$/);
-  const actingAs = page.getByLabel('Acting as');
+  await page.getByRole('link', { name: 'Makeup', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Makeup' })).toBeVisible();
+  await expect(page.getByRole('row', { name: /Riley Chen/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add makeup' })).toHaveCount(0);
+  await page.goto('/pipe-welding');
+  const actingAs = page.getByRole('main').getByRole('combobox', { name: /Acting as/ });
   const role = page.getByRole('combobox', { name: 'Role', exact: true });
   await expect(actingAs.locator('option:checked')).toHaveText('Myself');
   await expect(role.locator('option')).toHaveText(['Fitting', 'View All']);
+  await role.selectOption({ label: 'View All' });
   await actingAs.selectOption({ index: 1 });
   await expect(role.locator('option:checked')).toHaveText('Foreman');
-  await expect(page.getByText('Acting as Foreman for Morgan')).toBeVisible();
+  await expect(actingAs.locator('option:checked')).toHaveText(/Foreman for Morgan/);
   await actingAs.selectOption('');
   await expect(role.locator('option:checked')).toHaveText('Fitting');
 });

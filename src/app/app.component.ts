@@ -58,6 +58,7 @@ export class AppComponent {
 
   private swUpdate = inject(SwUpdate);
   private router = inject(Router);
+  private readonly currentUrl = signal(this.router.url);
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
 
@@ -114,13 +115,13 @@ export class AppComponent {
 
   constructor() {
     effect(() => {
-      const url = this.router.url;
+      const url = this.currentUrl();
       const adminPage = url.split(/[?#]/, 1)[0];
       const adminAccess = adminPage === '/admin/groups' ? this.viewer.canManageGroups()
         : adminPage === '/admin/services' ? this.viewer.canAccessWeldRecordServices()
         : this.viewer.canMaintainAdminTables();
       if ((!adminAccess && adminPage.startsWith('/admin/')) ||
-          (!this.viewer.canManageMakeup() && /^\/makeup(?:[/?#]|$)/.test(url)) ||
+          (!this.viewer.canViewMakeup() && /^\/makeup(?:[/?#]|$)/.test(url)) ||
           (!this.viewer.canUseLegacyWorkflowActions() && /^\/(assignments|pipe-welding-classic)(?:[/?#]|$)/.test(url))) {
         void this.router.navigateByUrl('/pipe-welding');
       }
@@ -137,7 +138,11 @@ export class AppComponent {
     /* derive active system from current route */
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
-    ).subscribe(e => this.activeSystem.set(systemForUrl(e.urlAfterRedirects || e.url)));
+    ).subscribe(e => {
+      const url = e.urlAfterRedirects || e.url;
+      this.currentUrl.set(url);
+      this.activeSystem.set(systemForUrl(url));
+    });
 
     /* also set on initial load */
     this.activeSystem.set(systemForUrl(this.router.url));

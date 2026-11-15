@@ -79,11 +79,11 @@ export class PipeWeldingPageComponent {
     Object.fromEntries(this.fields.filter(f => f.kind === 'list').map(f => [f.key, inArray]))
   );
 
-  selectedRole = linkedSignal<{ person: ReturnType<ViewerService['person']>; roles: Role[] }, Role | null>({
-    source: () => ({ person: this.viewer.person(), roles: this.viewer.roles() }),
-    computation: ({ person, roles }, previous): Role | null => {
+  selectedRole = linkedSignal<{ person: ReturnType<ViewerService['person']>; roles: Role[]; actingGrantId?: string }, Role | null>({
+    source: () => ({ person: this.viewer.person(), roles: this.viewer.roles(), actingGrantId: this.viewer.actingGrant()?.id }),
+    computation: ({ person, roles, actingGrantId }, previous): Role | null => {
       const prior = previous?.value;
-      if (person === previous?.source.person && prior && roles.includes(prior)) return prior;
+      if (person === previous?.source.person && actingGrantId === previous.source.actingGrantId && prior && roles.includes(prior)) return prior;
       return this.defaultRole();
     },
   });
@@ -102,7 +102,7 @@ export class PipeWeldingPageComponent {
     const saved = loadTabSearchState();
     if (saved) {
       const savedViewer = saved.viewerId ?? DEFAULT_DEMO_PERSON.id;
-      this.applyLayout(saved, savedViewer === this.viewer.person().id ? saved.role : null);
+      this.applyLayout(saved, !this.viewer.actingGrant() && savedViewer === this.viewer.person().id ? saved.role : null);
     } else this.pickVariant(this.defaultVariant() || STANDARD_VARIANT);
     /* a new visit starts with the filter bar hidden; page size carries over */
     const last = saved ?? loadSearchState();
