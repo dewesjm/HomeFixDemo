@@ -13,6 +13,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-15',
+    fixed: ['Moved Acting as beside the matching-record count on Pipe Welding.'],
     added: [
       'Foremen can set and remove temporary Makeup status for fitters and welders. Search by name, ID, or PERNR.',
       'People with an active grant can choose Myself or Foreman for the granting foreman. Signed records and History show who signed and whom they represented.',

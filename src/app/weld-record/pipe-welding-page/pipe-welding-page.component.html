@@ -3,22 +3,6 @@
 <!-- Title, saved views and filter actions on one line -->
 <div class="page-header search-head">
   <h2 class="section-title">Pipe Welding</h2>
-  @if (viewer.hasMakeupStatus()) {
-    <label class="flex items-center gap-2 mb-sm">
-      <span class="text-sm">Acting as</span>
-      <select class="select select-sm w-auto" [disabled]="!viewer.activeMakeupGrants().length"
-              [ngModel]="viewer.actingGrant()?.id ?? ''"
-              (ngModelChange)="viewer.selectActingGrant($event)">
-        <option value="">Myself</option>
-        @for (grant of viewer.activeMakeupGrants(); track grant.id) {
-          <option [value]="grant.id">Foreman for {{ viewer.personName(grant.foremanId) }} (through {{ grant.endDate }})</option>
-        }
-      </select>
-    </label>
-    @if (!viewer.activeMakeupGrants().length) {
-      <p class="text-sm mb-sm">No active Makeup status.</p>
-    }
-  }
   <app-banner-pill [banner]="banner()" />
   <span class="spacer"></span>
   <span class="fw-bold">View</span>
@@ -81,6 +65,22 @@
     </button>
   }
   <span class="fw-bold">{{ table.total() }} of {{ totalJobs }} match</span>
+  @if (viewer.hasMakeupStatus()) {
+    <label class="flex items-center gap-2">
+      <span class="text-sm">Acting as</span>
+      <select class="select select-sm select-bordered w-auto" [disabled]="!viewer.activeMakeupGrants().length"
+              [ngModel]="viewer.actingGrant()?.id ?? ''"
+              (ngModelChange)="viewer.selectActingGrant($event)">
+        <option value="">Myself</option>
+        @for (grant of viewer.activeMakeupGrants(); track grant.id) {
+          <option [value]="grant.id">Foreman for {{ viewer.personName(grant.foremanId) }} (through {{ grant.endDate }})</option>
+        }
+      </select>
+    </label>
+    @if (!viewer.activeMakeupGrants().length) {
+      <p class="text-sm">No active Makeup status.</p>
+    }
+  }
   @for (c of activeChips(); track c.key) {
     <span class="badge badge-outline gap-1 h-auto py-0.5">
       {{ c.label }}
