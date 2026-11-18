@@ -195,9 +195,16 @@ export class JointPageComponent implements OnDestroy {
   editable(stage: WorkflowStage): boolean {
     return this.canSign(stage) && stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned() && !this.heldAt(stage);
   }
-  /* inputs editable on active or unlocked optional stage */
+  /* inputs editable on active or unlocked optional stage; someone who can't sign it but may enter
+     engineering values gets only those (definition-field.component) */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
-    return this.canSign(stage) && this.canSelectType(stage, i);
+    return (this.canSign(stage) || this.canEnterEngineering(stage)) && this.canSelectType(stage, i);
+  }
+
+  /* an unsigned welding routing the external system sent nothing for, and a viewer who may type its
+     engineering values without signing it */
+  private canEnterEngineering(stage: WorkflowStage): boolean {
+    return !!stage.engineeringEntry && this.viewer.canEnterEngineeringValues();
   }
 
   private canSelectType(stage: WorkflowStage, i: number): boolean {
@@ -264,6 +271,9 @@ export class JointPageComponent implements OnDestroy {
       showRestrictedWorkflowActions: () => this.viewer.showRestrictedWorkflowActions(),
       canChooseType: (s, type) => this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignRouting(s.id, type),
       canUseWorkflowActions: () => this.viewer.canUseLegacyWorkflowActions(),
+      canReleaseEngineeringHold: () => this.viewer.canReleaseEngineeringHold(),
+      canEnterEngineeringValues: () => this.viewer.canEnterEngineeringValues(),
+      engineeringEntryOnly: (s) => !this.canSign(s) && this.canEnterEngineering(s),
       editable: (s) => this.editable(s),
       inputsEditable: (s, i) => this.inputsEditable(s, i),
       visibleFields: (s) => this.visibleFields(s),
@@ -278,9 +288,9 @@ export class JointPageComponent implements OnDestroy {
       reportedDeviations: (s) => ov.reported()[s.id] ?? [],
       foremanOverride: (s) => ov.foremanOverride(s),
       engineeringOverrideAvailable: (s) =>
-        (this.viewer.canUseLegacyWorkflowActions() || this.viewer.showRestrictedWorkflowActions()) && ov.engineeringOverrideAvailable(s),
+        (this.viewer.canEnterEngineeringValues() || this.viewer.showRestrictedWorkflowActions()) && ov.engineeringOverrideAvailable(s),
       engineeringOverride: (s) => {
-        if (this.viewer.canUseLegacyWorkflowActions()) ov.engineeringOverrideClick(s);
+        if (this.viewer.canEnterEngineeringValues()) ov.engineeringOverrideClick(s);
       },
       removeForemanOverride: (s, i) => ov.removeForemanOverride(s, i),
       assignedLocked: (s, k) => ov.assignedLocked(s, k),

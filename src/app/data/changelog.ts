@@ -20,6 +20,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Services pages star their main calls and list them first. Weld Engineering Admin > Services shows its procedure and section write calls again, after the starred reads.',
       'Refactored the Weld Record joint service calls: reads and writes are in separate files, and History sections are listed in one place.',
       'Weld Engineering Admin > Manage Procedures search now also finds procedures by weld process, process type, base metals and filler types, the same as Procedure Lookup. Export still matches what the table shows.',
+      'Engineering no longer signs any routing. It can search, open Joint Details and History, release an Engineering Hold, and enter engineering values (GWP, WTN, process, preheat/interpass, filler) on welding routings with an Engineering Override. Admin > Groups has new Release Engineering Hold and Engineering Override permissions, and the demo groups were reset.',
       'Weld Record Admin > Services stars its main calls and lists them first: getJoint, findJoints, searchJoints, getRouting and signRouting.',
       'exportProcedures in Weld Engineering Admin > Services takes the same query as searchProcedures (search text, filters, sort), without paging.',
     ],

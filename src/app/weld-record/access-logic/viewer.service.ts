@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, NgZone, computed, effect, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, DEVELOPER_GROUP_ID, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, DEVELOPER_GROUP_ID, EDIT_FABRICATION_PERMISSION, ENGINEERING_GROUP_ID, ENGINEERING_OVERRIDE_PERMISSION, RELEASE_ENGINEERING_HOLD_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE, demoPersonName } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
@@ -13,7 +13,7 @@ import { GroupsStore } from './groups.store';
 
 const GROUPS_WITH_RESTRICTION_MESSAGES = [
   WELDING_GROUP_ID, FOREMAN_GROUP_ID, INSPECTOR_GROUP_ID, NQC_INSPECTOR_GROUP_ID,
-  O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID,
+  O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, ENGINEERING_GROUP_ID,
 ];
 const GROUPS_WITHOUT_LEGACY_ACTIONS = [VIEW_GROUP_ID, FITTING_GROUP_ID, ...GROUPS_WITH_RESTRICTION_MESSAGES];
 
@@ -51,6 +51,12 @@ export class ViewerService {
   readonly hasMakeupStatus = computed(() => makeupGrants().some(grant => grant.personId === this.person().id));
   readonly canViewMakeup = computed(() => this.canReviewAllMakeup() || this.canManageMakeup() || this.hasMakeupStatus());
   readonly canEditFabrication = computed(() => this.permissions().has(EDIT_FABRICATION_PERMISSION));
+  readonly canReleaseEngineeringHold = computed(() =>
+    this.permissions().has(RELEASE_ENGINEERING_HOLD_PERMISSION) || this.canUseLegacyWorkflowActions());
+  /* type engineering values (GWP, WTN, process, preheat/interpass, filler) on welding routings the
+     external system sent nothing for, kept without signing */
+  readonly canEnterEngineeringValues = computed(() =>
+    this.permissions().has(ENGINEERING_OVERRIDE_PERMISSION) || this.canUseLegacyWorkflowActions());
   readonly canManageGroups = computed(() => this.permissions().has(MANAGE_GROUPS_PERMISSION));
   readonly canMaintainAdminTables = computed(() =>
     this.permissions().has(MAINTAIN_ADMIN_TABLES_PERMISSION) || this.canUseLegacyWorkflowActions());

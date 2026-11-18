@@ -2,7 +2,7 @@
    (its key is in allowed) or doesn't. */
 
 import { ROUTING_PERSONAS, type Role } from './roles';
-import { getSignoffTypes, seededSignoffTypeIds, WELD_BUILDUP_TYPE } from './signoff-types';
+import { getSignoffTypes, WELD_BUILDUP_TYPE } from './signoff-types';
 import { STORAGE } from './storage-keys';
 
 interface Permission {
@@ -32,12 +32,8 @@ export const signoffPermission = (type: string) => `signoff:${type}`;
 export const SIGN_EXCAVATION_NDT_PERMISSION = 'sign-excavation-ndt';
 const NON_SIGNABLE_TYPE = 'sold';
 const SIGNOFF_CATEGORY = 'Signoff Types';
-// Preserve the existing signoff access of groups awaiting their role review.
-const EXISTING_SIGNOFF_PERMISSIONS = [
-  ...seededSignoffTypeIds.filter(type => type !== 'fit' && type !== WELD_BUILDUP_TYPE && type !== NON_SIGNABLE_TYPE)
-    .map(signoffPermission),
-  SIGN_EXCAVATION_NDT_PERMISSION,
-];
+export const RELEASE_ENGINEERING_HOLD_PERMISSION = 'release-engineering-hold';
+export const ENGINEERING_OVERRIDE_PERMISSION = 'engineering-override';
 
 export const MANAGE_MAKEUP_PERMISSION = 'manage-makeup';
 export const API_ACCESS_PERMISSION = 'api-access';
@@ -52,7 +48,9 @@ const PERMISSIONS: Permission[] = [
   { key: HISTORY_PAGE_PERMISSION, label: 'View History page', category: 'Access' },
   { key: MANAGE_MAKEUP_PERMISSION, label: 'Manage Makeup', category: 'Access' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
+  { key: RELEASE_ENGINEERING_HOLD_PERMISSION, label: 'Release Engineering Hold', category: 'Routing' },
   { key: EDIT_FABRICATION_PERMISSION, label: 'Edit fabrication fields', category: 'Data Entry' },
+  { key: ENGINEERING_OVERRIDE_PERMISSION, label: 'Engineering Override', category: 'Data Entry' },
   { key: MANAGE_GROUPS_PERMISSION, label: 'Manage groups and permissions', category: 'Administration' },
   { key: MAINTAIN_ADMIN_TABLES_PERMISSION, label: 'Maintain other admin tables', category: 'Administration' },
 ];
@@ -98,6 +96,7 @@ export const INSPECTOR_GROUP_ID = 'g5';
 export const NQC_INSPECTOR_GROUP_ID = 'g6';
 export const O63_RECORDS_GROUP_ID = 'g7';
 export const O04_RECORDS_GROUP_ID = 'g8';
+export const ENGINEERING_GROUP_ID = 'g9';
 
 const INSPECTOR_PERMISSIONS = [
   ...VIEW_PERMISSIONS, EDIT_FABRICATION_PERMISSION, SIGN_EXCAVATION_NDT_PERMISSION,
@@ -128,8 +127,10 @@ const SAMPLE_GROUPS: AdminGroup[] = [
     personas: ['O63 Records'], allowed: [...VIEW_PERMISSIONS, signoffPermission('review-o63')] },
   { id: O04_RECORDS_GROUP_ID, name: 'O04 Records', description: 'O04 records reviewers.',
     personas: ['O04 Records'], allowed: [...VIEW_PERMISSIONS, signoffPermission('review-o04')] },
-  { id: 'g9', name: 'Engineering', description: 'Engineers who handle Engineering Hold and routing overrides.',
-    personas: ['Engineering'], allowed: ['force-routing', ...EXISTING_SIGNOFF_PERMISSIONS] },
+  { id: ENGINEERING_GROUP_ID, name: 'Engineering', description: 'Engineers who release Engineering Holds and enter engineering values on welding routings.',
+    personas: ['Engineering'], allowed: [
+      ...VIEW_PERMISSIONS, 'force-routing', RELEASE_ENGINEERING_HOLD_PERMISSION, ENGINEERING_OVERRIDE_PERMISSION,
+    ] },
   { id: VIEW_GROUP_ID, name: 'View', description: 'Search Weld Record.',
     personas: [], allowed: VIEW_PERMISSIONS },
 ];

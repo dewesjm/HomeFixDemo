@@ -1,4 +1,4 @@
-import { ADMINISTRATORS_GROUP_ID, DEVELOPER_GROUP_ID, FITTING_GROUP_ID, FOREMAN_GROUP_ID, INSPECTOR_GROUP_ID, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, VIEW_GROUP_ID, WELDING_GROUP_ID } from './admin-groups';
+import { ADMINISTRATORS_GROUP_ID, DEVELOPER_GROUP_ID, ENGINEERING_GROUP_ID, FITTING_GROUP_ID, FOREMAN_GROUP_ID, INSPECTOR_GROUP_ID, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, VIEW_GROUP_ID, WELDING_GROUP_ID } from './admin-groups';
 
 export const DEMO_PEOPLE = [
   { id: 'developer', label: 'Developer', groupIds: [DEVELOPER_GROUP_ID] },
@@ -12,7 +12,7 @@ export const DEMO_PEOPLE = [
   { id: 'nqc-inspector', label: 'Drew (NQC Inspector)', groupIds: [NQC_INSPECTOR_GROUP_ID] },
   { id: 'o63', label: 'Jamie (O63 Records)', groupIds: [O63_RECORDS_GROUP_ID] },
   { id: 'o04', label: 'Sam (O04 Records)', groupIds: [O04_RECORDS_GROUP_ID] },
-  { id: 'engineering', label: 'Cameron (Engineering)', groupIds: ['g9', VIEW_GROUP_ID] },
+  { id: 'engineering', label: 'Cameron (Engineering)', groupIds: [ENGINEERING_GROUP_ID] },
   { id: 'fitter-welder', label: 'Robin (Fitter and Welder)', groupIds: [FITTING_GROUP_ID, WELDING_GROUP_ID] },
 ];
 

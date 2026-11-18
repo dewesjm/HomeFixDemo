@@ -46,7 +46,7 @@
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
         } @else if (!st.signed && isEngineeringHold(st.id)) {
-          @if (ctx().canUseWorkflowActions()) {
+          @if (ctx().canReleaseEngineeringHold()) {
             <div class="w-full"><app-engineering-release-panel [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
           } @else if (ctx().showRestrictedWorkflowActions()) {
             <button type="button" class="btn btn-primary" disabled>Release Engineering Hold</button>
@@ -61,13 +61,13 @@
           @if (ctx().showRestrictedWorkflowActions() && lacksSignoffPermission(st)) {
             <span class="meta">Signing requires permission for the selected or available Type.</span>
           }
-          @if (ctx().editable(st) && ctx().engineeringOverrideAvailable(st)) {
+          @if ((ctx().editable(st) || ctx().engineeringEntryOnly(st) && ctx().inputsEditable(st, ctx().selectedRouting())) && ctx().engineeringOverrideAvailable(st)) {
             <!-- Saved engineering values are locked; this asks for a reason and opens them again -->
             <span class="spacer"></span>
-            <button type="button" class="btn btn-outline" [disabled]="!ctx().canUseWorkflowActions()" (click)="ctx().engineeringOverride(st)">
+            <button type="button" class="btn btn-outline" [disabled]="!ctx().canEnterEngineeringValues()" (click)="ctx().engineeringOverride(st)">
               <svg lucideTriangleAlert class="size-4"></svg> Engineering Override
             </button>
-            @if (!ctx().canUseWorkflowActions()) {
+            @if (!ctx().canEnterEngineeringValues()) {
               <span class="meta">Engineering Override requires workflow permission.</span>
             }
           }

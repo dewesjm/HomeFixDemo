@@ -49,7 +49,7 @@ describe('Admin Repair Codes', () => {
     setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
     const stage = stageFromTemplate(nextRepairStage([]));
     const field = stageFieldOptions(lookupCatalogField('repairType')!, stage, { job: undefined, stages: [stage], offListUnlocked: false });
-    const ctx = { fieldError: () => undefined, fieldWarning: () => '', inputsEditable: () => true,
+    const ctx = { fieldError: () => undefined, fieldWarning: () => '', inputsEditable: () => true, engineeringEntryOnly: () => false,
       selectedRouting: () => stage.id, assignedLocked: () => false,
       stageSelectChange: (_stage: unknown, _field: unknown, value: string) => { stage.inputs['repairType'] = value; },
     } as unknown as SignoffContext;

@@ -5,7 +5,7 @@
 import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ACTUAL_REQUIREMENT } from '../signoff-forms-logic/weld-fields';
+import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-forms-logic/weld-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { isFieldLocked, isReadonlyLimit } from '../signoff-forms-logic/field-locks';
 import { isPersonField } from '../catalogs/field-catalog';
@@ -43,7 +43,8 @@ export class DefinitionFieldComponent {
     const st = this.stage(), f = this.field();
     if (this.signoff()) return !this.ctx().editable(st) || !!f.disabled;
     return !this.ctx().inputsEditable(st, this.ctx().selectedRouting()) || !!f.disabled
-      || isFieldLocked(st, f) || this.ctx().assignedLocked(st, f.key);
+      || isFieldLocked(st, f) || this.ctx().assignedLocked(st, f.key)
+      || (this.ctx().engineeringEntryOnly(st) && !ENGINEERING_ENTRY_KEYS.has(f.key));
   }
 
   value(): string {

@@ -18,7 +18,7 @@ export const STORAGE = {
   mclTraceability: 'welding:mcl-traceability:v2',
   materialClassification: 'welding:material-classification:v5',
   banner: 'welding:banner',
-  adminGroups: 'welding:admin-groups:v9',
+  adminGroups: 'welding:admin-groups:v10',
   viewer: 'welding:viewer:v1',
   theme: 'welding:theme',
   searchState: 'welding:search-state:v1',

@@ -23,6 +23,10 @@ export interface SignoffContext {
   showRestrictedWorkflowActions: () => boolean;
   canChooseType: (stage: WorkflowStage, type: string) => boolean;
   canUseWorkflowActions: () => boolean;
+  canReleaseEngineeringHold: () => boolean;
+  canEnterEngineeringValues: () => boolean;
+  /* the viewer can't sign this routing but may type its engineering values (Engineering) */
+  engineeringEntryOnly: (stage: WorkflowStage) => boolean;
   editable: (stage: WorkflowStage) => boolean;
   inputsEditable: (stage: WorkflowStage, idx: number) => boolean;
   visibleFields: (stage: WorkflowStage) => FormField[];
