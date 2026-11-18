@@ -31,6 +31,15 @@ describe('Manage Procedures', () => {
   it('lists every procedure and filters by status', () => {
     expect(ids()).toEqual(['MP-1', 'MP-2']);
     page.table.setColumnFilter('status', ['draft']);
+    TestBed.flushEffects();
+    expect(ids()).toEqual(['MP-2']);
+  });
+
+  it('searches the same columns as Procedure Lookup, weld process included', () => {
+    procedures.set([testProcedure('MP-1'), testProcedure('MP-2', { weldProcess: 'SMAW' })]);
+    TestBed.flushEffects();
+    page.table.globalFilter.set('smaw');
+    TestBed.flushEffects();
     expect(ids()).toEqual(['MP-2']);
   });
 

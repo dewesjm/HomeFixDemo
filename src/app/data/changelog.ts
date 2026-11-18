@@ -19,6 +19,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Makeup calls in Weld Record Admin > Services now report a refusal with an error and a title, like the other calls.',
       'Admin > Services pages star their main calls and list them first. Weld Engineering Admin > Services shows its procedure and section write calls again, after the starred reads.',
       'Refactored the Weld Record joint service calls: reads and writes are in separate files, and History sections are listed in one place.',
+      'Weld Engineering Admin > Manage Procedures search now also finds procedures by weld process, process type, base metals and filler types, the same as Procedure Lookup. Export still matches what the table shows.',
+      'exportProcedures in Weld Engineering Admin > Services takes the same query as searchProcedures (search text, filters, sort), without paging.',
     ],
   },
   {

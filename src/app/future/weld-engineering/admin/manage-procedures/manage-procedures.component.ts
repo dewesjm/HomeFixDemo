@@ -1,4 +1,6 @@
-/* Weld Engineering Admin - Manage Procedures: list with Edit/Delete, create/edit form is procedure-form.component.ts. */
+/* Weld Engineering Admin - Manage Procedures: list with Edit/Delete, create/edit form is procedure-form.component.ts.
+   The rows come from the procedure service's searchProcedures call (every status unless one is picked),
+   and Export sends the same query to exportProcedures, so the file holds what the table shows. */
 import { Component, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,12 +11,13 @@ import { SortHeaderComponent } from '../../../../shared/sort-header.component';
 import { downloadFile } from '../../../../shared/download-file';
 import { ConfirmService } from '../../../../shared/confirm.service';
 import { ToastService } from '../../../../shared/toast.service';
-import {
-  procedures, procedureName, PROCEDURE_STATUS_OPTIONS, type Procedure
-} from '../../../../data/procedures';
-import { createManageProceduresTable } from '../../procedure-service/manage-procedures-table';
+import { procedureName, PROCEDURE_STATUS_OPTIONS } from '../../../../data/procedures';
+import { TableState } from '../../../../shared/table-state';
 import { exportProcedures } from '../../procedure-service/procedure-file-service';
-import { deleteProcedure } from '../../procedure-service/procedure-service';
+import { deleteProcedure, searchProcedures } from '../../procedure-service/procedure-service';
+import type { ProcedureSearchRow } from '../../procedure-service/procedure-search';
+import type { ProcedureKey } from '../../procedure-service/procedure-record';
+import { procedureTableQuery } from '../../procedure-table-query';
 import { TableToolbarComponent } from '../../../../shared/table-toolbar.component';
 
 @Component({
@@ -27,22 +30,26 @@ import { TableToolbarComponent } from '../../../../shared/table-toolbar.componen
   templateUrl: './manage-procedures.component.html'
 })
 export class ManageProceduresComponent {
-  table = createManageProceduresTable();
+  table = new TableState<ProcedureSearchRow>([], {}, true);
   statusOptions = PROCEDURE_STATUS_OPTIONS;
 
   constructor(private router: Router, private confirm: ConfirmService, private toast: ToastService) {
-    effect(() => this.table.setRows(procedures()));
+    /* runs again when the query or the procedures change */
+    effect(() => {
+      const result = searchProcedures(procedureTableQuery(this.table));
+      this.table.setRows(result.ok ? result.data.procedures : []);
+    });
   }
 
   addNew() {
     this.router.navigate(['/weld-engineering/admin/new']);
   }
 
-  edit(row: Procedure) {
+  edit(row: ProcedureKey) {
     this.router.navigate(['/weld-engineering/admin', row.gwp, row.wtn, 'edit']);
   }
 
-  deleteRow(row: Procedure) {
+  deleteRow(row: ProcedureKey) {
     this.confirm.confirm({
       header: 'Delete Procedure',
       message: `Delete ${procedureName(row)}?`,
@@ -57,12 +64,7 @@ export class ManageProceduresComponent {
   }
 
   exportCsv() {
-    const result = exportProcedures({
-      text: this.table.globalFilter(),
-      columns: this.table.columnFilters(),
-      sort: this.table.sortField(),
-      order: this.table.sortOrder(),
-    });
+    const result = exportProcedures(procedureTableQuery(this.table));
     if (result.ok) downloadFile(result.data);
     else this.toast.add({ severity: 'warn', summary: result.title, detail: result.error });
   }

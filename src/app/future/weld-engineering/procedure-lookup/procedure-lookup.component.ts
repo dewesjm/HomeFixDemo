@@ -14,14 +14,14 @@ import { LucideSearch, LucideFileText, LucideX } from '@lucide/angular';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { TableState } from '../../../shared/table-state';
 import { PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES } from '../../../data/procedures';
+import { procedureTableQuery } from '../procedure-table-query';
 import { procedureSections, findField } from '../procedure-sections';
 import { fieldChoices, fieldLabel } from '../procedure-field-values';
 import { AppDatePipe } from '../../../shared/date-format';
 import { searchProcedures } from '../procedure-service/procedure-service';
-import type { ProcedureSearch, ProcedureSearchRow, SearchColumn } from '../procedure-service/procedure-search';
+import type { ProcedureSearch, ProcedureSearchRow } from '../procedure-service/procedure-search';
 
 const asOptions = (list: string[]) => list.map(v => ({ label: v, value: v }));
-const ALL_STATUSES = PROCEDURE_STATUS_OPTIONS.map(o => o.value);
 
 @Component({
   selector: 'app-procedure-lookup',
@@ -54,15 +54,7 @@ export class ProcedureLookupComponent {
 
   /* the call the table's search, filters and sort make */
   query(): ProcedureSearch {
-    const filters: NonNullable<ProcedureSearch['filters']> = { ...this.table.columnFilters() };
-    const status = filters.status;
-    if (!status || !status.length) filters.status = ALL_STATUSES;
-    const by = this.table.sortField() as SearchColumn | null;
-    return {
-      text: this.table.globalFilter(),
-      filters,
-      ...(by ? { sort: { by, order: this.table.sortOrder() === 1 ? 'asc' : 'desc' } } : {}),
-    };
+    return procedureTableQuery(this.table);
   }
 
   constructor(private router: Router) {

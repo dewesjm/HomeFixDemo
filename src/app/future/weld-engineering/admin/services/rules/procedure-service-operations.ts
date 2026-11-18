@@ -13,7 +13,7 @@ import type { ProcedureKey } from '../../../procedure-service/procedure-record';
 import type { ProcedureFilter } from '../../../procedure-service/procedure-filter';
 import { SEARCH_COLUMNS, type ProcedureSearch } from '../../../procedure-service/procedure-search';
 
-import { exportProcedures, getLoadTemplate, type ProcedureExportFilter } from '../../../procedure-service/procedure-file-service';
+import { exportProcedures, getLoadTemplate } from '../../../procedure-service/procedure-file-service';
 
 const STATUSES = PROCEDURE_STATUS_OPTIONS.map(o => o.value);
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
@@ -65,16 +65,16 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
     },
     {
       name: 'exportProcedures',
-      signature: 'exportProcedures({ text?, columns?, sort?, order? })',
-      description: 'Downloads the Manage Procedures CSV for all matching rows in the requested order.',
+      signature: 'exportProcedures({ text?, filters?, sort? })',
+      description: 'Downloads the Manage Procedures CSV for every procedure matching a searchProcedures query, in its sort order. Every status unless filtered; no paging.',
       writes: false,
       important: true,
       params: [{
-        name: 'filter', label: 'Filter and sort', type: 'json',
-        help: 'Optional search text, column filters (gwp, wtn, title, status), sort column, and order (1 or -1).',
-        example: '{ "columns": { "status": ["active"] }, "sort": "gwp", "order": 1 }',
+        name: 'query', label: 'Query', type: 'json',
+        help: `The searchProcedures query without page or pageSize. Columns: ${SEARCH_COLUMNS.join(', ')}. Leave blank for every procedure.`,
+        example: '{ "text": "steel", "filters": { "status": ["active"] }, "sort": { "by": "gwp", "order": "asc" } }',
       }],
-      call: a => [a['filter'] as ProcedureExportFilter | undefined],
+      call: a => [(a['query'] ?? {}) as ProcedureSearch],
       fn: exportProcedures,
     },
     {

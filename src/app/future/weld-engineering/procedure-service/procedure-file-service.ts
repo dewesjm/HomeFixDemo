@@ -4,61 +4,31 @@ import { csvText } from '../../../shared/export-csv';
 import { xlsxTemplateBase64 } from '../../../shared/spreadsheet-import';
 import { procedureCsvColumns, procedureTemplateHeaders } from '../procedure-files';
 import { procedureSections } from '../procedure-sections';
-import { createManageProceduresTable } from './manage-procedures-table';
+import { searchProblem, searchRow, searchRows, type ProcedureSearch } from './procedure-search';
 import { fail, type ServiceResult } from './service-result';
 
-const TEXT_COLUMNS = ['gwp', 'wtn', 'title'];
-const SORT_COLUMNS = [...TEXT_COLUMNS, 'status', 'weldProcess'];
+const ALL_STATUSES = PROCEDURE_STATUS_OPTIONS.map(o => o.value);
 
-export interface ProcedureExportFilter {
-  text?: string;
-  columns?: Record<string, string | string[]>;
-  sort?: string | null;
-  order?: 1 | -1;
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object' && !Array.isArray(value);
-}
-
-function filterProblem(filter: unknown): string {
-  if (!isObject(filter)) return 'Send the filter as an object.';
-  if (Object.keys(filter).some(key => !['text', 'columns', 'sort', 'order'].includes(key))) {
-    return 'Filter supports text, columns, sort and order.';
-  }
-  const { text, sort, order, columns } = filter;
-  if (text !== undefined && typeof text !== 'string') return 'Search text must be a string.';
-  if (sort != null && (typeof sort !== 'string' || !SORT_COLUMNS.includes(sort))) return 'Choose a Manage Procedures column to sort by.';
-  if (order !== undefined && order !== 1 && order !== -1) return 'Sort order must be 1 or -1.';
-  if (columns === undefined) return '';
-  if (!isObject(columns)) return 'Send column filters as an object.';
-  for (const [column, value] of Object.entries(columns)) {
-    if (column === 'status') {
-      if (!Array.isArray(value) || !value.every(status => PROCEDURE_STATUS_OPTIONS.some(option => option.value === status))) {
-        return 'Status must be a list of Active, Draft or Retired values in lowercase.';
-      }
-    } else if (!TEXT_COLUMNS.includes(column) || typeof value !== 'string') {
-      return 'GWP, WTN and Title column filters must be strings.';
-    }
-  }
-  return '';
-}
-
-/* Match the Manage Procedures table and export every matching row. */
-export function exportProcedures(filter: ProcedureExportFilter = {}): ServiceResult<DownloadFile> {
-  const problem = filterProblem(filter);
+/* The CSV of every procedure matching a searchProcedures query (procedure-search.ts): the same search
+   text, column filters and sort, so Manage Procedures exports what it shows. Unlike searchProcedures,
+   every status is included unless filtered, and every match is exported (no paging). */
+export function exportProcedures(query: ProcedureSearch = {}): ServiceResult<DownloadFile> {
+  const q = query ?? {};
+  const problem = searchProblem(q);
   if (problem) return fail(problem);
-  const table = createManageProceduresTable();
-  table.setRows(procedures());
-  table.globalFilter.set(filter.text ?? '');
-  table.columnFilters.set(filter.columns ?? {});
-  table.sortField.set(filter.sort ?? null);
-  table.sortOrder.set(filter.order ?? 1);
+  if (q.page !== undefined || q.pageSize !== undefined) return fail('Export answers every match; leave out page and pageSize.');
+  const filters = { ...q.filters };
+  if (!filters.status || !filters.status.length) filters.status = ALL_STATUSES;
+  const sections = procedureSections();
+  const all = procedures();
+  const keyOf = (p: { gwp: string; wtn: string }) => `${p.gwp}|${p.wtn}`;
+  const byKey = new Map(all.map(p => [keyOf(p), p]));
+  const rows = searchRows(all.map(p => searchRow(p, sections)), { ...q, filters }).map(r => byKey.get(keyOf(r))!);
   try {
     return { ok: true, data: {
       fileName: 'procedures-export.csv',
       contentType: 'text/csv;charset=utf-8',
-      base64: textBase64(csvText(procedureCsvColumns(procedureSections()), table.sorted())),
+      base64: textBase64(csvText(procedureCsvColumns(sections), rows)),
     } };
   } catch {
     return fail('The procedure export could not be made.', 'Export not made');
