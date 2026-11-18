@@ -85,6 +85,7 @@ export function jointSignoffOperations(svc: JointSignoffService, example: JointK
       signature: 'signRouting(key, routingId)',
       description: 'Signs the current routing using the joint’s existing form answers and returns the resulting routing. Get the routing ID with getRouting.',
       writes: true,
+      important: true,
       params: [...keyParams(example), routingParam],
       call: a => [keyOf(a), str(a['routingId'])],
       fn: (key, routingId) => svc.signRouting(key, routingId),
@@ -137,6 +138,7 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       signature: 'getJoint({ hull, drawing, joint } | { xrefid })',
       description: 'One joint: its record fields, current routing, Refit # and Repair #, and url, its Joint Details link.',
       writes: false,
+      important: true,
       params: keyParams(example),
       call: a => [keyOf(a)],
       fn: k => svc.getJoint(k),
@@ -146,6 +148,7 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       signature: 'findJoints(filter, { openOnly? })',
       description: 'For another system\'s logic: every joint matching all the filter\'s conditions, each an exact value (any case) on a joint field or its current routing. Answers whole joints, each with url, its Joint Details link. No search text, sort or paging (that\'s searchJoints).',
       writes: false,
+      important: true,
       params: [
         {
           name: 'filter', label: 'Filter', type: 'conditions',
@@ -163,6 +166,7 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       signature: 'searchJoints({ text?, filters?, sort?, page?, pageSize?, openOnly? })',
       description: 'For a list screen: search text (XREFID, hull, drawing, joint, routing, technician), column filters, sort and optional paging, with the total. Answers flat rows, each with url, its Joint Details link.',
       writes: false,
+      important: true,
       params: [{
         name: 'query', label: 'Query', type: 'json',
         example: JSON.stringify({ text: example.drawing ?? '', filters: { weldType: ['Butt', 'Socket'] }, sort: { by: 'joint', order: 'asc' }, page: 1, pageSize: 10 }),
@@ -185,6 +189,7 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       signature: 'getRouting({ hull, drawing, joint } | { xrefid })',
       description: 'Every routing on the joint\'s path in order, signed or not, and which one it is at now.',
       writes: false,
+      important: true,
       params: keyParams(example),
       call: a => [keyOf(a)],
       fn: k => svc.getRouting(k),
