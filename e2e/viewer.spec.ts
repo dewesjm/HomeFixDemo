@@ -144,8 +144,9 @@ test('Welding can sign Weld Build-Up and Tack, with read-only History', async ({
   await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption({ label: 'View All' });
   await (await pipeWeldingRow(page, TACK_JOINT)).getByRole('button', { name: 'History' }).click();
   await expect(page.getByRole('button', { name: 'Deprogress', exact: true })).toBeDisabled();
-  await expect(page.getByText('Requires Deprogress access.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Correct', exact: true }).first()).toBeDisabled();
+  await expect(page.getByText('Requires Deprogress access.', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Requires correction access.', { exact: true })).toHaveCount(0);
 
   await page.goto('/admin/groups');
   await expect(page).toHaveURL(/\/pipe-welding$/);
