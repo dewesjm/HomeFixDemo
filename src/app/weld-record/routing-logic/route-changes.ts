@@ -44,7 +44,7 @@ export function applySignedFlags(stages: WorkflowStage[], job: Job, fab?: Record
     }
     const effect = routingEffect(s.id, job, stages, fab);
     const included = usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
-    const required = !effect?.drop && ((!!effect?.add && isJointsTwin(t, job, templates)) || (included && baseRequired(t, job, stages, fab)));
+    const required = !effect?.drop && ((!!effect?.add && isJointsTwin(t, job)) || (included && baseRequired(t, job, stages, fab)));
     const { typeOptions, attributeRules } = attributeTypeSettings(s.id, job, stages, fab, s.inputs);
     const sameTypes = JSON.stringify(typeOptions) === JSON.stringify(s.typeOptions);
     if (required === s.required && sameTypes && JSON.stringify(attributeRules) === JSON.stringify(s.attributeRules)) return s;

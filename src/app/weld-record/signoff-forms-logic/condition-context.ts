@@ -5,8 +5,8 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionContext } from '../conditions-logic/form-conditions';
 import { jointOrFabricationField } from '../catalogs/field-choices';
-import { stepOnJoint } from '../../data/welding-step-ids';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
+import { nqcStepId } from '../../data/welding-step-ids';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_NQC_UTRT_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
 
 /* the step's own fields, its id and whether an engineering override has it, without the joint or
    other steps (they read as blank): what a fill's "when" may read */
@@ -31,7 +31,9 @@ export function buildConditionContext(stage: WorkflowStage, job: Job | undefined
     },
     stageProperty: (key: string): string => {
       if (key === ENGINEERING_OVERRIDE_KEY) return stage.engineeringEntry ? 'yes' : '';
-      if (key === REJECTED_PHASE_UTRT_KEY) return stepOnJoint(allStages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`) ? 'yes' : '';
+      const utrt = `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`;
+      if (key === REJECTED_PHASE_UTRT_KEY) return allStages.some(s => s.id === utrt) ? 'yes' : '';
+      if (key === REJECTED_PHASE_NQC_UTRT_KEY) return allStages.some(s => s.id === nqcStepId(utrt)) ? 'yes' : '';
       return '';
     },
     priorInput: (stepId: string, fieldKey: string): string =>

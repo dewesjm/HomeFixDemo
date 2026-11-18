@@ -37,7 +37,7 @@ export const STORAGE = {
   makeup: 'welding:makeup:v4',
   qualConditions: 'welding:qual-conditions:v8',
   featureToggles: 'welding:feature-toggles:v1',
-  stepFieldConfig: 'welding:step-field-config:v18',
+  stepFieldConfig: 'welding:step-field-config:v19',
   attributeCodeExceptions: 'welding:attribute-code-exceptions:v1',
 } as const;
 

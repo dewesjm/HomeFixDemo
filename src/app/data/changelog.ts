@@ -15,6 +15,10 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-11-18',
     changed: [
       'Admin > Signoff Types: Root\'s Additional Signoffs now list NQC Root NDT 5X/VT as its own rules. Each rule signs only the routing it names; a rule on a regular routing no longer signs its NQC row too. Saved Signoff Types reset to the defaults.',
+      'Routing rules no longer switch to the NQC row of a routing on their own. Each Then go to, Reject routes to and Signs routing target signs or goes to only the exact routing it names.',
+      'Repair and Excavation NDT have separate targets for the NQC rows: Rejecting phase\'s NQC UT/RT and Rejecting phase\'s NQC VT/5X. Repair\'s allowable thickness rules now have one rule per Nuclear Indicator group, and NQC Excavation NDT goes to the NQC VT/5X.',
+      'Signoff Type Forms conditions have a new choice, Rejected phase has NQC RT/UT. Repair\'s allowable thickness checkboxes use it for N Ind 1 and 2 joints. Saved Signoff Type Forms and Routing Settings reset to the defaults.',
+      'Admin > Attribute Code Exceptions: a row that adds a routing applies only when that row\'s own Included when Nuclear Indicator matches the joint; the regular row is no longer used when neither row matches.',
     ],
     added: [
       'Weld Engineering Admin > Procedure Sections has two new field types. Grid: set its columns (number or NC, number, text, min/max range or pick one) and each procedure adds its own rows, for example a table of temperatures. Images: each procedure can add up to 6 pictures with captions, for example a butt joint sketch.',

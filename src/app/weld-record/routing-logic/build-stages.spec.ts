@@ -1,6 +1,5 @@
 import { buildStages } from './build-stages';
 import { getTemplates, updateStageTemplate } from './routing-settings-rules';
-import { stepOnJoint } from '../../data/welding-step-ids';
 import { JOBS, Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 
@@ -37,9 +36,12 @@ describe('NQC rows (Admin > Routing Settings)', () => {
     updateStageTemplate('nqc-fitup-insp', { displayName: 'Fit-Up Insp' });
   });
 
-  it('a built-in step id finds the joint\'s own row', () => {
-    expect(stepOnJoint(buildStages(job('1')), 'root-ndt-utrt')?.id).toBe('nqc-root-ndt-utrt');
-    expect(stepOnJoint(buildStages(job('3')), 'root-ndt-utrt')?.id).toBe('root-ndt-utrt');
+  it('a joint gets exactly one row of an NQC pair', () => {
+    const ids = (nInd: string) => buildStages(job(nInd)).map(s => s.id);
+    expect(ids('1')).toContain('nqc-root-ndt-utrt');
+    expect(ids('1')).not.toContain('root-ndt-utrt');
+    expect(ids('3')).toContain('root-ndt-utrt');
+    expect(ids('3')).not.toContain('nqc-root-ndt-utrt');
   });
 });
 

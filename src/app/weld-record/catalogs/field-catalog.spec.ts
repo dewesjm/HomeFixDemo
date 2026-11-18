@@ -105,7 +105,7 @@ describe('what each screen offers', () => {
     expect(labels[0]).toBe('This form: X');
     expect(at('Calculated: Controlled Material')).toBeGreaterThan(at('Joint Details: N Ind.'));
     expect(at('Fabrication: Drawing Rev Execution')).toBeGreaterThan(at('Calculated: Controlled Material'));
-    expect(labels.slice(-3)).toEqual(['Routing ID matches', 'Rejected phase has RT/UT', 'Engineering override']);
+    expect(labels.slice(-4)).toEqual(['Routing ID matches', 'Rejected phase has RT/UT', 'Rejected phase has NQC RT/UT', 'Engineering override']);
     expect(labels.some(l => l.startsWith('Fabrication: Fabrication'))).toBeFalse();
   });
 });

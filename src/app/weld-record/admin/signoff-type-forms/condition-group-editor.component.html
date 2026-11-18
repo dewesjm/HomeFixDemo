@@ -32,9 +32,9 @@
             <option value="">off</option>
             <option value="yes">on</option>
           </select>
-        } @else if (c.source === 'rejectedUtrt') {
+        } @else if (c.source === 'rejectedUtrt' || c.source === 'rejectedNqcUtrt') {
           <span class="text-xs">is</span>
-          <select class="select select-bordered select-xs w-20" aria-label="Rejected phase has RT/UT is"
+          <select class="select select-bordered select-xs w-20" [attr.aria-label]="c.source === 'rejectedUtrt' ? 'Rejected phase has RT/UT is' : 'Rejected phase has NQC RT/UT is'"
                   [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
             <option value="yes">Yes</option>
             <option value="">No</option>

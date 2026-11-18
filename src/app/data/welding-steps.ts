@@ -165,8 +165,9 @@ const ENGINEERING_HOLD_STAGE: StageTemplate = {
 
 export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
   { ...REPAIR_STAGE, thenRules: [
-    { when: [{ field: 'self.allowableThicknessExceededN1', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' },
-    { when: [{ field: 'self.allowableThicknessExceededN23', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' },
+    { when: [{ field: 'self.allowableThicknessExceededN1', op: 'is', values: ['yes'] }, { field: 'nInd', op: 'is', values: ['1', '2'] }], to: 'rejecting-nqc-utrt' },
+    { when: [{ field: 'self.allowableThicknessExceededN23', op: 'is', values: ['yes'] }, { field: 'nInd', op: 'is', values: ['1', '2'] }], to: 'rejecting-nqc-utrt' },
+    { when: [{ field: 'self.allowableThicknessExceededN23', op: 'is', values: ['yes'] }, { field: 'nInd', op: 'is', values: ['3'] }], to: 'rejecting-utrt' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['grind'] }], to: 'rejecting-ndt' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['cut'] }], to: 'fit' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['weld-repair'] }], to: 'add-excavation-ndt' },
@@ -182,7 +183,7 @@ export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
     description: 'Excavation NDT is a request to repair, validating that the joint has been prepared and is ready for the actual repair (weld repair, cut, etc.) to proceed. Requires NQC for nuclear joints',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['1', '2'] }]],
     rejectToStage: 'own-repair', thenRules: [
-      { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-vt5x' },
+      { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-nqc-vt5x' },
       { when: [], to: 'rejecting-ndt' },
     ] },
   ENGINEERING_HOLD_STAGE,

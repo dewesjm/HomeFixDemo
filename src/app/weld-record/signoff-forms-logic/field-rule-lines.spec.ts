@@ -34,9 +34,11 @@ describe('field rule lines', () => {
       .toEqual([{ condition: 'Always', behaviors: ['Show', 'Required'] }]);
     for (const key of ['allowableThicknessExceededN1', 'allowableThicknessExceededN23']) {
       const line = fieldRuleLines({ key }, label)[0];
-      expect(line.condition).toContain('rejected phase has an RT/UT routing');
+      expect(line.condition).toContain('rejected phase has an NQC RT/UT routing');
       expect(line.condition).toContain('N Ind.');
       expect(line.behaviors).toEqual(['Show']);
     }
+    /* N Ind 3 joints have the regular RT/UT row */
+    expect(fieldRuleLines({ key: 'allowableThicknessExceededN23' }, label)[0].condition).toContain('rejected phase has an RT/UT routing');
   });
 });

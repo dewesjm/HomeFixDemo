@@ -11,6 +11,8 @@ describe('Round-relative routing targets', () => {
     expect(resolveRuleTarget(stages, exc, 'rejecting-ndt')).toBe('nqc-final-ndt-mtpt');
     expect(resolveRuleTarget(stages, exc, 'rejecting-utrt')).toBe('final-ndt-utrt');
     expect(resolveRuleTarget(stages, exc, 'rejecting-vt5x')).toBe('final-ndt-vt5x');
+    expect(resolveRuleTarget(stages, exc, 'rejecting-nqc-utrt')).toBe('nqc-final-ndt-utrt');
+    expect(resolveRuleTarget(stages, exc, 'rejecting-nqc-vt5x')).toBe('nqc-final-ndt-vt5x');
   });
   it('offers only targets supported by a routing’s context', () => {
     expect(availableRuleTargets('fit').map(t => t.id)).not.toContain('add-excavation-ndt');

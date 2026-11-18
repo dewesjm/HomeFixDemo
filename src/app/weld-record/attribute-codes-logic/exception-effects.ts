@@ -87,17 +87,12 @@ export function routingEffect(routingId: string, job: Job, stages: WorkflowStage
   };
 }
 
-/* An added NQC-split routing goes on as the row the joint's N Ind. picks: the twin whose Included when
-   N Ind. clauses match, the regular row when neither does. */
-export function isJointsTwin(t: Pick<StageTemplate, 'id' | 'includeWhen'>, job: Job, templates: Pick<StageTemplate, 'id' | 'includeWhen'>[]): boolean {
-  const base = baseStepId(t.id);
-  if (!NQC_SPLIT_STEP_IDS.includes(base)) return true;
-  const nIndMatches = (id: string) => {
-    const rules = templates.find(x => x.id === id)?.includeWhen?.map(r => r.filter(c => c.field === 'nInd')).filter(r => r.length);
-    return !!rules?.length && conditionsMatch(rules, job);
-  };
-  const twin = t.id === base ? `nqc-${base}` : base;
-  return nIndMatches(t.id) || (t.id === base && !nIndMatches(twin));
+/* An added NQC-split routing goes on only when its own Included when N Ind. clauses match the joint
+   (a row with no N Ind. clause matches every joint). The other row of the pair is never consulted. */
+export function isJointsTwin(t: Pick<StageTemplate, 'id' | 'includeWhen'>, job: Job): boolean {
+  if (!NQC_SPLIT_STEP_IDS.includes(baseStepId(t.id))) return true;
+  const rules = t.includeWhen?.map(r => r.filter(c => c.field === 'nInd')).filter(r => r.length);
+  return !rules?.length || conditionsMatch(rules, job);
 }
 
 /* the routing's Types after the matching rows: only = just those, add = those as well */

@@ -9,11 +9,11 @@ import {
   conditionTerms,
   isConditionGroup,
 } from '../../../conditions-logic/form-conditions';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-forms-logic/stage-property-keys';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_NQC_UTRT_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-forms-logic/stage-property-keys';
 
 /* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
-   the rejected phase has an RT/UT step */
-export type ClauseSrc = 'field' | 'jointDetail' | 'stepId' | 'engineering' | 'rejectedUtrt';
+   the rejected phase has its regular RT/UT routing; 'rejectedNqcUtrt' = the same for its NQC RT/UT routing */
+export type ClauseSrc = 'field' | 'jointDetail' | 'stepId' | 'engineering' | 'rejectedUtrt' | 'rejectedNqcUtrt';
 
 export interface WorkClause {
   source: ClauseSrc;
@@ -37,6 +37,7 @@ function clauseToWork(c: FormConditionClause): WorkClause {
   if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
   if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return { source: 'engineering', key: '', equals: c.equals ?? '' };
   if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return { source: 'rejectedUtrt', key: '', equals: c.equals ?? '' };
+  if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_NQC_UTRT_KEY) return { source: 'rejectedNqcUtrt', key: '', equals: c.equals ?? '' };
   if (c.source === 'field' || c.source === 'jointDetail') return { source: c.source, key: c.key, equals: c.anyOf?.join(', ') ?? c.equals ?? '' };
   return blankClause();
 }
@@ -45,13 +46,14 @@ function workToClause(w: WorkClause): FormConditionClause {
   if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
   if (w.source === 'engineering') return { source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: w.equals };
   if (w.source === 'rejectedUtrt') return { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: w.equals };
+  if (w.source === 'rejectedNqcUtrt') return { source: 'stageProperty', key: REJECTED_PHASE_NQC_UTRT_KEY, equals: w.equals };
   const values = w.equals.split(',').map(v => v.trim()).filter(Boolean);
   return values.length > 1 ? { source: w.source, key: w.key, anyOf: values } : { source: w.source, key: w.key, equals: w.equals };
 }
 
 /* a clause left without its field (or its regex) isn't saved */
 const isComplete = (w: WorkClause) =>
-  w.source === 'engineering' || w.source === 'rejectedUtrt' || (w.source === 'stepId' ? !!w.equals : !!w.key);
+  w.source === 'engineering' || w.source === 'rejectedUtrt' || w.source === 'rejectedNqcUtrt' || (w.source === 'stepId' ? !!w.equals : !!w.key);
 
 export function conditionToWork(c: FieldCondition | undefined): WorkGroup {
   if (!c) return { op: 'all', items: [] };

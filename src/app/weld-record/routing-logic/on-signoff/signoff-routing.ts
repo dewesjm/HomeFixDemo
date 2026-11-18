@@ -17,7 +17,6 @@ import {
   isRepairStageId,
   isExcavationNdtStageId,
   baseStepId,
-  stepOnJoint,
 } from '../../../data/welding-step-ids';
 import { hasDecision, initialInspectionType, typeValues } from '../../signoff-forms-logic/stage-rules';
 import { withoutHiddenAnswers } from '../../signoff-forms-logic/shown-fields';
@@ -38,7 +37,7 @@ function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stag
   const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
   const at = stages.findIndex(s => s.id === stageId);
   const targetId = rule ? resolveRuleTarget(stages, st, rule.to) : '';
-  const targetAt = stages.findIndex(s => s.id === stepOnJoint(stages, targetId)?.id);
+  const targetAt = stages.findIndex(s => s.id === targetId);
   const usable = rule && (isAddTarget(rule.to) || (st.insertion && rule.to === 'continue') || (targetAt >= 0 && targetAt <= at));
   return { to: st.insertion && rule ? rule.to : usable ? rule.to : st.rejectToStage ?? '', rule: st.insertion && rule ? rule : usable ? rule : null };
 }
@@ -78,7 +77,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   /* an UNSAT whose reject target is this step (Records Review's default): the signoff is recorded, but
      the step isn't signed, so the joint stays there */
   const rejectsToItself = !asStepId && signing.result === 'unsat'
-    && stepOnJoint(wf.stages, resolveRuleTarget(wf.stages, signing, rejectTarget(wf.stages, job, signing, stageId, wf.fabricationData).to))?.id === stageId;
+    && resolveRuleTarget(wf.stages, signing, rejectTarget(wf.stages, job, signing, stageId, wf.fabricationData).to) === stageId;
   /* stages with no SAT/UNSAT choice are accepted by signing */
   let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now, wf.history.some(h => h.stageId === stageId && h.section === 'Sign-off')) : wf.stages.map(s => {
     if (s.id !== stageId) return s;
@@ -99,9 +98,9 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
      there on comes up blank (routeBack). One History entry names where it went. */
   let fabricationData = wf.fabricationData;
   let routedBack: { label: string; fabBefore?: SignoffInput[] } | null = null;
-  /* a built-in target means the joint's own step for it (its NQC or regular row) */
+  /* the target is the exact routing the rule names; a routing not on this joint is no target */
   const routeBackTo = (id: string) => {
-    const target = stepOnJoint(stages, id);
+    const target = stages.find(s => s.id === id);
     if (!target) return;
     const r = routeBack({ ...wf, stages, fabricationData }, job, target.id);
     stages = r.wf.stages;
@@ -165,7 +164,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       reasons.push('Excavation NDT is added with the rejecting inspection’s Type and its Type exceptions');
       return;
     }
-    const target = stepOnJoint(stages, resolveRuleTarget(stages, st, destination));
+    const target = stages.find(s => s.id === resolveRuleTarget(stages, st, destination));
     if (!target) {
       if (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType']))) throw new RoutingConfigurationError(`Destination ${destination} has no routing context.`);
       return;
@@ -204,9 +203,9 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   }
   if (st.result !== 'unsat') {
     const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
-    if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
+    if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stages.some(s => s.id === resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
-      reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);
+      reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stages.find(s => s.id === rule.to)?.label ?? rule.to}`);
     }
   }
 

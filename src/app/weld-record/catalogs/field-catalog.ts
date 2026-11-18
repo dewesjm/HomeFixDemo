@@ -24,7 +24,7 @@ import { fabricationSigned } from '../fabrication-logic/fabrication-steps';
 import { nqcStepId } from '../../data/welding-step-ids';
 import { FieldCondition } from '../conditions-logic/form-conditions';
 import { repairCodeOptions } from '../signoff-forms-logic/repair-code-options';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-forms-logic/stage-property-keys';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_NQC_UTRT_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-forms-logic/stage-property-keys';
 
 /* ── What an entry is ── */
 
@@ -382,16 +382,17 @@ const SIGNOFF_FORM_ROWS: SignoffFormRow[] = [
   /* ── Repair ── */
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
     get options() { return repairCodeOptions(true); } },
-  /* "exceeded" sends the joint to that phase's RT/UT, so by default it shows only when there is one */
+  /* "exceeded" sends the joint to that phase's RT/UT, so by default it shows only when there is one:
+     N Ind 1 and 2 joints have the NQC RT/UT row, N Ind 3 the regular row */
   { key: 'allowableThicknessExceededN1', label: 'Allowable thickness of 3/8 inch or 20% of material thickness, whichever is less, has been exceeded (Nuclear Indicator 1) - Volumetric inspection (UT/RT) is required', type: 'checkbox',
     defaultShowIf: { all: [
       { source: 'jointDetail', key: 'nInd', equals: '1' },
-      { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' },
+      { source: 'stageProperty', key: REJECTED_PHASE_NQC_UTRT_KEY, equals: 'yes' },
     ] } },
   { key: 'allowableThicknessExceededN23', label: 'Allowable thickness of 3/16 inch or 20% of material thickness, whichever is less, has been exceeded (Nuclear Indicators 2/3) - Volumetric inspection (UT/RT) is required', type: 'checkbox',
-    defaultShowIf: { all: [
-      { source: 'jointDetail', key: 'nInd', anyOf: ['2', '3'] },
-      { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' },
+    defaultShowIf: { any: [
+      { all: [{ source: 'jointDetail', key: 'nInd', equals: '2' }, { source: 'stageProperty', key: REJECTED_PHASE_NQC_UTRT_KEY, equals: 'yes' }] },
+      { all: [{ source: 'jointDetail', key: 'nInd', equals: '3' }, { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' }] },
     ] } },
 
   /* ── Joint page ── */

@@ -31,6 +31,7 @@ export function clauseChoices(stepFields: StepFieldChoice[], stepOnly: boolean):
     ...JOINT_AND_FABRICATION_FIELDS.map(f => choice('jointDetail', f.key, f.values.join() === 'Yes,No' ? 'Yes' : '', fieldChoiceLabel(f))),
     choice('stepId', '', '', 'Routing ID matches'),
     choice('rejectedUtrt', '', 'yes', 'Rejected phase has RT/UT'),
+    choice('rejectedNqcUtrt', '', 'yes', 'Rejected phase has NQC RT/UT'),
     engineering,
   ];
 }

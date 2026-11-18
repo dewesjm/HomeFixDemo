@@ -20,9 +20,9 @@ export function buildStages(job: Job, fab?: Record<string, string>): WorkflowSta
   /* then Admin > Attribute Code Exceptions: a row can drop the routing or add it (as the joint's NQC or
      regular row); a row waiting on a later answer puts it on the joint, not required, until it matches */
   const effectOf = (t: StageTemplate) => routingEffect(t.id, job);
-  const addedByCode = (t: StageTemplate) => !!effectOf(t)?.add && isJointsTwin(t, job, tradeStages);
+  const addedByCode = (t: StageTemplate) => !!effectOf(t)?.add && isJointsTwin(t, job);
   const included = (t: StageTemplate) => !effectOf(t)?.drop
-    && (routingIncluded(t) || addedByCode(t) || (mayBeAddedLater(t.id, job) && isJointsTwin(t, job, tradeStages)));
+    && (routingIncluded(t) || addedByCode(t) || (mayBeAddedLater(t.id, job) && isJointsTwin(t, job)));
   /* Sold follows whichever Records Review the joint got */
   const hasO63Data = tradeStages.some(t => t.id === 'review-o63' && included(t));
 

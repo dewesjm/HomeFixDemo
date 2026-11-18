@@ -2,14 +2,13 @@
 import { WorkflowStage } from '../../model/workflow-types';
 import { typeSignsStep } from '../../signoff-forms-logic/signoff-type-routing-rules';
 import { typeValues } from '../../signoff-forms-logic/stage-rules';
-import { baseStepId } from '../../../data/welding-step-ids';
 
 /* the later step a stage's Type signs (the Type's Signs step), or '' */
 export function signedAsStep(stages: WorkflowStage[], stage: WorkflowStage): string {
   const target = typeSignsStep(stage.id, stage.signoffType);
   if (!target) return '';
   const idx = stages.findIndex(s => s.id === stage.id);
-  return stages.find((s, i) => i > idx && baseStepId(s.id) === target)?.id ?? '';
+  return stages.find((s, i) => i > idx && s.id === target)?.id ?? '';
 }
 
 /* sign `stageId` as the later step `targetId`: the target takes the values and is signed, and the
