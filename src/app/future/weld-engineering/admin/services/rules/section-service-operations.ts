@@ -30,6 +30,7 @@ export function sectionServiceOperations(example: SectionExample): ServiceOperat
       signature: 'getProcedureFields()',
       description: 'Every field key a caller can use: header fields, then each section\'s fields, with type, choices, how findProcedures filters it (filter) and whether getProcedure\'s fields option takes it (askable).',
       writes: false,
+      important: true,
       params: [],
       call: () => [],
       fn: getProcedureFields,

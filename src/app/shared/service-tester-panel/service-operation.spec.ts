@@ -1,4 +1,4 @@
-import { callText, choiceGroups, readArgs, responseFile, sent, shownResponse, startingInputs, type ServiceOperation } from './service-operation';
+import { callText, choiceGroups, importantFirst, readArgs, responseFile, sent, shownResponse, startingInputs, type ServiceOperation } from './service-operation';
 
 const op: ServiceOperation = {
   name: 'demo', signature: 'demo()', description: '', writes: false, call: a => [a], fn: a => a,
@@ -23,6 +23,12 @@ describe('service operation inputs', () => {
   it('names a missing required input or bad JSON', () => {
     expect(readArgs(op, {})).toEqual({ problem: 'Id is required.' });
     expect(readArgs(op, { id: 'A1', filter: '{x' })).toEqual({ problem: 'Filter isn\'t valid JSON.' });
+  });
+
+  it('lists the important calls first, each group in the order given', () => {
+    const named = (name: string, important?: boolean): ServiceOperation => ({ ...op, name, important });
+    expect(importantFirst([named('a'), named('b', true), named('c'), named('d', true)]).map(o => o.name))
+      .toEqual(['b', 'd', 'a', 'c']);
   });
 
   it('writes the full call with each argument as JSON, dropping trailing ones left out', () => {

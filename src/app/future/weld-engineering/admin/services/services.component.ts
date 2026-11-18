@@ -1,7 +1,9 @@
 /* Weld Engineering Admin - Services: try the calls made to Weld Engineering and see each response. The
-   calls are procedure-service/procedure-service.ts (procedures) and procedure-service/section-service.ts
-   (section and field definitions); rules/ lists them for the shared service tester. The Filter and
-   Fields droplists come from getProcedureFields, as another system would get them. */
+   calls are in procedure-service/: procedure-service.ts (procedures), section-service.ts (section and
+   field definitions), procedure-file-service.ts (export and load template) and
+   procedure-catalog-service.ts (material and filler choices); rules/ lists them for the shared service
+   tester. The main reads are starred and listed first; the writes follow. The Filter and Fields
+   droplists come from getProcedureFields, as another system would get them. */
 import { Component } from '@angular/core';
 
 import { procedures } from '../../../../data/procedures';
@@ -19,8 +21,8 @@ import { getProcedureFields } from '../../procedure-service/section-service';
     <div class="table-page-wrap" style="max-width: 72rem">
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
-        Read procedures, look up field definitions and material choices, or download files.
-        Run a call to see its inputs and response.
+        Read and change procedures and their field definitions, look up material choices, or download
+        files. Starred calls are the main ones. Run a call to see its inputs and response.
       </p>
       <app-service-tester-panel [operations]="operations" />
     </div>
@@ -40,5 +42,5 @@ export class ServicesComponent {
       sectionId: this.section?.id ?? '', sectionName: this.section?.name ?? '',
       fieldKey: this.field?.key ?? '', fieldLabel: this.field?.label ?? '',
     }),
-  ].filter(operation => !operation.writes);
+  ];
 }

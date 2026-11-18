@@ -1,14 +1,14 @@
 /* Service tester: pick one of a system's service operations, fill in its parameters, see the full call
    it makes and run it to see the exact response. A call that answers later (a Promise) is waited for;
    a file in the response is offered for download. The page around it passes the operations
-   (service-operation.ts). */
+   (service-operation.ts); the starred (important) ones are listed first. */
 import { Component, computed, input, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideCopy, LucideDownload, LucidePlay, LucidePlus, LucideRotateCcw, LucideX } from '@lucide/angular';
 
 import {
-  callText, choiceGroups, readArgs, responseFile, shownResponse, startingInputs,
+  callText, choiceGroups, importantFirst, readArgs, responseFile, shownResponse, startingInputs,
   type ConditionRow, type OperationParam, type ParamChoice, type ParamInput, type ResponseFile, type ServiceOperation,
 } from './service-operation';
 
@@ -24,9 +24,11 @@ interface Run { call: string; response: unknown; file: ResponseFile | null; }
 })
 export class ServiceTesterPanelComponent {
   operations = input.required<ServiceOperation[]>();
+  /* the droplist's order: starred calls first */
+  listed = computed(() => importantFirst(this.operations()));
 
   selectedName = signal('');
-  selected = computed<ServiceOperation | undefined>(() => this.operations().find(o => o.name === this.selectedName()) ?? this.operations()[0]);
+  selected = computed<ServiceOperation | undefined>(() => this.listed().find(o => o.name === this.selectedName()) ?? this.listed()[0]);
   inputs: Record<string, ParamInput> = {};
   problem = signal('');
   last = signal<Run | null>(null);

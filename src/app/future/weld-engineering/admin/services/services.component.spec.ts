@@ -71,13 +71,18 @@ describe('Weld Engineering Services page', () => {
     expect(el.querySelector('#param-fields')).not.toBeNull();
   });
 
-  it('lists read calls only', async () => {
+  it('lists the starred reads first, then the writes unstarred', async () => {
     const fixture = await render();
-    const options = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('option')).map(o => o.textContent?.trim());
-    expect(options.some(option => option?.endsWith('(Write)'))).toBeFalse();
-    expect(options).toContain('getProcedure (Read)');
-    expect(options).toContain('exportProcedures (Read)');
-    expect(options).toContain('getLoadTemplate (Read)');
+    const picker = (fixture.nativeElement as HTMLElement).querySelector('select') as HTMLSelectElement;
+    const options = Array.from(picker.options, o => o.textContent!.trim());
+    expect(options).toContain('★ getProcedure (Read)');
+    expect(options).toContain('★ exportProcedures (Read)');
+    expect(options).toContain('★ getLoadTemplate (Read)');
+    expect(options).toContain('updateProcedure (Write)');
+    expect(options).toContain('addSection (Write)');
+    const firstWrite = options.findIndex(o => o.endsWith('(Write)'));
+    expect(options.slice(0, firstWrite).every(o => o.startsWith('★ '))).toBeTrue();
+    expect(options.slice(firstWrite).some(o => o.startsWith('★ '))).toBeFalse();
   });
 
   it('lists the three main procedure reads and hides workflow helper reads', async () => {

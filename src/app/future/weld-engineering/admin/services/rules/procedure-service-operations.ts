@@ -55,6 +55,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       signature: 'getProcedure({ gwp, wtn }, { fields?, status?, revision? })',
       description: 'One procedure (WTN): its header and sections, or only the fields asked for. Fields it doesn\'t have are listed under missing.',
       writes: false,
+      important: true,
       params: [
         ...keyParams(example), fieldsParam(fields), statusParam,
         { name: 'revision', label: 'Revision', type: 'text', help: 'Default: the current revision. Older revisions aren\'t stored in this demo.' },
@@ -67,6 +68,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       signature: 'exportProcedures({ text?, columns?, sort?, order? })',
       description: 'Downloads the Manage Procedures CSV for all matching rows in the requested order.',
       writes: false,
+      important: true,
       params: [{
         name: 'filter', label: 'Filter and sort', type: 'json',
         help: 'Optional search text, column filters (gwp, wtn, title, status), sort column, and order (1 or -1).',
@@ -80,6 +82,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       signature: 'getLoadTemplate()',
       description: 'Downloads the blank Load Procedures Excel template with columns for the current section fields.',
       writes: false,
+      important: true,
       params: [],
       call: () => [],
       fn: getLoadTemplate,
@@ -89,6 +92,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       signature: 'findProcedures(filter, { fields?, status? })',
       description: 'For another system\'s logic: every procedure matching all the filter\'s conditions, on any header or section field. Answers headers only unless fields are asked for, with values tagged by kind. No search text, sort or paging (that\'s searchProcedures).',
       writes: false,
+      important: true,
       params: [
         {
           name: 'filter', label: 'Filter', type: 'conditions', example: '{ "baseMetal1Type": "02-CS", "fillerMetalTypes": "mil-70s-6" }',
@@ -105,6 +109,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       signature: 'searchProcedures({ text?, filters?, sort?, page?, pageSize? })',
       description: 'For a list screen (Procedure Lookup): search text, filters on its columns only, sort, and paging when page and pageSize are sent. Answers flat rows and the total matched. To filter on any field, use findProcedures.',
       writes: false,
+      important: true,
       params: [{
         name: 'query', label: 'Query', type: 'json',
         example: '{ "text": "steel", "filters": { "status": ["active", "draft"] }, "sort": { "by": "gwp", "order": "asc" }, "page": 1, "pageSize": 10 }',
@@ -118,6 +123,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       signature: 'getProcedurePdf({ gwp, wtn }, { status?, revision? })',
       description: 'One procedure\'s official PDF, the same document every system gets. Answers the file name, type and the file base64 encoded.',
       writes: false,
+      important: true,
       params: [
         ...keyParams(example), statusParam,
         { name: 'revision', label: 'Revision', type: 'text', help: 'Default: the current revision. Older revisions aren\'t stored in this demo.' },
@@ -199,19 +205,19 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       name: 'getBaseMaterialCodes',
       signature: 'getBaseMaterialCodes()',
       description: 'Lists the base-material codes available for procedures.',
-      writes: false, params: [], call: () => [], fn: getBaseMaterialCodes,
+      writes: false, important: true, params: [], call: () => [], fn: getBaseMaterialCodes,
     },
     {
       name: 'getProcedureFillerMetalTypes',
       signature: 'getProcedureFillerMetalTypes()',
       description: 'Lists the filler-metal types available for procedures with their labels and stored values.',
-      writes: false, params: [], call: () => [], fn: getProcedureFillerMetalTypes,
+      writes: false, important: true, params: [], call: () => [], fn: getProcedureFillerMetalTypes,
     },
     {
       name: 'getProcedureFillerMetalSizes',
       signature: 'getProcedureFillerMetalSizes()',
       description: 'Lists the filler-metal sizes available for procedures with their labels and stored values.',
-      writes: false, params: [], call: () => [], fn: getProcedureFillerMetalSizes,
+      writes: false, important: true, params: [], call: () => [], fn: getProcedureFillerMetalSizes,
     },
   ];
 }

@@ -4,7 +4,8 @@ import type { DownloadFile } from '../download-file';
    a name, what it does, whether it changes data, its parameters, how the typed-in inputs become the
    call's arguments, and the call itself. The tester builds the input form from the parameters, shows
    the full call, and runs fn(...call(inputs)), so the call shown is exactly the call run.
-   readArgs() turns the inputs into named arguments; callText() writes the full call. */
+   Important calls are starred and listed first. readArgs() turns the inputs into named arguments;
+   callText() writes the full call. */
 export type ParamType = 'text' | 'list' | 'select' | 'json' | 'picks' | 'conditions';
 
 /* one entry of a picks or conditions droplist; group = the droplist heading it's under, hint = the
@@ -40,11 +41,18 @@ export interface ServiceOperation {
   description: string;
   /* true when running it changes the system's data */
   writes: boolean;
+  /* the system's main calls: starred and listed first (importantFirst) */
+  important?: boolean;
   params: OperationParam[];
   /* the named inputs as the call's arguments, in order */
   call(inputs: Record<string, unknown>): unknown[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn(...args: any[]): unknown;
+}
+
+/* the starred (important) calls first, each group in the order given */
+export function importantFirst(ops: ServiceOperation[]): ServiceOperation[] {
+  return [...ops.filter(o => o.important), ...ops.filter(o => !o.important)];
 }
 
 /* blank inputs (and blank condition rows) are left out */

@@ -3,14 +3,15 @@
     <span class="label-text font-semibold">Operation</span>
     <select class="select select-sm select-bordered" style="max-width: 24rem"
             [ngModel]="selected()?.name" (ngModelChange)="selectedName.set($event)">
-      @for (op of operations(); track op.name) {
-        <option [value]="op.name">{{ op.name }} ({{ op.writes ? 'Write' : 'Read' }})</option>
+      @for (op of listed(); track op.name) {
+        <option [value]="op.name">{{ op.important ? '★ ' : '' }}{{ op.name }} ({{ op.writes ? 'Write' : 'Read' }})</option>
       }
     </select>
   </label>
 
   @if (selected(); as op) {
     <div>
+      @if (op.important) { <span class="text-warning" title="Main call" aria-label="Main call">★ </span> }
       <code class="text-sm">{{ op.signature }}</code>
       @if (op.writes) { <span class="badge badge-warning badge-sm" style="margin-left: 0.5rem">Changes data</span> }
       <p class="text-sm" style="margin-top: 0.25rem">{{ op.description }}</p>
