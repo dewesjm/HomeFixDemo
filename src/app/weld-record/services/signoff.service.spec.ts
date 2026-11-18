@@ -67,6 +67,15 @@ describe('SignoffService', () => {
     });
   }
 
+  it('a rule names one routing exactly: the regular row\'s rule does not sign the NQC row', () => {
+    const job = weldingJob({ ndtRoot: 'VT', nInd: '1' });
+    setSignoffTypes(getSignoffTypes().map(t => t.value === 'root' ? {
+      ...t, alsoSigns: [{ stepId: 'root-ndt-vt5x', type: 'vt', when: { all: [] } }],
+    } : t));
+    service.signStage(job, 'root-weld');
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'nqc-root-ndt-vt5x')!.signed).toBeFalse();
+  });
+
   it('does not also sign when the answer is no or the configured rule is removed', () => {
     const job = weldingJob({ ndtRoot: '5X' });
     service.signStage(job, 'root-weld');

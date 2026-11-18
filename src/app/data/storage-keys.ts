@@ -5,7 +5,7 @@ export const STORAGE = {
   offlineJointPrefix: 'welding:offline-joint:v1:',
   stageTemplates: 'welding:stage-templates:v7',
   signoffTypeRouting: 'welding:signoff-type-routing:v1',
-  signoffTypes: 'welding:signoff-types:v5',
+  signoffTypes: 'welding:signoff-types:v6',
   penetrants: 'welding:penetrants:v1',
   inspectionProcedures: 'welding:inspection-procedures:v1',
   defectCodes: 'welding:defect-codes:v1',

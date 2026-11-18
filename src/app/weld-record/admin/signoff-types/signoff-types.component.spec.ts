@@ -21,7 +21,7 @@ describe('Signoff Types settings', () => {
     localStorage.clear();
     const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
     let row = component.rows().find(t => t.value === 'root')!;
-    expect(row.alsoSigns!.length).toBe(2);
+    expect(row.alsoSigns!.length).toBe(4);
     component.startEdit(row);
     row.alsoSigns = [row.alsoSigns![0]];
     component.saveEdit(row);

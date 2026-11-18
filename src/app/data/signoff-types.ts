@@ -4,6 +4,7 @@
 import { signal } from '@angular/core';
 import { STORAGE } from './storage-keys';
 import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
+import { nqcStepId } from './welding-step-ids';
 
 export interface AdditionalSignoff {
   stepId: string;
@@ -11,13 +12,14 @@ export interface AdditionalSignoff {
   when: FieldCondition;
 }
 
-const ROOT_ADDITIONAL_SIGNOFFS: AdditionalSignoff[] = ['5X', 'VT'].map(method => ({
-  stepId: 'root-ndt-vt5x', type: method.toLowerCase(),
+/* one rule per routing: the regular Root NDT 5X/VT and its NQC row are named separately */
+const ROOT_ADDITIONAL_SIGNOFFS: AdditionalSignoff[] = ['root-ndt-vt5x', nqcStepId('root-ndt-vt5x')].flatMap(stepId => ['5X', 'VT'].map(method => ({
+  stepId, type: method.toLowerCase(),
   when: { all: [
     { source: 'field', key: 'performed5x', equals: 'yes' },
     { source: 'jointDetail', key: 'ndtRoot', equals: method },
   ] },
-}));
+})));
 
 export interface SignoffType {
   label: string;

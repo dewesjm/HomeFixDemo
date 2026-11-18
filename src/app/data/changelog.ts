@@ -13,6 +13,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-18',
+    changed: [
+      'Admin > Signoff Types: Root\'s Additional Signoffs now list NQC Root NDT 5X/VT as its own rules. Each rule signs only the routing it names; a rule on a regular routing no longer signs its NQC row too. Saved Signoff Types reset to the defaults.',
+    ],
     added: [
       'Weld Engineering Admin > Procedure Sections has two new field types. Grid: set its columns (number or NC, number, text, min/max range or pick one) and each procedure adds its own rows, for example a table of temperatures. Images: each procedure can add up to 6 pictures with captions, for example a butt joint sketch.',
       'Grids and images show on the procedure edit form and the procedure PDF. Images are shrunk when added. Grids are in the Manage Procedures export and Load Procedures; images are not.',
