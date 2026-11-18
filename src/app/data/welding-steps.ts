@@ -44,7 +44,7 @@ const BUILT_IN_STEPS: StageTemplate[] = [
   ...PHASE_NDT_KINDS.final.map(kind => ndtStage('final', kind)),
   { id: 'review-o63', label: 'O63 Records Review', required: true, persona: 'O63 Records', rejectToStage: 'review-o63', decisionLabel: 'Inspection Results' },
   { id: 'review-o04', label: 'O04 Records Review', required: true, persona: 'O04 Records', rejectToStage: 'review-o04', decisionLabel: 'Inspection Results' },
-  { id: 'sold', label: 'Sold', required: true, persona: 'O63 Records' },
+  { id: 'sold', label: 'Sold', required: true, persona: 'View' },
 ];
 
 /* each NQC_SPLIT_STEP_IDS step is followed by its NQC row: same step, signed by NQC Inspector, shown

@@ -1,16 +1,23 @@
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { JOBS, Job } from '../../data/jobs';
-import { closingPersona, routingPersona } from './routing-persona';
+import { routingPersona } from './routing-persona';
 import { closesJoint } from './current-routing';
 import { getAddedTemplate, updateStageTemplate } from './routing-settings-rules';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './inserted-routing/added-routings';
 import { buildStages } from './build-stages';
 
 describe('Sold', () => {
-  it('closes the joint and its persona follows the Records Review', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => localStorage.clear());
+  const soldRole = () => buildStages(JOBS[0]).find(s => s.id === 'sold')!.role;
+
+  it('closes the joint and starts on the View persona', () => {
     expect(closesJoint('sold')).toBeTrue();
-    expect(closingPersona(true)).toBe('O63 Records');
-    expect(closingPersona(false)).toBe('O04 Records');
+    expect(soldRole()).toBe('View');
+  });
+  it('takes its persona from Routing Settings', () => {
+    updateStageTemplate('sold', { persona: 'O04 Records' });
+    expect(soldRole()).toBe('O04 Records');
   });
 });
 

@@ -1,5 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
-import { closingPersona, routingPersona } from './routing-persona';
+import { routingPersona } from './routing-persona';
 import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } from '../attribute-codes-logic/exception-effects';
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from '../conditions-logic/joint-conditions';
@@ -8,7 +8,6 @@ import { StageTemplate } from '../model/stage-template';
 import { isAddedTemplateId, getTemplates } from './routing-settings-rules';
 import { initialInspectionType, typeValues } from '../signoff-forms-logic/stage-rules';
 import { seedFabricationData } from '../../data/seed-fabrication';
-import { closesJoint } from './current-routing';
 import { isFitupInspId } from '../../data/welding-step-ids';
 
 export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
@@ -23,15 +22,13 @@ export function buildStages(job: Job, fab?: Record<string, string>): WorkflowSta
   const addedByCode = (t: StageTemplate) => !!effectOf(t)?.add && isJointsTwin(t, job);
   const included = (t: StageTemplate) => !effectOf(t)?.drop
     && (routingIncluded(t) || addedByCode(t) || (mayBeAddedLater(t.id, job) && isJointsTwin(t, job)));
-  /* Sold follows whichever Records Review the joint got */
-  const hasO63Data = tradeStages.some(t => t.id === 'review-o63' && included(t));
 
   const toStage = (t: StageTemplate): WorkflowStage => {
     const required = addedByCode(t) || (routingIncluded(t) && baseRequired(t, job, [], fab));
     const { typeOptions: exceptionOptions, attributeRules } = attributeTypeSettings(t.id, job);
     const typeOptions = exceptionOptions ?? t.typeOptions;
     const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};   /* Fit-Up Insp starts released to welding */
-    const role = closesJoint(t.id) ? closingPersona(hasO63Data) : routingPersona(t, job);
+    const role = routingPersona(t, job);
     return {
       id: t.id,
       /* the joint shows the Display Name; the Routing name is for Admin > Routing Settings rules */
