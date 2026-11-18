@@ -1,6 +1,6 @@
 /* Weld Engineering - how wide a procedure field is on the edit form and the PDF. Each field is Auto
    (sized to fit), a set width in pixels, or a line of its own; set in Admin > Procedure Sections.
-   Qualification requirements and override groups always take a line of their own. The PDF packs
+   Qualification requirements, override groups, grids and images always take a line of their own. The PDF packs
    fields into lines with procedure-pdf/pdf-field-lines.ts. */
 import type { ExtraField, FieldWidth } from './procedure-sections';
 
@@ -12,7 +12,7 @@ export const PDF_PAGE_WIDTH_PX = 687;
 
 /* field types that are always a line of their own, so they offer no width */
 export function hasFixedFullWidth(f: ExtraField): boolean {
-  return f.type === 'quals' || f.type === 'override';
+  return f.type === 'quals' || f.type === 'override' || f.type === 'grid' || f.type === 'images';
 }
 
 export function widthText(f: ExtraField): string {

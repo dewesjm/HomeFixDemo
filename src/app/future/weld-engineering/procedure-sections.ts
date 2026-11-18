@@ -14,7 +14,7 @@ import { STORAGE } from '../../data/storage-keys';
 import type { QualGroup } from './qualifications-logic/qual-requirements';
 import type { OptionSourceId } from './procedure-option-sources';
 
-export type ExtraFieldType = 'text' | 'number' | 'range' | 'list' | 'multi' | 'table' | 'limit' | 'override' | 'quals';
+export type ExtraFieldType = 'text' | 'number' | 'range' | 'list' | 'multi' | 'table' | 'limit' | 'grid' | 'images' | 'override' | 'quals';
 
 /* the types a new field can be; override and quals are only the seeded locked fields' types */
 export const EXTRA_FIELD_TYPE_OPTIONS: { label: string; value: ExtraFieldType }[] = [
@@ -25,7 +25,25 @@ export const EXTRA_FIELD_TYPE_OPTIONS: { label: string; value: ExtraFieldType }[
   { label: 'Pick many from a list', value: 'multi' },
   { label: 'Pick from another admin table', value: 'table' },
   { label: 'Number or NC = no limit', value: 'limit' },
+  { label: 'Grid (rows of set columns)', value: 'grid' },
+  { label: 'Images', value: 'images' },
 ];
+
+/* the kinds of value a grid column holds; the same rules as a field of that type */
+export type GridColumnType = 'text' | 'number' | 'range' | 'list' | 'limit';
+export const GRID_COLUMN_TYPE_OPTIONS: { label: string; value: GridColumnType }[] = [
+  { label: 'Number or NC = no limit', value: 'limit' },
+  { label: 'Number', value: 'number' },
+  { label: 'Text', value: 'text' },
+  { label: 'Min / Max range', value: 'range' },
+  { label: 'Pick one from a list', value: 'list' },
+];
+
+/* one column of a grid field, set when the field is added; key is unique within the field */
+export interface GridColumn { key: string; label: string; type: GridColumnType; options: string[]; }
+
+/* the most images one images field holds (the demo keeps them in browser storage) */
+export const MAX_IMAGES_PER_FIELD = 6;
 
 const TYPE_LABELS: Record<ExtraFieldType, string> = {
   ...Object.fromEntries(EXTRA_FIELD_TYPE_OPTIONS.map(o => [o.value, o.label])) as Record<ExtraFieldType, string>,
@@ -46,6 +64,7 @@ export interface ExtraField {
   source?: OptionSourceId;  /* where a 'table' field's choices come from (or a locked list field's) */
   locked?: boolean;
   width?: FieldWidth; /* form and PDF width; unset = Auto (procedure-field-width.ts) */
+  columns?: GridColumn[]; /* a 'grid' field's columns */
 }
 
 /* a set width in pixels, or a line of its own */
@@ -67,8 +86,18 @@ export const OVERRIDE_PARTS = [
 ] as const;
 export type OverrideValue = Record<typeof OVERRIDE_PARTS[number]['key'], string>;
 
+/* one grid row: column key -> cell (text, list and limit cells are strings) */
+export type GridCell = string | number | RangeValue | null;
+export type GridRow = Record<string, GridCell>;
+export interface GridValue { rows: GridRow[]; }
+
+/* an images field holds references; the image files are kept apart (data/procedure-images.ts) and
+   fetched one at a time with the image service's getProcedureImage(id) */
+export interface ImageRef { id: string; name: string; caption: string; }
+export interface ImagesValue { images: ImageRef[]; }
+
 /* text, list, table and limit values are strings; multi is string[] */
-export type ExtraFieldValue = string | number | string[] | RangeValue | OverrideValue | QualGroup | null;
+export type ExtraFieldValue = string | number | string[] | RangeValue | OverrideValue | QualGroup | GridValue | ImagesValue | null;
 export type ExtraFields = Record<string, ExtraFieldValue>;
 
 /* ── Seeded sections ── */
@@ -165,13 +194,36 @@ export function fieldLabelProblem(label: string, section: ProcedureSection, exce
   return '';
 }
 
-export interface ExtraFieldDraft { label: string; type: ExtraFieldType; required: boolean; options: string[]; source?: OptionSourceId; }
+export interface GridColumnDraft { label: string; type: GridColumnType; options: string[]; }
+
+export interface ExtraFieldDraft {
+  label: string; type: ExtraFieldType; required: boolean; options: string[]; source?: OptionSourceId;
+  columns?: GridColumnDraft[];
+}
+
+function columnsProblem(columns: GridColumnDraft[] | undefined): string {
+  if (!columns?.length) return 'Add at least one column to a grid field.';
+  const seen: string[] = [];
+  for (const c of columns) {
+    const l = c.label.trim().toLowerCase();
+    if (!l) return 'Enter a label for every column.';
+    if (seen.includes(l)) return `There is more than one column called ${c.label.trim()}.`;
+    seen.push(l);
+    if (!GRID_COLUMN_TYPE_OPTIONS.some(o => o.value === c.type)) return `Column ${c.label.trim()} has a type a column can't be.`;
+    if (c.type === 'list' && !c.options.length) return `Enter at least one choice for column ${c.label.trim()}.`;
+  }
+  return '';
+}
 
 export function fieldDraftProblem(draft: ExtraFieldDraft, section: ProcedureSection): string {
   const labelProblem = fieldLabelProblem(draft.label, section);
   if (labelProblem) return labelProblem;
   if ((draft.type === 'list' || draft.type === 'multi') && !draft.options.length) return 'Enter at least one choice for a list field.';
   if (draft.type === 'table' && !draft.source) return 'Pick the admin table the choices come from.';
+  if (draft.type === 'grid') {
+    const problem = columnsProblem(draft.columns);
+    if (problem) return problem;
+  }
   if (!EXTRA_FIELD_TYPE_OPTIONS.some(o => o.value === draft.type)) return 'That field type can\'t be added.';
   return '';
 }
@@ -227,7 +279,23 @@ export function newField(draft: ExtraFieldDraft, list: ProcedureSection[], taken
     required: draft.required,
     options: draft.type === 'list' || draft.type === 'multi' ? draft.options : [],
     ...(draft.type === 'table' && draft.source ? { source: draft.source } : {}),
+    ...(draft.type === 'grid' ? { columns: gridColumns(draft.columns ?? []) } : {}),
   };
+}
+
+/* column keys are made from the labels, like field keys */
+function gridColumns(drafts: GridColumnDraft[]): GridColumn[] {
+  const keys: string[] = [];
+  return drafts.map(d => {
+    const key = fieldKey(d.label, keys);
+    keys.push(key);
+    return { key, label: d.label.trim(), type: d.type, options: d.type === 'list' ? d.options : [] };
+  });
+}
+
+/* a grid column as a field of its type, so a cell follows the same value rules as a field */
+export function columnAsField(c: GridColumn): ExtraField {
+  return { key: c.key, label: c.label, type: c.type, required: false, options: c.options };
 }
 
 export function withFieldAdded(list: ProcedureSection[], sectionId: string, field: ExtraField): ProcedureSection[] {

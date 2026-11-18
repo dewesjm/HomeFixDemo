@@ -12,6 +12,14 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-18',
+    added: [
+      'Weld Engineering Admin > Procedure Sections has two new field types. Grid: set its columns (number or NC, number, text, min/max range or pick one) and each procedure adds its own rows, for example a table of temperatures. Images: each procedure can add up to 6 pictures with captions, for example a butt joint sketch.',
+      'Grids and images show on the procedure edit form and the procedure PDF. Images are shrunk when added. Grids are in the Manage Procedures export and Load Procedures; images are not.',
+      'Weld Engineering Admin > Services has getProcedureImage and uploadProcedureImage. Procedure reads answer each image\'s id, name and caption, and getProcedureImage fetches the file.',
+    ],
+  },
+  {
     date: '2026-11-17',
     fixed: ['Admin > Qualifications starting rows always cover every Signoff Type with a Qualification Check. Before, they could come up with only the User and Always rows, depending on load order.'],
     changed: [

@@ -4,6 +4,7 @@
     The sections a procedure can have, in form and PDF order; each procedure ticks its own.
     Locked fields are read by Weld Record and Weld Planning, so they can be renamed and moved but not removed.
     Width sets a field's size on the procedure form and PDF; Auto fits it, and the PDF page is about {{ pageWidthPx }} px wide.
+    A grid's columns are set when it's added; each procedure fills in its own rows.
   </p>
 
   @for (s of sections(); track s.id; let i = $index) {
@@ -181,6 +182,39 @@
         <svg lucidePlus class="size-4"></svg> Add Field
       </button>
     </div>
+    @if (d.type === 'grid') {
+      <!-- a grid's columns, set when it's added; each procedure adds its own rows -->
+      <p class="text-sm" style="margin-top: 0.5rem">Columns. Each procedure adds its own rows.</p>
+      @for (c of draftColumns(d); track $index; let ci = $index) {
+        <div class="stage-inputs" style="align-items: flex-end">
+          <div class="stage-field">
+            <label class="stage-field-label">Column Label</label>
+            <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. Amps Min" [(ngModel)]="c.label" />
+          </div>
+          <div class="stage-field">
+            <label class="stage-field-label">Column Type</label>
+            <select class="select select-sm select-bordered w-full" [(ngModel)]="c.type">
+              @for (o of columnTypeOptions; track o.value) {
+                <option [ngValue]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+          @if (c.type === 'list') {
+            <div class="stage-field">
+              <label class="stage-field-label">Choices (separate with commas)</label>
+              <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. Root, Fill, Cap" [(ngModel)]="c.optionsText" />
+            </div>
+          }
+          <button type="button" class="btn btn-ghost btn-xs" style="margin-bottom: 0.4rem" (click)="removeColumn(d, ci)"
+                  [attr.aria-label]="'Remove column ' + (ci + 1)">
+            <svg lucideX class="size-4"></svg>
+          </button>
+        </div>
+      }
+      <button type="button" class="btn btn-sm btn-ghost" style="margin-top: 0.25rem" (click)="addColumn(d)">
+        <svg lucidePlus class="size-4"></svg> Add Column
+      </button>
+    }
   }
 
   <h3 class="form-section-title">Add a Section</h3>

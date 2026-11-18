@@ -20,13 +20,17 @@ export type FilterMatch = 'equals' | 'contains' | 'inRange' | 'namesQual';
 
 export function filterMatch(field: ExtraField): FilterMatch | null {
   switch (field.type) {
-    case 'override': return null;
+    case 'override':
+    case 'grid':
+    case 'images': return null;
     case 'multi': return 'contains';
     case 'range': return 'inRange';
     case 'quals': return 'namesQual';
     default: return 'equals';
   }
 }
+
+const UNFILTERABLE: Partial<Record<ExtraField['type'], string>> = { grid: 'a grid', images: 'images' };
 
 const same = (a: unknown, b: string) => String(a).trim().toLowerCase() === b.trim().toLowerCase();
 
@@ -37,7 +41,7 @@ export function filterProblem(filter: ProcedureFilter, sections: ProcedureSectio
     if (FILTER_HEADER_KEYS.includes(key as keyof ProcedureHeader)) continue;
     const field = findField(key, sections);
     if (!field) return `No header or procedure field has the key ${key}.`;
-    if (!filterMatch(field)) return `${field.label} (${key}) can't be filtered on: it's a group of parts.`;
+    if (!filterMatch(field)) return `${field.label} (${key}) can't be filtered on: it's ${UNFILTERABLE[field.type] ?? 'a group of parts'}.`;
     if (field.type === 'range' && isNaN(Number(filter[key]))) return `${field.label} (${key}) is a range: filter it with a number.`;
   }
   return '';

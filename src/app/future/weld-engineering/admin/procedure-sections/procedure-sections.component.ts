@@ -12,7 +12,8 @@ import { ToastService } from '../../../../shared/toast.service';
 import { ConfirmService } from '../../../../shared/confirm.service';
 import { procedures } from '../../../../data/procedures';
 import {
-  procedureSections, fieldTypeLabel, EXTRA_FIELD_TYPE_OPTIONS, type ExtraField, type ExtraFieldType, type ProcedureSection
+  procedureSections, fieldTypeLabel, EXTRA_FIELD_TYPE_OPTIONS, GRID_COLUMN_TYPE_OPTIONS,
+  type ExtraField, type ExtraFieldType, type GridColumnType, type ProcedureSection
 } from '../../procedure-sections';
 import { sectionRemoveBlock, fieldRemoveBlock, type UsageBlock } from '../../procedure-section-usage';
 import * as sectionService from '../../procedure-service/section-service';
@@ -20,7 +21,13 @@ import type { ServiceFailure, ServiceResult } from '../../procedure-service/serv
 import { ADMIN_TABLE_SOURCES, sourceLabel, type OptionSourceId } from '../../procedure-option-sources';
 import { hasFixedFullWidth, parseWidth, widthText, PDF_PAGE_WIDTH_PX } from '../../procedure-field-width';
 
-interface FieldDraftForm { label: string; type: ExtraFieldType; required: boolean; optionsText: string; source: OptionSourceId | ''; }
+interface ColumnDraftForm { label: string; type: GridColumnType; optionsText: string; }
+interface FieldDraftForm {
+  label: string; type: ExtraFieldType; required: boolean; optionsText: string; source: OptionSourceId | '';
+  columns: ColumnDraftForm[];
+}
+
+const splitChoices = (text: string) => text.split(',').map(o => o.trim()).filter(Boolean);
 
 @Component({
   selector: 'app-procedure-sections',
@@ -34,6 +41,7 @@ export class ProcedureSectionsComponent {
 
   sections = procedureSections;
   typeOptions = EXTRA_FIELD_TYPE_OPTIONS;
+  columnTypeOptions = GRID_COLUMN_TYPE_OPTIONS;
   tableSources = ADMIN_TABLE_SOURCES;
   typeLabel = fieldTypeLabel;
   fixedFullWidth = hasFixedFullWidth;
@@ -63,11 +71,26 @@ export class ProcedureSectionsComponent {
   }
 
   draftFor(sectionId: string): FieldDraftForm {
-    return this.drafts[sectionId] ??= { label: '', type: 'text', required: false, optionsText: '', source: '' };
+    return this.drafts[sectionId] ??= { label: '', type: 'text', required: false, optionsText: '', source: '', columns: [] };
   }
 
-  /* typed choices, or the table/list the choices come from */
+  /* a grid field's columns; a new grid starts with one blank column */
+  draftColumns(d: FieldDraftForm): ColumnDraftForm[] {
+    if (!d.columns.length) this.addColumn(d);
+    return d.columns;
+  }
+
+  addColumn(d: FieldDraftForm) {
+    d.columns.push({ label: '', type: 'limit', optionsText: '' });
+  }
+
+  removeColumn(d: FieldDraftForm, i: number) {
+    d.columns.splice(i, 1);
+  }
+
+  /* typed choices, the table/list the choices come from, or a grid's columns */
   choicesText(f: ExtraField): string {
+    if (f.type === 'grid') return 'Columns: ' + (f.columns ?? []).map(c => c.type === 'list' ? `${c.label} (${c.options.join(', ')})` : c.label).join(', ');
     if (f.source) return sourceLabel(f.source);
     return f.options.join(', ') || '-';
   }
@@ -97,8 +120,9 @@ export class ProcedureSectionsComponent {
     const form = this.draftFor(section.id);
     const draft = {
       label: form.label, type: form.type, required: form.required,
-      options: form.optionsText.split(',').map(o => o.trim()).filter(Boolean),
+      options: splitChoices(form.optionsText),
       source: form.source || undefined,
+      ...(form.type === 'grid' ? { columns: form.columns.map(c => ({ label: c.label, type: c.type, options: splitChoices(c.optionsText) })) } : {}),
     };
     if (!this.done(sectionService.addField(section.id, draft))) return;
     this.toast.add({ severity: 'success', summary: 'Field added', detail: `${section.name}: ${draft.label.trim()}` });

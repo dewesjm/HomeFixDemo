@@ -140,7 +140,7 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
         ...keyParams(example),
         {
           name: 'values', label: 'Values', type: 'json', required: true, example: '{ "phMin": "100", "gasFlowRate": "30 CFH" }',
-          help: 'Field key: new value. null clears a field. Lists are ["a", "b"], ranges { "min": 1, "max": 2 }.',
+          help: 'Field key: new value. null clears a field. Lists are ["a", "b"], ranges { "min": 1, "max": 2 }, grids a list of rows [{ "column key": value }], images [{ "id": "img-...", "caption": "..." }] (ids from uploadProcedureImage).',
         },
         revisionNoteParam,
       ],

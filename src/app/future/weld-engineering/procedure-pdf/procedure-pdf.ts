@@ -7,8 +7,8 @@
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { procedureName, type Procedure } from '../../../data/procedures';
-import { OVERRIDE_PARTS, sectionsOnProcedure, type ExtraField, type ProcedureSection } from '../procedure-sections';
-import { extraValueText, isBlank, isOverride } from '../procedure-field-values';
+import { OVERRIDE_PARTS, sectionsOnProcedure, columnAsField, type ExtraField, type ExtraFieldValue, type ImageRef, type ProcedureSection } from '../procedure-sections';
+import { extraValueText, isBlank, isBlankRow, isGrid, isImages, isOverride } from '../procedure-field-values';
 import { formatDate } from '../../../shared/date-format';
 import { packFieldLines } from './pdf-field-lines';
 
@@ -61,13 +61,65 @@ function revisionRecord(p: Procedure): Content[] {
   ];
 }
 
-/* One section: its plain fields in lines (pdf-field-lines.ts), then each qualification requirement as a list and each
-   override group as its own table (only when it has a value). A section with no fields prints its
-   heading only. */
-function section(p: Procedure, s: ProcedureSection, n: number): Content[] {
+/* an image file as a data: URL, or null when it isn't stored */
+export type ImageLookup = (id: string) => string | null;
+
+const GRID_LAYOUT = {
+  hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => '#999999', vLineColor: () => '#999999',
+};
+
+/* a grid: its label, then a table with a heading row of the column labels and a row per grid row */
+function gridTable(f: ExtraField, v: ExtraFieldValue | undefined): Content[] {
+  const columns = f.columns ?? [];
+  const rows = isGrid(v) ? v.rows.filter(r => !isBlankRow(r)) : [];
+  if (!columns.length) return [];
+  return [
+    { text: f.label, bold: true, margin: [0, 4, 0, 0] as [number, number, number, number] },
+    {
+      table: {
+        headerRows: 1,
+        widths: columns.map(() => '*'),
+        body: [
+          columns.map(c => ({ text: c.label, bold: true, fillColor: '#eeeeee' })),
+          ...(rows.length
+            ? rows.map(r => columns.map(c => extraValueText(columnAsField(c), r[c.key]) || '-'))
+            : [columns.map(() => '-')]),
+        ],
+      },
+      layout: GRID_LAYOUT,
+      margin: [0, 4, 0, 12] as [number, number, number, number],
+    },
+  ];
+}
+
+/* images two to a line, each fitted in its half of the page with its caption under it */
+function imageBlock(f: ExtraField, v: ExtraFieldValue | undefined, imageUrl: ImageLookup): Content[] {
+  const images = isImages(v) ? v.images : [];
+  if (!images.length) return [];
+  const cell = (i: ImageRef): Content => {
+    const url = imageUrl(i.id);
+    return { stack: [
+      url ? { image: url, fit: [240, 200] } : { text: `${i.name} (image not found)`, italics: true },
+      ...(i.caption ? [{ text: i.caption, fontSize: 9, italics: true, margin: [0, 2, 0, 0] as [number, number, number, number] }] : []),
+    ] };
+  };
+  const out: Content[] = [{ text: f.label, bold: true, margin: [0, 4, 0, 4] as [number, number, number, number] }];
+  for (let i = 0; i < images.length; i += 2) {
+    out.push({
+      columns: [cell(images[i]), images[i + 1] ? cell(images[i + 1]) : { text: '' }],
+      columnGap: 16, margin: [0, 0, 0, 10] as [number, number, number, number],
+    });
+  }
+  return out;
+}
+
+/* One section: its plain fields in lines (pdf-field-lines.ts), then each qualification requirement as a list, each
+   override group as its own table (only when it has a value), each grid as a table and each images
+   field's pictures. A section with no fields prints its heading only. */
+function section(p: Procedure, s: ProcedureSection, n: number, imageUrl: ImageLookup): Content[] {
   const out: Content[] = [{ text: `${n}. ${s.name}`, style: 'sectionHeader' }];
   const value = (f: ExtraField) => p.extraFields[f.key];
-  const plain = s.fields.filter(f => f.type !== 'quals' && f.type !== 'override');
+  const plain = s.fields.filter(f => !['quals', 'override', 'grid', 'images'].includes(f.type));
   const lines = packFieldLines(plain.map(f => ({ label: f.label, value: extraValueText(f, value(f)), width: f.width })));
   lines.forEach((line, i) => out.push(limitsTable(
     line.cells.map(c => [c.label, c.value]), line.widths, i === lines.length - 1 ? 12 : 2,
@@ -85,11 +137,14 @@ function section(p: Procedure, s: ProcedureSection, n: number): Content[] {
       );
       if (o.note) out.push({ text: o.note, italics: true, margin: [0, -8, 0, 12] });
     }
+    if (f.type === 'grid') out.push(...gridTable(f, o));
+    if (f.type === 'images') out.push(...imageBlock(f, o, imageUrl));
   }
   return out;
 }
 
-export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[]): TDocumentDefinitions {
+/* imageUrl: where the images come from; procedure-pdf-actions.ts passes the stored ones */
+export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[], imageUrl: ImageLookup = () => null): TDocumentDefinitions {
   const content: Content[] = [
     { text: procedureName(p), style: 'procedureId' },
     { text: p.title, style: 'title' },
@@ -98,7 +153,7 @@ export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[
 
     ...revisionRecord(p),
 
-    ...sectionsOnProcedure(p.sectionIds, sections).flatMap(({ section: s, number }) => section(p, s, number)),
+    ...sectionsOnProcedure(p.sectionIds, sections).flatMap(({ section: s, number }) => section(p, s, number, imageUrl)),
 
     { text: 'Rules', style: 'sectionHeader' },
     { ul: p.rules.length ? p.rules : ['-'], margin: [0, 4, 0, 12] },

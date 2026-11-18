@@ -32,6 +32,8 @@ export const STORAGE = {
   quickLinks: 'welding:quick-links:v1',
   procedures: 'welding:procedures:v13',
   procedureSections: 'welding:procedure-sections:v2',
+  /* one key per image: this prefix + the image id */
+  procedureImagePrefix: 'welding:procedure-image:v1:',
   makeup: 'welding:makeup:v4',
   qualConditions: 'welding:qual-conditions:v8',
   featureToggles: 'welding:feature-toggles:v1',

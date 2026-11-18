@@ -1,0 +1,58 @@
+<div class="overflow-x-auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        @for (c of columns(); track c.key) { <th>{{ c.label }}</th> }
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of value().rows; track $index; let i = $index) {
+        <tr>
+          @for (c of columns(); track c.key) {
+            <td>
+              @switch (c.type) {
+                @case ('number') {
+                  <input type="number" class="input input-sm input-bordered w-full" [attr.aria-label]="c.label + ' row ' + (i + 1)"
+                         [(ngModel)]="row[c.key]" />
+                }
+                @case ('range') {
+                  <div class="flex gap-2">
+                    <input type="number" class="input input-sm input-bordered w-full" placeholder="Min"
+                           [attr.aria-label]="c.label + ' Min row ' + (i + 1)" [(ngModel)]="range(row, c.key).min" />
+                    <input type="number" class="input input-sm input-bordered w-full" placeholder="Max"
+                           [attr.aria-label]="c.label + ' Max row ' + (i + 1)" [(ngModel)]="range(row, c.key).max" />
+                  </div>
+                }
+                @case ('list') {
+                  <select class="select select-sm select-bordered w-full" [attr.aria-label]="c.label + ' row ' + (i + 1)" [(ngModel)]="row[c.key]">
+                    <option value="">-</option>
+                    @for (o of c.options; track o) { <option [value]="o">{{ o }}</option> }
+                  </select>
+                }
+                @case ('limit') {
+                  <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit"
+                         [attr.aria-label]="c.label + ' row ' + (i + 1)" [(ngModel)]="row[c.key]" />
+                }
+                @default {
+                  <input type="text" class="input input-sm input-bordered w-full" [attr.aria-label]="c.label + ' row ' + (i + 1)"
+                         [(ngModel)]="row[c.key]" />
+                }
+              }
+            </td>
+          }
+          <td>
+            <button type="button" class="btn btn-ghost btn-xs" (click)="removeRow(i)" [attr.aria-label]="'Remove row ' + (i + 1)">
+              <svg lucideX class="size-4"></svg>
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td [attr.colspan]="columns().length + 1" class="empty">No rows yet.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+<button type="button" class="btn btn-sm" style="margin-top: 0.5rem" (click)="addRow()">
+  <svg lucidePlus class="size-4"></svg> Add Row
+</button>

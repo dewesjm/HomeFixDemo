@@ -16,6 +16,7 @@
    Writes: createProcedure(procedure), updateProcedure(key, changes, revisionNote), updateProcedureFields(key,
            values, revisionNote) (section values only), deleteProcedure(key), importProcedures(rows, revisionNote)
            (many at once, each row saved or refused on its own).
+   Images fields hold image ids; the files have their own calls in procedure-image-service.ts.
    The section and field definitions have their own service, section-service.ts.
    Workflow-specific reads for Weld Record and Weld Planning live in procedure-usage.ts.
    Reads ask for fields by key (procedure-sections.ts), never by section name or number, since sections
@@ -38,6 +39,7 @@ import { parseFieldInput } from './procedure-field-input';
 import { choiceProblem, procedureSaveProblem } from './procedure-save-checks';
 import { changesProblem, type ProcedureChanges } from './procedure-changes';
 import { procedurePdfBase64 } from '../procedure-pdf/procedure-pdf-actions';
+import { removeUnusedImages } from './procedure-image-service';
 
 import { fail, type ServiceResult } from './service-result';
 
@@ -197,6 +199,7 @@ function save(original: Procedure | undefined, next: Procedure, revisionNote: st
     const { createdAt, updatedAt, ...rest } = form;
     addProcedure(rest);
   }
+  removeUnusedImages();
   return { ok: true, data: procedureRow(form.gwp, form.wtn)! };
 }
 
@@ -254,6 +257,7 @@ export function deleteProcedure(key: ProcedureKey): ServiceResult<{ deleted: Pro
   const p = rowFor(key);
   if (!p) return noSuchProcedure(key);
   storeDelete(p.gwp, p.wtn);
+  removeUnusedImages();
   return { ok: true, data: { deleted: { gwp: p.gwp, wtn: p.wtn } } };
 }
 

@@ -2,8 +2,8 @@
    Load Procedures, Admin > Services). Each answers a short title and a message. The revision note
    check is in procedure-service.ts, since it depends on the stored procedure. */
 import { isProcedure, procedureName, type Procedure } from '../../../data/procedures';
-import { sectionsOnProcedure, type ProcedureSection } from '../procedure-sections';
-import { extraFieldProblems, fieldChoices, textValue } from '../procedure-field-values';
+import { sectionsOnProcedure, type ExtraField, type ProcedureSection } from '../procedure-sections';
+import { extraFieldProblems, fieldChoices, isGrid, textValue } from '../procedure-field-values';
 
 interface SaveProblem { summary: string; detail: string; }
 
@@ -32,7 +32,17 @@ export function procedureSaveProblem(
   return null;
 }
 
-/* A changed list, multi or table value on a section the procedure has must be one of that field's
+/* a changed grid's list cells must be one of their column's choices */
+function gridChoiceProblem(f: ExtraField, v: Procedure['extraFields'][string]): SaveProblem | null {
+  if (!isGrid(v)) return null;
+  for (const c of (f.columns ?? []).filter(c => c.type === 'list')) {
+    const wrong = v.rows.map(r => r[c.key]).filter(x => typeof x === 'string' && x.trim() && !c.options.includes(x));
+    if (wrong.length) return { summary: 'Not a choice', detail: `${f.label} (${f.key}) column ${c.label} doesn't allow ${wrong.join(', ')}.` };
+  }
+  return null;
+}
+
+/* A changed list, multi or table value (or grid list cell) on a section the procedure has must be one of that field's
    choices. Only changed values are checked, so a procedure keeps a value whose choice was later
    removed from the field until someone changes it. before: the stored values (empty for a new one). */
 export function choiceProblem(
@@ -40,6 +50,10 @@ export function choiceProblem(
 ): SaveProblem | null {
   for (const { section } of sectionsOnProcedure(form.sectionIds, sections)) {
     for (const f of section.fields) {
+      if (f.type === 'grid' && JSON.stringify(form.extraFields[f.key]) !== JSON.stringify(before[f.key])) {
+        const problem = gridChoiceProblem(f, form.extraFields[f.key]);
+        if (problem) return problem;
+      }
       if (f.type !== 'list' && f.type !== 'multi' && f.type !== 'table') continue;
       const v = form.extraFields[f.key];
       if (JSON.stringify(v) === JSON.stringify(before[f.key])) continue;

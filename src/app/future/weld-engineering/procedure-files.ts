@@ -3,7 +3,7 @@
 import { CsvColumn } from '../../shared/export-csv';
 import { Procedure } from '../../data/procedures';
 import { OVERRIDE_PARTS, type ExtraField, type ExtraFieldValue, type OverrideValue, type ProcedureSection } from './procedure-sections';
-import { extraValueText, fieldChoices, isOverride } from './procedure-field-values';
+import { extraValueText, fieldChoices, isGrid, isOverride } from './procedure-field-values';
 
 const HEADER_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'GWP', value: r => r.gwp },
@@ -23,9 +23,10 @@ const TAIL_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Revision ${rv.revision} (${rv.date}): ${rv.note}`).join('; ') },
 ];
 
-/* One spreadsheet column per section field (an override group gets one per part). The export and
-   Load Procedures use the same columns, so an export can be loaded back: id is the template
-   heading, header the export heading, and aliases older headings the import still accepts. */
+/* One spreadsheet column per section field (an override group gets one per part; images fields get
+   none, since a spreadsheet can't carry them). The export and Load Procedures use the same columns,
+   so an export can be loaded back: id is the template heading, header the export heading, and
+   aliases older headings the import still accepts. */
 export interface SectionColumn {
   id: string;
   header: string;
@@ -36,7 +37,7 @@ export interface SectionColumn {
 }
 
 export function sectionColumns(sections: ProcedureSection[]): SectionColumn[] {
-  return sections.flatMap(s => s.fields.flatMap((f): SectionColumn[] => f.type === 'override'
+  return sections.flatMap(s => s.fields.filter(f => f.type !== 'images').flatMap((f): SectionColumn[] => f.type === 'override'
     ? OVERRIDE_PARTS.map(part => ({
         id: `${f.key}.${part.key}`, header: `${s.name}: ${f.label} ${part.label}`,
         aliases: [`Override ${part.label}`], sectionId: s.id, field: f, part: part.key,
@@ -44,9 +45,11 @@ export function sectionColumns(sections: ProcedureSection[]): SectionColumn[] {
     : [{ id: f.key, header: `${s.name}: ${f.label}`, aliases: [f.label], sectionId: s.id, field: f }]));
 }
 
-/* a value as spreadsheet text: pick-many lists are '; ' separated labels */
+/* a value as spreadsheet text: pick-many lists are '; ' separated labels; a grid is its rows as JSON,
+   keyed by column key, the same list of rows updateProcedureFields takes */
 export function columnText(col: SectionColumn, value: ExtraFieldValue | undefined): string {
   if (col.part) return isOverride(value) ? value[col.part] ?? '' : '';
+  if (col.field.type === 'grid') return isGrid(value) && value.rows.length ? JSON.stringify(value.rows) : '';
   if (Array.isArray(value)) {
     const choices = fieldChoices(col.field, value);
     return value.map(v => choices.find(c => c.value === v)?.label ?? v).join('; ');

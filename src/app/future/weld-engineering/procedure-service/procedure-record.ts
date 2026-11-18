@@ -8,7 +8,7 @@ import {
   OVERRIDE_PARTS, sectionsOnProcedure, sectionOfField,
   type ExtraField, type ExtraFieldType, type ExtraFieldValue, type ProcedureSection,
 } from '../procedure-sections';
-import { extraValueText, isOverride, isQuals, isRange } from '../procedure-field-values';
+import { extraValueText, isGrid, isImages, isOverride, isQuals, isRange } from '../procedure-field-values';
 import { requirementText, type QualGroup } from '../qualifications-logic/qual-requirements';
 
 export interface ProcedureKey { gwp: string; wtn: string; }
@@ -23,8 +23,15 @@ export interface ProcedureHeader extends ProcedureKey {
   application: string;
 }
 
-/* one value, several values, a Min / Max pair, named parts, or a qualification requirement */
+/* a grid cell's value: one value, or a Min / Max pair for a range column */
+export type CellValue = string | number | null | { min: number | null; max: number | null };
+
+/* one value, several values, a Min / Max pair, named parts, a qualification requirement, rows of a
+   grid (each row column key -> cell, blank cells left out) or image references (fetch each file with
+   getProcedureImage(id)) */
 export type FieldValue =
+  | { kind: 'rows'; columns: { key: string; label: string; type: string }[]; rows: Record<string, CellValue>[] }
+  | { kind: 'images'; images: { id: string; name: string; caption: string }[] }
   | { kind: 'one'; value: string | number | null }
   | { kind: 'many'; values: string[] }
   | { kind: 'range'; min: number | null; max: number | null }
@@ -68,6 +75,12 @@ export function fieldValue(field: ExtraField, v: ExtraFieldValue | undefined): F
       kind: 'parts',
       parts: OVERRIDE_PARTS.map(p => ({ key: p.key, label: p.label, value: isOverride(v) ? v[p.key] ?? '' : '' })),
     };
+    case 'grid': return {
+      kind: 'rows',
+      columns: (field.columns ?? []).map(c => ({ key: c.key, label: c.label, type: c.type })),
+      rows: isGrid(v) ? structuredClone(v.rows) as Record<string, CellValue>[] : [],
+    };
+    case 'images': return { kind: 'images', images: isImages(v) ? v.images.map(i => ({ ...i })) : [] };
     case 'quals': {
       const requirement: QualGroup = isQuals(v) ? v : { op: 'all', items: [] };
       return { kind: 'quals', requirement, text: requirementText(requirement) };

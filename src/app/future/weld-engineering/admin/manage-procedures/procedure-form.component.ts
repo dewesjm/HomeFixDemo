@@ -14,9 +14,11 @@ import {
 import { getQualifications } from '../../../../weld-record/reference-data-service/reference-data-service';
 import type { QualGroup } from '../../qualifications-logic/qual-requirements';
 import { ProcedureQualGroupEditorComponent } from '../../qual-group-editor/qual-group-editor.component';
+import { ProcedureGridEditorComponent } from '../../grid-editor/grid-editor.component';
+import { ProcedureImagesEditorComponent } from '../../images-editor/images-editor.component';
 import {
   procedureSections, sectionsOnProcedure, OVERRIDE_PARTS,
-  type ExtraField, type OverrideValue, type RangeValue
+  type ExtraField, type GridValue, type ImagesValue, type OverrideValue, type RangeValue
 } from '../../procedure-sections';
 import { withAllFields, fieldChoices } from '../../procedure-field-values';
 import { createProcedure, updateProcedure } from '../../procedure-service/procedure-service';
@@ -38,7 +40,8 @@ const EMPTY_FORM: Procedure = {
 @Component({
   selector: 'app-procedure-form',
   standalone: true,
-  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX, ProcedureQualGroupEditorComponent],
+  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX,
+    ProcedureQualGroupEditorComponent, ProcedureGridEditorComponent, ProcedureImagesEditorComponent],
   templateUrl: './procedure-form.component.html'
 })
 export class ProcedureFormComponent implements OnInit {
@@ -107,6 +110,8 @@ export class ProcedureFormComponent implements OnInit {
   override(key: string): OverrideValue { return this.form.extraFields[key] as OverrideValue; }
   quals(key: string): QualGroup { return this.form.extraFields[key] as QualGroup; }
   picked(key: string): string[] { return this.form.extraFields[key] as string[]; }
+  grid(key: string): GridValue { return this.form.extraFields[key] as GridValue; }
+  images(key: string): ImagesValue { return this.form.extraFields[key] as ImagesValue; }
 
   /* a list, multi or table field's choices; a picked inactive admin-table row stays listed */
   choices(f: ExtraField) {

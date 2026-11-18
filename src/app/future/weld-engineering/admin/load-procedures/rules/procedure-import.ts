@@ -6,6 +6,7 @@ import { fieldChoices, isOverride } from '../../../procedure-field-values';
 import type { SectionColumn } from '../../../procedure-files';
 import { parseRequirementText, qualsIn } from '../../../qualifications-logic/qual-requirements';
 import { getQualifications } from '../../../../../weld-record/reference-data-service/reference-data-service';
+import { parseFieldInput } from '../../../procedure-service/procedure-field-input';
 
 type CellResult = { value: ExtraFieldValue } | { problem: string };
 
@@ -49,6 +50,12 @@ export function parseCell(col: SectionColumn, text: string): CellResult {
         if (!values.includes(v)) values.push(v);
       }
       return { value: values };
+    }
+    case 'grid': {
+      let rows: unknown;
+      try { rows = JSON.parse(t); } catch { return { problem: `${name} must be a list of rows, as the export writes it.` }; }
+      const r = parseFieldInput(col.field, rows);
+      return 'problem' in r ? { problem: `${name}: ${r.problem}` } : { value: r.value };
     }
     case 'quals': {
       const g = parseRequirementText(t);

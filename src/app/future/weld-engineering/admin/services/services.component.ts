@@ -1,7 +1,7 @@
 /* Weld Engineering Admin - Services: try the calls made to Weld Engineering and see each response. The
    calls are in procedure-service/: procedure-service.ts (procedures), section-service.ts (section and
    field definitions), procedure-file-service.ts (export and load template) and
-   procedure-catalog-service.ts (material and filler choices); rules/ lists them for the shared service
+   procedure-catalog-service.ts (material and filler choices), procedure-image-service.ts (images); rules/ lists them for the shared service
    tester. The main reads are starred and listed first; the writes follow. The Filter and Fields
    droplists come from getProcedureFields, as another system would get them. */
 import { Component } from '@angular/core';
@@ -11,6 +11,8 @@ import { ServiceTesterPanelComponent } from '../../../../shared/service-tester-p
 import { procedureSections } from '../../procedure-sections';
 import { procedureServiceOperations } from './rules/procedure-service-operations';
 import { sectionServiceOperations } from './rules/section-service-operations';
+import { imageServiceOperations } from './rules/image-service-operations';
+import { isImages } from '../../procedure-field-values';
 import { getProcedureFields } from '../../procedure-service/section-service';
 
 @Component({
@@ -36,8 +38,11 @@ export class ServicesComponent {
   private section = procedureSections()[0];
   private field = procedureSections().flatMap(s => s.fields).find(f => !f.locked);
   private fields = (r => (r.ok ? r.data.fields : []))(getProcedureFields());
+  /* the first image any procedure shows */
+  private imageId = procedures().flatMap(p => Object.values(p.extraFields)).find(isImages)?.images[0]?.id ?? '';
   operations = [
     ...procedureServiceOperations(this.exampleKey, this.fields),
+    ...imageServiceOperations(this.imageId),
     ...sectionServiceOperations({
       sectionId: this.section?.id ?? '', sectionName: this.section?.name ?? '',
       fieldKey: this.field?.key ?? '', fieldLabel: this.field?.label ?? '',

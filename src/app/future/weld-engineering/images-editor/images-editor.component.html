@@ -1,0 +1,33 @@
+<div class="flex flex-wrap gap-4">
+  @for (img of value().images; track img.id; let i = $index, first = $first, last = $last) {
+    <div class="procedure-image-card">
+      @if (url(img.id); as src) {
+        <img [src]="src" [alt]="img.caption || img.name" class="procedure-image" />
+      } @else {
+        <div class="procedure-image text-sm">{{ img.name }} (image not found)</div>
+      }
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="Caption"
+             [attr.aria-label]="'Caption for ' + img.name" [(ngModel)]="img.caption" />
+      <div class="row-tight">
+        <span class="text-sm grow procedure-image-name">{{ img.name }}</span>
+        <button type="button" class="btn btn-ghost btn-xs" [disabled]="first" (click)="shift(i, -1)" [attr.aria-label]="'Move ' + img.name + ' left'">
+          <svg lucideArrowLeft class="size-4"></svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-xs" [disabled]="last" (click)="shift(i, 1)" [attr.aria-label]="'Move ' + img.name + ' right'">
+          <svg lucideArrowRight class="size-4"></svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-xs text-error" (click)="remove(i)" [attr.aria-label]="'Remove ' + img.name">
+          <svg lucideX class="size-4"></svg>
+        </button>
+      </div>
+    </div>
+  } @empty {
+    <p class="text-sm">No images yet.</p>
+  }
+</div>
+@if (value().images.length < max) {
+  <label class="btn btn-sm" style="margin-top: 0.5rem" [class.btn-disabled]="uploading()">
+    <svg lucidePlus class="size-4"></svg> {{ uploading() ? 'Adding…' : 'Add Images' }}
+    <input #picker type="file" [accept]="accept" multiple hidden (change)="add(picker)" />
+  </label>
+}

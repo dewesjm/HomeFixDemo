@@ -104,6 +104,18 @@
                                      (changed)="form.extraFields[f.key] = $event" />
             </div>
           }
+          @case ('grid') {
+            <div class="stage-field" style="flex: 1 1 100%">
+              <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
+              <app-procedure-grid-editor [field]="f" [value]="grid(f.key)" />
+            </div>
+          }
+          @case ('images') {
+            <div class="stage-field" style="flex: 1 1 100%">
+              <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
+              <app-procedure-images-editor [field]="f" [value]="images(f.key)" />
+            </div>
+          }
           @case ('override') {
             <div class="stage-field" style="flex: 1 1 100%">
               <label class="stage-field-label">{{ f.label }}</label>

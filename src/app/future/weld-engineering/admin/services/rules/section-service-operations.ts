@@ -5,7 +5,7 @@ import {
   getProcedureFields, addSection, renameSection, shiftSection, removeSection, addField, renameField, shiftField, moveField, setFieldWidth, removeField,
   type NewField,
 } from '../../../procedure-service/section-service';
-import { EXTRA_FIELD_TYPE_OPTIONS, type FieldWidth } from '../../../procedure-sections';
+import { EXTRA_FIELD_TYPE_OPTIONS, GRID_COLUMN_TYPE_OPTIONS, type FieldWidth } from '../../../procedure-sections';
 
 export interface SectionExample { sectionId: string; sectionName: string; fieldKey: string; fieldLabel: string; }
 
@@ -28,7 +28,7 @@ export function sectionServiceOperations(example: SectionExample): ServiceOperat
     {
       name: 'getProcedureFields',
       signature: 'getProcedureFields()',
-      description: 'Every field key a caller can use: header fields, then each section\'s fields, with type, choices, how findProcedures filters it (filter) and whether getProcedure\'s fields option takes it (askable).',
+      description: 'Every field key a caller can use: header fields, then each section\'s fields, with type, choices, a grid\'s columns, how findProcedures filters it (filter) and whether getProcedure\'s fields option takes it (askable).',
       writes: false,
       important: true,
       params: [],
@@ -73,14 +73,14 @@ export function sectionServiceOperations(example: SectionExample): ServiceOperat
     },
     {
       name: 'addField',
-      signature: 'addField(sectionId, { label, type, required?, options?, source? })',
+      signature: 'addField(sectionId, { label, type, required?, options?, source?, columns? })',
       description: 'A new field at the end of a section. Its key is made from the label.',
       writes: true,
       params: [
         sectionIdParam(example.sectionId),
         {
           name: 'field', label: 'Field', type: 'json', required: true, example: '{ "label": "Solvent", "type": "text" }',
-          help: `type: ${EXTRA_FIELD_TYPE_OPTIONS.map(o => o.value).join(', ')}. list and multi need options; table needs source.`,
+          help: `type: ${EXTRA_FIELD_TYPE_OPTIONS.map(o => o.value).join(', ')}. list and multi need options; table needs source; grid needs columns, e.g. [{ "label": "Amps", "type": "limit" }] (column types ${GRID_COLUMN_TYPE_OPTIONS.map(o => o.value).join(', ')}; list needs options).`,
         },
       ],
       call: a => [str(a['sectionId']), (a['field'] ?? {}) as NewField],

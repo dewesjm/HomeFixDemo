@@ -4,6 +4,7 @@
 import { Procedure } from '../../../data/procedures';
 import { procedureSections } from '../procedure-sections';
 import { procedureDocDefinition } from './procedure-pdf';
+import { imageDataUrl } from '../procedure-service/procedure-image-service';
 
 let vfsReady: Promise<any> | null = null;
 
@@ -22,5 +23,5 @@ async function pdfMake() {
 /* the procedure's PDF file, base64 encoded */
 export async function procedurePdfBase64(p: Procedure): Promise<string> {
   const pm = await pdfMake();
-  return pm.createPdf(procedureDocDefinition(p, procedureSections())).getBase64();
+  return pm.createPdf(procedureDocDefinition(p, procedureSections(), imageDataUrl)).getBase64();
 }

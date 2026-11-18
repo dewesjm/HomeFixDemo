@@ -13,7 +13,7 @@ import {
   procedureSections, changeSections, findField, sectionOfField, sectionNameProblem, fieldLabelProblem, fieldDraftProblem,
   newField, withSectionAdded, withFieldAdded, withSectionRenamed, withFieldRenamed, withSectionShifted, withFieldShifted,
   withFieldMoved, withFieldWidth, withFieldRemoved, withSectionRemoved,
-  type ExtraField, type ExtraFieldDraft, type ExtraFieldType, type FieldWidth, type ProcedureSection,
+  type ExtraField, type ExtraFieldDraft, type ExtraFieldType, type FieldWidth, type GridColumn, type GridColumnType, type ProcedureSection,
 } from '../procedure-sections';
 import { sectionRemoveBlock, fieldRemoveBlock, fieldMoveBlock, type UsageBlock } from '../procedure-section-usage';
 import { ADMIN_TABLE_SOURCES, type OptionSourceId } from '../procedure-option-sources';
@@ -26,8 +26,11 @@ export interface NumberedSection extends ProcedureSection { number: number; }
 export interface SectionAnswer { section: NumberedSection; }
 export interface FieldAnswer { field: ExtraField; section: { id: string; number: number; name: string }; }
 
-/* what addField takes; required and options are optional */
-export interface NewField { label: string; type: ExtraFieldType; required?: boolean; options?: string[]; source?: OptionSourceId; }
+/* what addField takes; required and options are optional; columns only for a grid (options only for a list column) */
+export interface NewField {
+  label: string; type: ExtraFieldType; required?: boolean; options?: string[]; source?: OptionSourceId;
+  columns?: { label: string; type: GridColumnType; options?: string[] }[];
+}
 
 const text = (v: unknown) => (typeof v === 'string' ? v : '');
 
@@ -69,6 +72,8 @@ export interface FieldDefinition {
   filter: FilterMatch | null;
   askable: boolean;
   choices?: string[];
+  /* a grid's columns, the keys its rows use */
+  columns?: GridColumn[];
 }
 
 const HEADER_LABELS: Record<string, string> = {
@@ -88,6 +93,7 @@ export function getProcedureFields(): ServiceResult<{ fields: FieldDefinition[] 
     return {
       key: f.key, label: f.label, type: f.type, section: { id: s.id, number: i + 1, name: s.name },
       required: f.required, filter: filterMatch(f), askable: true, ...(choices.length ? { choices } : {}),
+      ...(f.columns ? { columns: f.columns.map(c => ({ ...c, options: [...c.options] })) } : {}),
     };
   }));
   return { ok: true, data: { fields: [...header, ...sectionFields] } };
@@ -141,9 +147,17 @@ export function addField(sectionId: string, input: NewField): ServiceResult<Fiel
   if (input?.source !== undefined && !ADMIN_TABLE_SOURCES.some(o => o.value === input.source)) {
     return fail(`Source must be one of ${ADMIN_TABLE_SOURCES.map(o => o.value).join(', ')}.`, 'Field not added');
   }
+  const columns = input?.columns;
+  if (columns !== undefined && (!Array.isArray(columns) || columns.some(c => typeof c !== 'object' || c === null
+    || (c.options !== undefined && (!Array.isArray(c.options) || c.options.some(o => typeof o !== 'string')))))) {
+    return fail('Columns must be a list of { label, type, options? }.', 'Field not added');
+  }
   const draft: ExtraFieldDraft = {
     label: text(input?.label), type: input?.type, required: input?.required === true,
     options: options.map(o => o.trim()).filter(Boolean), source: input?.source,
+    ...(columns ? { columns: columns.map(c => ({
+      label: text(c.label), type: c.type, options: (c.options ?? []).map(o => o.trim()).filter(Boolean),
+    })) } : {}),
   };
   const problem = fieldDraftProblem(draft, section);
   if (problem) return fail(problem, 'Field not added');

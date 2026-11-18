@@ -60,6 +60,14 @@ html, body {
   background: var(--app-surface);
 }
 .procedure-section-card > .form-section-title { margin-top: 0; }
+/* one picture of a procedure's images field, with its caption (images-editor) */
+.procedure-image-card { display: flex; flex-direction: column; gap: 0.25rem; width: 14rem; max-width: 100%; }
+.procedure-image {
+  width: 100%; height: 10rem; object-fit: contain;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  border: 1px solid var(--app-border); border-radius: 4px; background: var(--app-bg);
+}
+.procedure-image-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* raw JSON shown as an example of stored data (Admin > Procedure Sections) */
 .json-block {
   margin: 0;
