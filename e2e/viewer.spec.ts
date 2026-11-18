@@ -98,7 +98,7 @@ test('Fitter can sign Fit and read joint History, with separate Weld Build-Up ac
   const row = await pipeWeldingRow(page, FIT_JOINT);
   await row.getByRole('button', { name: 'Details' }).click();
   await expect(page.getByRole('heading', { name: 'Joint details' })).toBeVisible();
-  await expect(typeSelect(page).getByRole('option', { name: 'Weld Build-Up' })).toHaveAttribute('disabled', '');
+  await expect(typeSelect(page).getByRole('option', { name: 'Weld Build-Up' })).toHaveCount(0);
   await fillAndLeave(fabricationInput(page, 'Actual Thickness'), '0.5');
   const panel = signoffPanel(page);
   await panel.getByRole('combobox', { name: 'Backing Ring Type*' }).selectOption({ label: 'Standard' });
@@ -130,7 +130,8 @@ test('Welding can sign Weld Build-Up and Tack, with read-only History', async ({
   const panel = signoffPanel(page);
   const signoff = panel.getByRole('button', { name: 'Signoff', exact: true });
   await expect(signoff).toBeDisabled();
-  await expect(typeSelect(page).getByRole('option', { name: 'Fit (permission required)', exact: true })).toHaveAttribute('disabled', '');
+  await expect(typeSelect(page).getByRole('option', { name: 'Fit', exact: true })).toHaveCount(0);
+  await expect(typeSelect(page).locator('option:checked')).toHaveText('Select a Type…');
   await expect(fabricationInput(page, 'Actual Thickness')).toBeEditable();
   await typeSelect(page).selectOption({ label: 'Weld Build-Up' });
   await expect(signoff).toBeEnabled();
