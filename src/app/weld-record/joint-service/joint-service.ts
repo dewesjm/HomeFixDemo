@@ -19,7 +19,7 @@ import { Injectable, inject } from '@angular/core';
 import { JOBS, type Job } from '../../data/jobs';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { activeStageId, closesJoint, currentRoutingLabel } from '../routing-logic/current-routing';
-import type { HistoryEntry, SignoffAttribution } from '../model/history';
+import { HISTORY_SECTIONS, type HistoryEntry, type SignoffAttribution } from '../model/history';
 import { jointUrl } from '../joint-link-logic/joint-route';
 import { findJoint, jointFailure, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
@@ -42,8 +42,8 @@ export interface RoutingRow {
   current: boolean;
 }
 
-/* the keys a findJoints condition can name: every joint field (never the internal id) plus routing */
-export const JOINT_FIELDS: string[] = [...Object.keys(JOBS[0] ?? {}).filter(k => k !== 'id' && k !== '_fresh'), 'routing'];
+/* the keys a findJoints condition can name: every field any joint has (never the internal id) plus routing */
+export const JOINT_FIELDS: string[] = [...new Set(JOBS.flatMap(j => Object.keys(j)))].filter(k => k !== 'id' && k !== '_fresh').concat('routing');
 
 export interface JointFieldDefinition {
   key: string;
@@ -60,10 +60,7 @@ export interface JointFieldDefinition {
 const OTHER_FIELDS: Record<string, { label: string; group: string }> = { technician: { label: 'Technician', group: 'Job' } };
 const catalogKey = (key: string) => (key === 'routing' ? 'currentRouting' : key);
 
-export const HISTORY_SECTIONS: HistoryEntry['section'][] = [
-  'Stages', 'Sign-off', 'Correction', 'References', 'Fabrication', 'Release', 'Refit', 'Routing',
-  'Deviation', 'Foreman Override', 'Engineering Override',
-];
+export { HISTORY_SECTIONS } from '../model/history';
 
 @Injectable({ providedIn: 'root' })
 export class JointService {
@@ -149,7 +146,7 @@ export class JointService {
   getHistory(key: JointKey, options: { section?: HistoryEntry['section'] } = {}): JointResult<{ count: number; entries: HistoryEntry[] }> {
     const found = findJoint(key);
     if (!found.ok) return found;
-    if (options.section && !HISTORY_SECTIONS.includes(options.section)) {
+    if (options.section && !(HISTORY_SECTIONS as readonly string[]).includes(options.section)) {
       return jointFailure(`section must be one of ${HISTORY_SECTIONS.join(', ')}.`, 'Wrong value');
     }
     const all = this.store.workflowFor(found.data)().history;

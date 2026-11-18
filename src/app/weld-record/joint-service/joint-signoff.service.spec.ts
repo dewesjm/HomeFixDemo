@@ -3,7 +3,7 @@ import { JOBS } from '../../data/jobs';
 import { JointSignoffService } from './joint-signoff.service';
 import { ViewerService } from '../access-logic/viewer.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { setRoutingFrom } from '../routing-logic/current-routing';
+import { activeStageId, setRoutingFrom } from '../routing-logic/current-routing';
 
 describe('JointSignoffService', () => {
   let svc: JointSignoffService;
@@ -33,5 +33,25 @@ describe('JointSignoffService', () => {
     expect(svc.releaseToWelding(key).ok).toBeTrue();
     expect(svc.releaseToWelding(key)).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong routing' }));
     expect(workflow().history.slice(before).map(entry => entry.section)).toEqual(['Release']);
+  });
+
+  it('signs only the current routing, and sends Fit-Up Release to releaseToWelding', () => {
+    const key = { xrefid: withXref.xrefid };
+    const workflow = TestBed.inject(WorkflowStore).workflowFor(withXref);
+    const waitAt = (id: string) => workflow.update(wf => ({
+      ...wf,
+      stages: setRoutingFrom(wf.stages.map(s => s.id === id ? { ...s, required: true, signed: false } : s), id),
+    }));
+    const viewer = TestBed.inject(ViewerService);
+    waitAt('fit');
+    viewer.select('developer');
+    expect(svc.signRouting(key, 'tack')).toEqual(jasmine.objectContaining({ ok: false, title: 'Signoff blocked' }));
+    viewer.select('view');
+    expect(svc.signRouting(key, 'fit')).toEqual(jasmine.objectContaining({ ok: false, title: 'Access denied' }));
+
+    waitAt('fitup-release');
+    viewer.select('developer');
+    expect(svc.signRouting(key, 'fitup-release')).toEqual(jasmine.objectContaining({ ok: false, title: 'Signoff blocked' }));
+    expect(activeStageId(workflow().stages)).toBe('fitup-release');
   });
 });

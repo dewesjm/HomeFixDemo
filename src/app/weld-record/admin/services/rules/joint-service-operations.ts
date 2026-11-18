@@ -196,7 +196,7 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       writes: false,
       params: [
         ...keyParams(example),
-        { name: 'section', label: 'Section', type: 'select', options: HISTORY_SECTIONS, help: 'Default: every section.' },
+        { name: 'section', label: 'Section', type: 'select', options: [...HISTORY_SECTIONS], help: 'Default: every section.' },
       ],
       call: a => [keyOf(a), sent({ section: (str(a['section']) || undefined) as HistoryEntry['section'] | undefined })],
       fn: (k, o) => svc.getHistory(k, o),

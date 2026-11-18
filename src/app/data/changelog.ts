@@ -18,7 +18,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Removed the access notes under disabled Deprogress and Correct buttons in History and Records Review.',
       'Makeup calls in Weld Record Admin > Services now report a refusal with an error and a title, like the other calls.',
       'Admin > Services pages star their main calls and list them first. Weld Engineering Admin > Services shows its procedure and section write calls again, after the starred reads.',
-      'Refactored the Weld Record joint service calls: reads and writes are in separate files.',
+      'Refactored the Weld Record joint service calls: reads and writes are in separate files, and History sections are listed in one place.',
     ],
   },
   {

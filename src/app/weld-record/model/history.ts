@@ -12,13 +12,20 @@ export interface SignoffAttribution {
   makeupGrantId?: string;
 }
 
+/* every History section, in the order getHistory's section option lists them */
+export const HISTORY_SECTIONS = [
+  'Stages', 'Sign-off', 'Correction', 'References', 'Fabrication', 'Release', 'Refit', 'Routing',
+  'Deviation', 'Foreman Override', 'Engineering Override',
+] as const;
+export type HistorySection = typeof HISTORY_SECTIONS[number];
+
 export interface HistoryEntry {
   attribution?: SignoffAttribution;
   when: string;          /* ISO string */
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */
   whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Sign-off' | 'Correction' | 'References' | 'Fabrication' | 'Release' | 'Refit' | 'Routing' | 'Deviation' | 'Foreman Override' | 'Engineering Override';
+  section: HistorySection;
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
