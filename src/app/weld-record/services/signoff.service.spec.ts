@@ -732,7 +732,7 @@ describe('SignoffService', () => {
       expect(makeup.addMakeupGrant('E20411', today, today).ok).toBeFalse();
       expect(makeup.addMakeupGrant('E10238', today, '2026-02-31').ok).toBeFalse();
       const grant = makeup.addMakeupGrant('E10238', today, today);
-      if (!grant.ok) throw new Error(grant.message);
+      if (!grant.ok) throw new Error(grant.error);
       const id = grant.data.id;
 
       viewer.select('E10238');

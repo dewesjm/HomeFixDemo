@@ -12,9 +12,9 @@ import { visibleSignoffFields, withoutHiddenAnswers } from '../signoff-forms-log
 import { snapshotInputs } from '../signoff-forms-logic/stage-display';
 import { signProblems } from '../signoff-validation-logic/sign-validation';
 import { visibleStageFields } from '../signoff-validation-logic/stage-form';
-import { findJoint, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
+import { findJoint, jointFailure, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 
-const blocked = (error: string) => ({ ok: false as const, title: 'Signoff blocked', error });
+const blocked = (error: string) => jointFailure(error, 'Signoff blocked');
 
 @Injectable({ providedIn: 'root' })
 export class JointSignoffService {
@@ -35,7 +35,7 @@ export class JointSignoffService {
     }
     if (stage.id === 'fitup-release') return blocked('Use releaseToWelding for Fit-Up Release.');
     if (!this.viewer.canSignRouting(stage.id, stage.signoffType)) {
-      return { ok: false, title: 'Access denied', error: 'You do not have permission to sign this routing and type.' };
+      return jointFailure('You do not have permission to sign this routing and type.', 'Access denied');
     }
     const open = this.deviations.openDeviations(wf);
     if (open.length && !open.some(d => d.stageId === stage.id)) return blocked('This joint is on Engineering Hold.');

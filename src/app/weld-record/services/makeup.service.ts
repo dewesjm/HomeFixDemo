@@ -19,36 +19,36 @@ export class MakeupService {
   }
 
   getMakeupGrants() {
-    if (!this.viewer.canViewMakeup()) return { ok: false as const, message: 'Makeup access is required.' };
+    if (!this.viewer.canViewMakeup()) return this.failure('Makeup access is required.', 'Access denied');
     return { ok: true as const, data: this.grants().map(grant => ({ ...grant })) };
   }
 
   addMakeupGrant(personId: string, startDate: string, endDate: string) {
     if (!this.viewer.canManageMakeup()) return this.denied();
     if (!PEOPLE.some(person => person.id === personId && MAKEUP_TITLES.includes(person.title))) {
-      return this.failure('Choose a fitter or welder.');
+      return this.failure('Choose a fitter or welder.', 'Wrong value');
     }
     const grant: MakeupGrant = {
       id: crypto.randomUUID(), personId, foremanId: this.viewer.person().id,
       startDate, endDate, changedBy: this.viewer.personName(this.viewer.person().id),
     };
     const problem = this.validate(grant);
-    return problem ? this.failure(problem) : this.save([...makeupGrants(), grant], grant.id);
+    return problem ? this.failure(problem, 'Wrong value') : this.save([...makeupGrants(), grant], grant.id);
   }
 
   updateMakeupGrant(id: string, startDate: string, endDate: string) {
     if (!this.viewer.canManageMakeup()) return this.denied();
     const existing = this.grants().find(grant => grant.id === id);
-    if (!existing) return this.failure('Makeup status not found.');
+    if (!existing) return this.failure('Makeup status not found.', 'Not found');
     const updated = { ...existing, startDate, endDate };
     const problem = this.validate(updated, existing);
-    return problem ? this.failure(problem)
+    return problem ? this.failure(problem, 'Wrong value')
       : this.save(makeupGrants().map(grant => grant.id === id ? updated : grant), id);
   }
 
   revokeMakeupGrant(id: string) {
     if (!this.viewer.canManageMakeup()) return this.denied();
-    if (!this.grants().some(grant => grant.id === id)) return this.failure('Makeup status not found.');
+    if (!this.grants().some(grant => grant.id === id)) return this.failure('Makeup status not found.', 'Not found');
     return this.save(makeupGrants().filter(grant => grant.id !== id), id);
   }
 
@@ -68,15 +68,15 @@ export class MakeupService {
       saveMakeupGrants(grants);
       return { ok: true as const, data: { id } };
     } catch {
-      return this.failure('Could not save Makeup status.');
+      return this.failure('Could not save Makeup status.', 'Not saved');
     }
   }
 
   private denied() {
-    return this.failure('Manage Makeup permission is required for a foreman.');
+    return this.failure('Manage Makeup permission is required for a foreman.', 'Access denied');
   }
 
-  private failure(message: string) {
-    return { ok: false as const, message };
+  private failure(error: string, title: string) {
+    return { ok: false as const, error, title };
   }
 }

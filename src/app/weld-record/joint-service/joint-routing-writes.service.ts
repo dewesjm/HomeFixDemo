@@ -3,7 +3,7 @@ import { ViewerService } from '../access-logic/viewer.service';
 import { activeStageId, currentRoutingLabel } from '../routing-logic/current-routing';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { findJoint, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
+import { findJoint, jointFailure, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 
 @Injectable({ providedIn: 'root' })
 export class JointRoutingWritesService {
@@ -13,28 +13,28 @@ export class JointRoutingWritesService {
 
   deprogress(key: JointKey, reason: string): JointResult<{ routing: string }> {
     if (!this.viewer.canUseLegacyWorkflowActions()) {
-      return { ok: false, title: 'Access denied', error: 'You do not have permission to deprogress joints.' };
+      return jointFailure('You do not have permission to deprogress joints.', 'Access denied');
     }
     const found = findJoint(key);
     if (!found.ok) return found;
-    if (!reason.trim()) return { ok: false, title: 'Reason required', error: 'Enter a reason for Deprogress.' };
+    if (!reason.trim()) return jointFailure('Enter a reason for Deprogress.', 'Reason required');
     if (!this.routing.deprogress(found.data, reason.trim())) {
-      return { ok: false, title: 'No signoff to undo', error: 'This joint has no signoff that can be deprogressed.' };
+      return jointFailure('This joint has no signoff that can be deprogressed.', 'No signoff to undo');
     }
     return { ok: true, data: { routing: currentRoutingLabel(this.store.workflowFor(found.data)().stages) } };
   }
 
   setRouting(key: JointKey, routingId: string, reason: string): JointResult<{ routing: string }> {
     if (!this.viewer.canMaintainAdminTables()) {
-      return { ok: false, title: 'Access denied', error: 'You do not have permission to override routing.' };
+      return jointFailure('You do not have permission to override routing.', 'Access denied');
     }
     const found = findJoint(key);
     if (!found.ok) return found;
-    if (!reason.trim()) return { ok: false, title: 'Reason required', error: 'Enter a reason for the Routing Override.' };
+    if (!reason.trim()) return jointFailure('Enter a reason for the Routing Override.', 'Reason required');
     const workflow = this.store.workflowFor(found.data);
     const { stages } = workflow();
     if (activeStageId(stages) === routingId || !stages.some(stage => stage.id === routingId && stage.required)) {
-      return { ok: false, title: 'Invalid target', error: 'Choose a required routing other than the current routing.' };
+      return jointFailure('Choose a required routing other than the current routing.', 'Invalid target');
     }
     this.routing.setRouting(found.data, routingId, reason.trim());
     return { ok: true, data: { routing: currentRoutingLabel(workflow().stages) } };

@@ -23,7 +23,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { fabricationFieldsShown } from '../fabrication-logic/fabrication-form';
 import type { HistoryEntry, SignoffAttribution } from '../model/history';
 import { jointUrl } from '../joint-link-logic/joint-route';
-import { findJoint, jointFailure as fail, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
+import { findJoint, jointFailure, type JointKey, type JointResult } from '../joint-link-logic/joint-lookup';
 import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
 import {
   SEARCH_COLUMNS, filterProblem, matchesFilter, searchProblem, searchRow, searchRows,
@@ -76,24 +76,24 @@ export class JointService {
 
   releaseToWelding(key: JointKey): JointResult<{ routing: string }> {
     if (!this.viewer.canSignType('fitup-release') || !this.viewer.roles().includes('Foreman')) {
-      return fail('Release to Welding requires Fit-Up Release permission and the Foreman persona.', 'Access denied');
+      return jointFailure('Release to Welding requires Fit-Up Release permission and the Foreman persona.', 'Access denied');
     }
     const found = findJoint(key);
     if (!found.ok) return found;
     const job = found.data;
     const workflow = this.store.workflowFor(job);
     if (activeStageId(workflow().stages) !== 'fitup-release') {
-      return fail('The joint must be at Fit-Up Release.', 'Wrong routing');
+      return jointFailure('The joint must be at Fit-Up Release.', 'Wrong routing');
     }
     if (!this.signoff.releaseFitUp(job)) {
-      return fail('Release to Welding is no longer available in your current capacity.', 'Access denied');
+      return jointFailure('Release to Welding is no longer available in your current capacity.', 'Access denied');
     }
     return { ok: true, data: { routing: currentRoutingLabel(workflow().stages) } };
   }
 
   setFabricationData(key: JointKey, field: string, value: string): JointResult<{ fabricationData: Record<string, string> }> {
     if (!this.viewer.canEditFabrication()) {
-      return fail('Editing fabrication data requires the Edit fabrication fields permission.', 'Access denied');
+      return jointFailure('Editing fabrication data requires the Edit fabrication fields permission.', 'Access denied');
     }
     const found = findJoint(key);
     if (!found.ok) return found;
@@ -101,14 +101,14 @@ export class JointService {
     const workflow = this.store.workflowFor(job);
     const current = workflow();
     if (!fabricationEditable(current.stages)) {
-      return fail('Fabrication is locked at the current routing.', 'Wrong routing');
+      return jointFailure('Fabrication is locked at the current routing.', 'Wrong routing');
     }
     const input = fabricationFieldsShown(job, current.fabricationData).find(f => f.key === field);
     if (!input || input.notApplicable) {
-      return fail('Choose a fabrication field that applies to this joint.', 'Wrong field');
+      return jointFailure('Choose a fabrication field that applies to this joint.', 'Wrong field');
     }
     if (typeof value !== 'string' || (value && input.type === 'select' && !input.options?.some(o => o.value === value))) {
-      return fail('Enter text or a stored option value for the selected field.', 'Wrong value');
+      return jointFailure('Enter text or a stored option value for the selected field.', 'Wrong value');
     }
     if (value !== (current.fabricationData[field] ?? '')) {
       this.fabrication.setFabricationData(job, field, value);
@@ -139,7 +139,7 @@ export class JointService {
 
   findJoints(filter: JointFilter = {}, options: { openOnly?: boolean } = {}): JointResult<{ count: number; joints: JointRecord[] }> {
     const problem = filterProblem(filter, JOINT_FIELDS);
-    if (problem) return fail(problem, 'Wrong value');
+    if (problem) return jointFailure(problem, 'Wrong value');
     const joints = this.records(options?.openOnly).filter(j => matchesFilter(j, filter ?? {}));
     return { ok: true, data: { count: joints.length, joints } };
   }
@@ -147,7 +147,7 @@ export class JointService {
   searchJoints(query: JointSearch = {}): JointResult<{ total: number; page?: number; pageSize?: number; joints: JointSearchRow[] }> {
     const q = query ?? {};
     const problem = searchProblem(q);
-    if (problem) return fail(problem, 'Wrong value');
+    if (problem) return jointFailure(problem, 'Wrong value');
     const found = searchRows(this.records(q.openOnly).map(searchRow), q);
     if (!q.pageSize) return { ok: true, data: { total: found.length, joints: found } };
     const page = q.page ?? 1;
@@ -197,7 +197,7 @@ export class JointService {
     const found = findJoint(key);
     if (!found.ok) return found;
     if (options.section && !HISTORY_SECTIONS.includes(options.section)) {
-      return fail(`section must be one of ${HISTORY_SECTIONS.join(', ')}.`, 'Wrong value');
+      return jointFailure(`section must be one of ${HISTORY_SECTIONS.join(', ')}.`, 'Wrong value');
     }
     const all = this.store.workflowFor(found.data)().history;
     const entries = [...(options.section ? all.filter(e => e.section === options.section) : all)]

@@ -107,7 +107,7 @@ export class MakeupPageComponent {
 
   saveAdd() {
     const result = this.makeup.addMakeupGrant(this.newPerson()?.id ?? '', this.newStartDate(), this.newEndDate());
-    if (!result.ok) return this.warn(result.message);
+    if (!result.ok) return this.warn(result.error);
     this.adding.set(false);
     this.messages.add({ severity: 'success', summary: 'Makeup status set', life: 3000 });
   }
@@ -115,7 +115,7 @@ export class MakeupPageComponent {
   removeGrant(row: GrantRow) {
     this.confirm.confirmDelete(`makeup for ${row.person}`, () => {
       const result = this.makeup.revokeMakeupGrant(row.id);
-      if (!result.ok) return this.warn(result.message);
+      if (!result.ok) return this.warn(result.error);
       if (this.editingId() === row.id) this.editingId.set(null);
       this.messages.add({ severity: 'info', summary: 'Makeup status removed', life: 3000 });
     });
@@ -141,7 +141,7 @@ export class MakeupPageComponent {
 
   confirmEdit(row: GrantRow) {
     const result = this.makeup.updateMakeupGrant(row.id, this.editStart(), this.editEnd());
-    if (!result.ok) return this.warn(result.message);
+    if (!result.ok) return this.warn(result.error);
     this.editingId.set(null);
   }
 

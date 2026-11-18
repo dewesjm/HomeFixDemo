@@ -13,7 +13,10 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-17',
-    changed: ['Removed the access notes under disabled Deprogress and Correct buttons in History and Records Review.'],
+    changed: [
+      'Removed the access notes under disabled Deprogress and Correct buttons in History and Records Review.',
+      'Makeup calls in Weld Record Admin > Services now report a refusal with an error and a title, like the other calls.',
+    ],
   },
   {
     date: '2026-11-15',
