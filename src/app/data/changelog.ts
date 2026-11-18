@@ -13,6 +13,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-17',
+    fixed: ['Admin > Qualifications starting rows always cover every Signoff Type with a Qualification Check. Before, they could come up with only the User and Always rows, depending on load order.'],
     changed: [
       'Removed the access notes under disabled Deprogress and Correct buttons in History and Records Review.',
       'Makeup calls in Weld Record Admin > Services now report a refusal with an error and a title, like the other calls.',

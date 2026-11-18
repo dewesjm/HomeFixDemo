@@ -178,12 +178,18 @@ function applies(c: QualCondition, valueOf: (field: string) => string | undefine
   return !c.when.items.length || whenMatches(c.when, valueOf);
 }
 
-/* the saved rows, else the starting rows for every Type with a Qualification Check */
-export const qualConditions = signal<QualCondition[]>(
-  loadQualConditions() ?? defaultQualConditions(signoffTypeChoices().map(o => o.value)));
+/* the saved rows; null until the rows are first saved */
+const savedConditions = signal<QualCondition[] | null>(loadQualConditions());
+
+/* the saved rows, else the starting rows for every Type with a Qualification Check. The starting rows
+   are built when read, not when this file loads: the Types come from the routing templates, which may
+   not be registered yet at load time. */
+export function qualConditions(): QualCondition[] {
+  return savedConditions() ?? defaultQualConditions(signoffTypeChoices().map(o => o.value));
+}
 
 export function setQualConditions(conditions: QualCondition[]) {
-  qualConditions.set(conditions);
+  savedConditions.set(conditions);
   saveQualConditions(conditions);
 }
 

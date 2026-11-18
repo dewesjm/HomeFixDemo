@@ -53,7 +53,13 @@ describe('Signoff Type to Routing', () => {
     expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '3', hull: 'TEST' })?.[0].value).toBe('vt');
     expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '2' })?.[0].value).toBe('5x');
   });
-  afterEach(() => { localStorage.removeItem(STORAGE.signoffTypeRouting); localStorage.removeItem(STORAGE.signoffTypes); });
+  /* back to the starting rows through the setters, so getTemplates()' cached Types refresh too */
+  afterEach(() => {
+    localStorage.removeItem(STORAGE.signoffTypeRouting);
+    localStorage.removeItem(STORAGE.signoffTypes);
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    setSignoffTypes(getSignoffTypes());
+  });
 
   it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {
     const job = { ...JOBS[0], ndtFinal: 'VT', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' };

@@ -4,7 +4,7 @@ import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../d
 
 describe('Type exceptions grid', () => {
   beforeEach(() => localStorage.clear());
-  afterEach(() => localStorage.clear());
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
   const create = () => { const f = TestBed.createComponent(TypeExceptionsComponent); f.detectChanges(); return f; };
   it('shows both seeded routings and only makes the grip draggable', () => {
     const f = create(); const host: HTMLElement = f.nativeElement;

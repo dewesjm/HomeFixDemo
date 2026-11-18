@@ -177,7 +177,8 @@ describe('rules on Fabrication', () => {
 });
 
 describe('Qualifications', () => {
-  const saved = qualConditions();
+  let saved: ReturnType<typeof qualConditions>;
+  beforeEach(() => { saved = qualConditions(); });
   afterEach(() => setQualConditions(saved));
 
   it('offers Fabrication and matches only once it is filled in', () => {

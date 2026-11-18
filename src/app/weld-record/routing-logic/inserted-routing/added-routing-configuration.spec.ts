@@ -7,7 +7,12 @@ import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '..
 describe('ordinary inserted routing setup', () => {
   const template: StageTemplate = { id: 'extra', label: 'Extra', required: true, classification: 'added', lifecycle: 'ordinary', persona: 'Inspector', status: 'draft' };
   beforeEach(() => { localStorage.clear(); resetStepFieldConfig(); });
-  afterEach(() => { localStorage.clear(); resetStepFieldConfig(); });
+  afterEach(() => {
+    localStorage.clear();
+    resetStepFieldConfig();
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    setSignoffTypes(getSignoffTypes());
+  });
 
   it('requires an offered, known Type and its form', () => {
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Offer at least one');
