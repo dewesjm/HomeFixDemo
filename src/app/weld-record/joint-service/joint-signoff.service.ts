@@ -40,7 +40,7 @@ export class JointSignoffService {
       return blocked('Choose the current signable routing. Fit-Up Release and Engineering Hold have separate workflows.');
     }
     if (stage.id === 'fitup-release') return blocked('Use releaseToWelding for Fit-Up Release.');
-    if (!this.viewer.canSignRouting(stage.id, stage.signoffType)) {
+    if (!this.viewer.canSignRouting(stage, stage.signoffType)) {
       return jointFailure('You do not have permission to sign this routing and type.', 'Access denied');
     }
     const open = this.deviations.openDeviations(wf);

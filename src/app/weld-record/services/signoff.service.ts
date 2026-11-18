@@ -61,7 +61,7 @@ export class SignoffService {
     const workflow = this.store.workflowFor(job)();
     const stage = workflow.stages.find(s => s.id === stageId);
     const attribution = this.viewer.signoffAttribution();
-    if (!attribution || !stage || !this.viewer.canSignRouting(stage.id, stage.signoffType)) return false;
+    if (!attribution || !stage || !this.viewer.canSignRouting(stage, stage.signoffType)) return false;
     let r: ReturnType<SignoffService['applySignoff']>;
     try {
       r = this.applySignoff(workflow, job, stageId, inputs, engineeringHold, attribution);

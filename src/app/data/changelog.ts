@@ -19,6 +19,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Repair and Excavation NDT have separate targets for the NQC rows: Rejecting phase\'s NQC UT/RT and Rejecting phase\'s NQC VT/5X. Repair\'s allowable thickness rules now have one rule per Nuclear Indicator group, and NQC Excavation NDT goes to the NQC VT/5X.',
       'Signoff Type Forms conditions have a new choice, Rejected phase has NQC RT/UT. Repair\'s allowable thickness checkboxes use it for N Ind 1 and 2 joints. Saved Signoff Type Forms and Routing Settings reset to the defaults.',
       'Admin > Attribute Code Exceptions: a row that adds a routing applies only when that row\'s own Included when Nuclear Indicator matches the joint; the regular row is no longer used when neither row matches.',
+      'Who can sign a routing now follows Admin > Groups and Admin > Routing Settings only: a group needs the Type\'s Sign permission and the routing\'s Persona on that joint. Fit\'s Persona is now Fitting or Welding, so welders sign Weld Build-Up there and fitters sign Fit. Joints at Fit now also show in the Welding queue on Pipe Welding.',
     ],
     added: [
       'Weld Engineering Admin > Procedure Sections has two new field types. Grid: set its columns (number or NC, number, text, min/max range or pick one) and each procedure adds its own rows, for example a table of temperatures. Images: each procedure can add up to 6 pictures with captions, for example a butt joint sketch.',

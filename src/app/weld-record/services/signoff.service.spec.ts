@@ -15,9 +15,15 @@ import { activeStageId } from '../routing-logic/current-routing';
 import { discardUnsignedEdits } from '../routing-logic/route-changes';
 import { routingPanelSteps } from '../routing-panel/rules/routing-panel-steps';
 import { seededWorkflow } from '../../data/seeded-workflow';
-import { updateStageTemplate } from '../routing-logic/routing-settings-rules';
+import { getAddedTemplate, getTemplates, updateStageTemplate } from '../routing-logic/routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
 import { typeValues } from '../signoff-forms-logic/stage-rules';
+
+/* a routing with its starting persona (Admin > Routing Settings), as canSignRouting reads it on a joint */
+function routing(id: string) {
+  const template = getTemplates().find(t => t.id === id) ?? getAddedTemplate(id);
+  return { id, role: template.persona ?? '' };
+}
 
 /* a fresh copy of a seeded joint with these overrides yields a minimal, deterministic Welding pipeline:
    N Ind. 3 (regular rows, not the NQC ones) with a consumable insert joint design: pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
@@ -623,6 +629,19 @@ describe('SignoffService', () => {
     });
   });
 
+  it('signs a routing by Type permission and the routing persona: welders Weld Build-Up on Fit, fitters Fit', () => {
+    const viewer = TestBed.inject(ViewerService);
+    viewer.select('welder');
+    expect(viewer.canSignRouting(routing('fit'), 'weld-buildup')).toBeTrue();
+    expect(viewer.canSignRouting(routing('fit'), 'fit')).toBeFalse();
+    viewer.select('fitter');
+    expect(viewer.canSignRouting(routing('fit'), 'fit')).toBeTrue();
+    expect(viewer.canSignRouting(routing('fit'), 'weld-buildup')).toBeFalse();
+    /* the persona comes from the routing on the joint: without Welding there, welders can't sign it */
+    viewer.select('welder');
+    expect(viewer.canSignRouting({ id: 'fit', role: 'Fitting' }, 'weld-buildup')).toBeFalse();
+  });
+
   it('lists Excavation NDT separately and leaves Sold unsigned', () => {
     const viewer = TestBed.inject(ViewerService);
     const labels = permissionsIn('Signoff Types').map(permission => permission.label);
@@ -631,10 +650,10 @@ describe('SignoffService', () => {
     expect(service.signStage(weldingJob(), 'sold')).toBeFalse();
 
     viewer.select('inspector');
-    expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeTrue();
-    expect(viewer.canSignRouting('nqc-excavation-ndt-2', '5x')).toBeFalse();
+    expect(viewer.canSignRouting(routing('excavation-ndt'), 'pt')).toBeTrue();
+    expect(viewer.canSignRouting(routing('nqc-excavation-ndt-2'), '5x')).toBeFalse();
     viewer.select('foreman');
-    expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeFalse();
+    expect(viewer.canSignRouting(routing('excavation-ndt'), 'pt')).toBeFalse();
   });
 
   it('keeps group administration separate from other admin tables', () => {
@@ -674,15 +693,15 @@ describe('SignoffService', () => {
       expect(viewer.canEditFabrication()).toBeTrue();
       expect(viewer.canAccessAdmin()).toBeFalse();
       expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
-      expect(viewer.canSignRouting('repair', 'repair')).toBeFalse();
-      expect(viewer.canSignRouting('pre-fit', 'pre-fit')).toBe(person === 'nqc-inspector');
+      expect(viewer.canSignRouting(routing('repair'), 'repair')).toBeFalse();
+      expect(viewer.canSignRouting(routing('pre-fit'), 'pre-fit')).toBe(person === 'nqc-inspector');
 
       for (const [id, type] of [
         ['fitup-insp', 'fitup-insp'], ['root-ndt-vt5x', 'vt'], ['layer-ndt-mtpt', 'mt'],
         ['final-ndt-utrt', 'rt'], ['excavation-ndt-2', '5x'],
       ]) {
-        expect(viewer.canSignRouting(ownPrefix + id, type)).toBeTrue();
-        expect(viewer.canSignRouting(otherPrefix + id, type)).toBeFalse();
+        expect(viewer.canSignRouting(routing(ownPrefix + id), type)).toBeTrue();
+        expect(viewer.canSignRouting(routing(otherPrefix + id), type)).toBeFalse();
       }
     }
   });
@@ -700,9 +719,9 @@ describe('SignoffService', () => {
       expect(viewer.canEditFabrication()).toBeFalse();
       expect(viewer.canAccessAdmin()).toBeFalse();
       expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
-      expect(viewer.canSignRouting(otherReview, otherReview)).toBeFalse();
-      expect(viewer.canSignRouting('repair', 'repair')).toBeFalse();
-      expect(viewer.canSignRouting(ownReview, ownReview)).toBeTrue();
+      expect(viewer.canSignRouting(routing(otherReview), otherReview)).toBeFalse();
+      expect(viewer.canSignRouting(routing('repair'), 'repair')).toBeFalse();
+      expect(viewer.canSignRouting(routing(ownReview), ownReview)).toBeTrue();
     }
   });
 
@@ -716,8 +735,8 @@ describe('SignoffService', () => {
     expect(viewer.canViewHistoryPage()).toBeTrue();
     expect(viewer.canAccessAdmin()).toBeFalse();
     expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
-    expect(viewer.canSignRouting('repair-2', 'repair')).toBeTrue();
-    expect(viewer.canSignRouting('root-weld', 'root')).toBeFalse();
+    expect(viewer.canSignRouting(routing('repair-2'), 'repair')).toBeTrue();
+    expect(viewer.canSignRouting(routing('root-weld'), 'root')).toBeFalse();
 
     const regular = weldingJob();
     const nqc = weldingJob({ id: 'foreman-nqc', nInd: '1' });
@@ -748,8 +767,8 @@ describe('SignoffService', () => {
       expect(service.signStage(job, 'fitup-insp')).toBeFalse();
       viewer.selectActingGrant(id);
       expect(viewer.canManageMakeup()).toBeFalse();
-      expect(viewer.canSignRouting('fit', 'fit')).toBeFalse();
-      expect(viewer.canSignRouting('nqc-fitup-insp', 'fitup-insp')).toBeFalse();
+      expect(viewer.canSignRouting(routing('fit'), 'fit')).toBeFalse();
+      expect(viewer.canSignRouting(routing('nqc-fitup-insp'), 'fitup-insp')).toBeFalse();
       expect(viewer.roles()).toContain('Foreman');
       expect(service.signStage(job, 'fitup-insp')).toBeTrue();
       expect(service.releaseFitUp(job)).toBeTrue();

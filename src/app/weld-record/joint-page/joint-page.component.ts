@@ -212,7 +212,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   private canSign(stage: WorkflowStage): boolean {
-    return this.viewer.canSignRouting(stage.id, stage.signoffType);
+    return this.viewer.canSignRouting(stage, stage.signoffType);
   }
 
   /* ── Engineering Hold ── */
@@ -267,9 +267,9 @@ export class JointPageComponent implements OnDestroy {
       rejectedCount: () => this.rejectedCount(),
       resultOptions: STAGE_RESULT_OPTIONS,
       canSign: (s) => this.canSign(s),
-      canSignType: (s, type) => this.viewer.canSignRouting(s.id, type),
+      canSignType: (s, type) => this.viewer.canSignRouting(s, type),
       showRestrictedWorkflowActions: () => this.viewer.showRestrictedWorkflowActions(),
-      canChooseType: (s, type) => this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignRouting(s.id, type),
+      canChooseType: (s, type) => this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignRouting(s, type),
       canUseWorkflowActions: () => this.viewer.canUseLegacyWorkflowActions(),
       canReleaseEngineeringHold: () => this.viewer.canReleaseEngineeringHold(),
       canEnterEngineeringValues: () => this.viewer.canEnterEngineeringValues(),
@@ -302,7 +302,7 @@ export class JointPageComponent implements OnDestroy {
       toggleAffectedItem: (s, item, e) => edits.toggleAffectedItem(s, item, e),
       onConsumableInsertChange: (s, v) => edits.onConsumableInsertChange(s, v),
       setType: (s, v) => {
-        if (this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignRouting(s.id, v)) edits.setType(s, v);
+        if (this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignRouting(s, v)) edits.setType(s, v);
       },
       setStageResult: (s, r) => edits.setStageResult(s, r),
       signStage: (s) => this.signStage(s),

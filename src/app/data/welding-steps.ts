@@ -31,7 +31,7 @@ function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
 
 const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, persona: 'NQC Inspector' },
-  { id: 'fit', label: 'Fit', required: true, persona: 'Fitting' },
+  { id: 'fit', label: 'Fit', required: true, persona: 'Fitting|Welding' },
   { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, persona: 'Welding' },
   { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, persona: 'Foreman|Inspector', decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
   { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, persona: 'Foreman' },

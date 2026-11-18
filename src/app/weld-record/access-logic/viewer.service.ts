@@ -3,7 +3,8 @@ import { API_ACCESS_PERMISSION, DEVELOPER_GROUP_ID, EDIT_FABRICATION_PERMISSION,
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE, demoPersonName } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
-import { baseStepId, isExcavationNdtStageId, nqcStepId, NQC_SPLIT_STEP_IDS } from '../../data/welding-step-ids';
+import { isExcavationNdtStageId } from '../../data/welding-step-ids';
+import type { WorkflowStage } from '../model/workflow-types';
 import { STORAGE } from '../../data/storage-keys';
 import { closesJoint } from '../routing-logic/current-routing';
 import { makeupGrants, refreshMakeupGrants } from '../../data/makeup-grants';
@@ -84,23 +85,18 @@ export class ViewerService {
       this.signoffGroups().some(group => group.allowed.includes(signoffPermission(type))));
   }
 
-  canSignRouting(stageId: string, type: string): boolean {
-    if (closesJoint(stageId)) return false;
+  /* a group signs a routing as a Type when it has that Type's permission (Admin > Groups; Excavation NDT
+     has its own) and one of its personas is the routing's persona on this joint (Admin > Routing
+     Settings Persona and persona rules; "A|B" names several) */
+  canSignRouting(stage: Pick<WorkflowStage, 'id' | 'role'>, type: string): boolean {
+    if (closesJoint(stage.id)) return false;
     if (this.hasFullWorkflowAccess()) return true;
     if (!findSignoffType(type)) return false;
 
-    const excavation = isExcavationNdtStageId(stageId);
-    const inspection = excavation || NQC_SPLIT_STEP_IDS.includes(baseStepId(stageId));
-    const nqc = stageId !== baseStepId(stageId);
-    const permission = excavation ? SIGN_EXCAVATION_NDT_PERMISSION : signoffPermission(type);
-    return this.signoffGroups().some(group => {
-      if (!group.allowed.includes(permission)) return false;
-      if (group.id === INSPECTOR_GROUP_ID) return inspection && !nqc;
-      if (group.id === NQC_INSPECTOR_GROUP_ID) return stageId === 'pre-fit' || (inspection && nqc);
-      if (group.id === O63_RECORDS_GROUP_ID) return stageId === 'review-o63';
-      if (group.id === O04_RECORDS_GROUP_ID) return stageId === 'review-o04';
-      return group.id !== FOREMAN_GROUP_ID || stageId !== nqcStepId('fitup-insp');
-    });
+    const permission = isExcavationNdtStageId(stage.id) ? SIGN_EXCAVATION_NDT_PERMISSION : signoffPermission(type);
+    const personas = (stage.role ?? '').split('|').filter(Boolean);
+    return this.signoffGroups().some(group =>
+      group.allowed.includes(permission) && group.personas.some(persona => personas.includes(persona)));
   }
 
   constructor() {
