@@ -8,7 +8,7 @@ import { ViewerService } from '../../access-logic/viewer.service';
 import { JOBS } from '../../../data/jobs';
 import { ServiceTesterPanelComponent } from '../../../shared/service-tester-panel/service-tester-panel.component';
 import { JointService } from '../../joint-service/joint-service';
-import { jointRecordOperations, jointRoutingOperations, jointServiceOperations } from './rules/joint-service-operations';
+import { jointRecordOperations, jointRoutingOperations, jointServiceOperations, jointSignoffOperations } from './rules/joint-service-operations';
 import { JointRecordEditsService } from '../../joint-service/joint-record-edits.service';
 import { JointRoutingWritesService } from '../../joint-service/joint-routing-writes.service';
 import { JointSignoffService } from '../../joint-service/joint-signoff.service';
@@ -49,7 +49,8 @@ export class AdminServicesComponent {
   private fields = (r => (r.ok ? r.data.fields : []))(this.svc.getJointFields());
   private readonly apiOperations = [
     ...jointServiceOperations(this.svc, { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint }, this.fields),
-    ...jointRoutingOperations(this.routing, this.signoff, this.example),
+    ...jointSignoffOperations(this.signoff, this.example),
+    ...jointRoutingOperations(this.routing, this.example),
     ...jointRecordOperations(this.edits, this.example),
     ...offlineServiceOperations(this.offline, this.example),
     ...referenceDataServiceOperations,

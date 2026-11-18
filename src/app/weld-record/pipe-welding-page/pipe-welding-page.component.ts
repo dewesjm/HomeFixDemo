@@ -35,7 +35,7 @@ import {
 } from '../../shared/filter-engine';
 import { allStepAnswerFields } from '../catalogs/field-choices';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { JointService } from '../joint-service/joint-service';
+import { JointSignoffService } from '../joint-service/joint-signoff.service';
 import { activeStage } from '../routing-logic/current-routing';
 import { DEFAULT_DEMO_PERSON } from '../../data/demo-people';
 import { ViewerService } from '../access-logic/viewer.service';
@@ -96,7 +96,7 @@ export class PipeWeldingPageComponent {
   filtersHidden = signal(false);
   colDrag = new ColumnDrag(this.columnKeys);
 
-  constructor(private router: Router, private store: WorkflowStore, private jointService: JointService,
+  constructor(private router: Router, private store: WorkflowStore, private jointSignoff: JointSignoffService,
               private confirm: ConfirmService) {
     /* this tab's state (refresh, back from a joint), else a new visit: the default variant */
     const saved = loadTabSearchState();
@@ -394,7 +394,7 @@ export class PipeWeldingPageComponent {
     const ids = this.selectedIds();
     for (const row of this.table.paged()) {
       const { id, hull, drawing, joint } = row;
-      if (ids.has(id)) this.jointService.releaseToWelding({ hull, drawing, joint });
+      if (ids.has(id)) this.jointSignoff.releaseToWelding({ hull, drawing, joint });
     }
     this.selectedIds.set(new Set());
   }

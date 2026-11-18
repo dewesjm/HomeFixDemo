@@ -1,3 +1,8 @@
+/* Weld Record's routing calls, named by joint key (joint-lookup.ts), each with a required reason:
+     deprogress(key, reason)            = undoes the latest signoff that can be undone;
+     setRouting(key, routingId, reason) = Routing Override to a required routing.
+   History, Joint Details, Admin > Routing Override and Admin > Services all use them. Each answers
+   { ok: true, data } or { ok: false, error, title } (jointFailure), never throws. */
 import { inject, Injectable } from '@angular/core';
 import { ViewerService } from '../access-logic/viewer.service';
 import { activeStageId, currentRoutingLabel } from '../routing-logic/current-routing';

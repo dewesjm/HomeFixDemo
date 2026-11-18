@@ -25,7 +25,7 @@ import { findJointByRoute } from '../joint-link-logic/joint-route';
 import { JointRoutingWritesService } from '../joint-service/joint-routing-writes.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
-import { JointService } from '../joint-service/joint-service';
+import { JointRecordEditsService } from '../joint-service/joint-record-edits.service';
 import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -74,7 +74,7 @@ export class JointPageComponent implements OnDestroy {
   private routingWrites = inject(JointRoutingWritesService);
   private signoffService = inject(SignoffService);
   private referenceService = inject(ReferenceService);
-  private jointService = inject(JointService);
+  private recordEdits = inject(JointRecordEditsService);
   private deviationService = inject(DeviationService);
   private weldAssignment = inject(WeldAssignmentService);
   private confirm = inject(ConfirmService);
@@ -178,7 +178,7 @@ export class JointPageComponent implements OnDestroy {
   fabInputBlur(key: string, value: string) {
     if (!this.fabLocked() && this.job && this.wf && value !== (this.fab()[key] ?? '')) {
       const { hull, drawing, joint } = this.job;
-      this.jointService.setFabricationData({ hull, drawing, joint }, key, value);
+      this.recordEdits.setFabricationData({ hull, drawing, joint }, key, value);
     }
   }
   fabSelectChange(key: string, value: string | null) {

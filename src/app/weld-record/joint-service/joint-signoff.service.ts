@@ -1,10 +1,16 @@
+/* Weld Record's signing calls, named by joint key (joint-lookup.ts):
+     signRouting(key, routingId) = signs the current routing with the answers already on its form;
+                                   blocked when the form has problems or deviations to review first;
+     releaseToWelding(key)       = Fit-Up Release (Foreman persona and Fit-Up Release permission).
+   Pipe Welding releases through releaseToWelding. Each answers { ok: true, data } or
+   { ok: false, error, title } (jointFailure), never throws. */
 import { Injectable, inject } from '@angular/core';
 import { isEngineeringHoldId } from '../../data/welding-step-ids';
 import { ViewerService } from '../access-logic/viewer.service';
 import { fabricationErrors } from '../fabrication-logic/fabrication-form';
 import { detectDeviations } from '../deviation-logic/deviations';
 import { conditionRequirements, heldQuals } from '../qualifications-logic/qual-conditions';
-import { activeStage, closesJoint, currentRoutingLabel } from '../routing-logic/current-routing';
+import { activeStage, activeStageId, closesJoint, currentRoutingLabel } from '../routing-logic/current-routing';
 import { DeviationService } from '../services/deviation.service';
 import { SignoffService } from '../services/signoff.service';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -58,6 +64,23 @@ export class JointSignoffService {
     const preview = this.signoff.previewSignoff(wf, job, stage.id);
     if (preview.blocked) return blocked(preview.blocked);
     if (!this.signoff.signStage(job, stage.id, inputs)) return blocked('The signoff could not be completed.');
+    return { ok: true, data: { routing: currentRoutingLabel(workflow().stages) } };
+  }
+
+  releaseToWelding(key: JointKey): JointResult<{ routing: string }> {
+    if (!this.viewer.canSignType('fitup-release') || !this.viewer.roles().includes('Foreman')) {
+      return jointFailure('Release to Welding requires Fit-Up Release permission and the Foreman persona.', 'Access denied');
+    }
+    const found = findJoint(key);
+    if (!found.ok) return found;
+    const job = found.data;
+    const workflow = this.store.workflowFor(job);
+    if (activeStageId(workflow().stages) !== 'fitup-release') {
+      return jointFailure('The joint must be at Fit-Up Release.', 'Wrong routing');
+    }
+    if (!this.signoff.releaseFitUp(job)) {
+      return jointFailure('Release to Welding is no longer available in your current capacity.', 'Access denied');
+    }
     return { ok: true, data: { routing: currentRoutingLabel(workflow().stages) } };
   }
 }

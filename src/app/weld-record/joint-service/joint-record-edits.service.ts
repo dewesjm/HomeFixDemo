@@ -1,7 +1,17 @@
+/* Weld Record's calls that change a joint's recorded values, named by joint key (joint-lookup.ts):
+     correctRouting(key, routingId, changes, reason) = corrects editable answers on a signed routing;
+     setFabricationData(key, field, value)           = one Fabrication field, while it's editable;
+     addReference(key, name) / removeReference(key, id) = the References panel's file names.
+   The Correct dialog uses correctRouting and Joint Details uses setFabricationData; the References
+   panel still calls ReferenceService directly. Each answers { ok: true, data } or
+   { ok: false, error, title } (jointFailure), never throws. */
 import { inject, Injectable } from '@angular/core';
 import { ViewerService } from '../access-logic/viewer.service';
 import type { Reference } from '../model/workflow-types';
 import { ReferenceService } from '../services/reference.service';
+import { FabricationDataService } from '../services/fabrication-data.service';
+import { fabricationFieldsShown } from '../fabrication-logic/fabrication-form';
+import { fabricationEditable } from '../routing-logic/current-routing';
 import { SignoffService } from '../services/signoff.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { isUserEditable } from '../signoff-forms-logic/field-locks';
@@ -20,6 +30,7 @@ export class JointRecordEditsService {
   private readonly store = inject(WorkflowStore);
   private readonly signoff = inject(SignoffService);
   private readonly references = inject(ReferenceService);
+  private readonly fabrication = inject(FabricationDataService);
 
   correctRouting(key: JointKey, routingId: string, changes: unknown, reason: string): JointResult<{ routingId: string }> {
     if (!this.viewer.canUseLegacyWorkflowActions()) return denied();
@@ -77,5 +88,30 @@ export class JointRecordEditsService {
     }
     this.references.removeReference(found.data, id);
     return { ok: true, data: { references: [...workflow().references] } };
+  }
+
+  setFabricationData(key: JointKey, field: string, value: string): JointResult<{ fabricationData: Record<string, string> }> {
+    if (!this.viewer.canEditFabrication()) {
+      return jointFailure('Editing fabrication data requires the Edit fabrication fields permission.', 'Access denied');
+    }
+    const found = findJoint(key);
+    if (!found.ok) return found;
+    const job = found.data;
+    const workflow = this.store.workflowFor(job);
+    const current = workflow();
+    if (!fabricationEditable(current.stages)) {
+      return jointFailure('Fabrication is locked at the current routing.', 'Wrong routing');
+    }
+    const input = fabricationFieldsShown(job, current.fabricationData).find(f => f.key === field);
+    if (!input || input.notApplicable) {
+      return jointFailure('Choose a fabrication field that applies to this joint.', 'Wrong field');
+    }
+    if (typeof value !== 'string' || (value && input.type === 'select' && !input.options?.some(o => o.value === value))) {
+      return jointFailure('Enter text or a stored option value for the selected field.', 'Wrong value');
+    }
+    if (value !== (current.fabricationData[field] ?? '')) {
+      this.fabrication.setFabricationData(job, field, value);
+    }
+    return { ok: true, data: { fabricationData: { ...workflow().fabricationData } } };
   }
 }

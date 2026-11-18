@@ -45,6 +45,19 @@ export function jointRecordOperations(svc: JointRecordEditsService, example: Joi
       fn: (key, routingId, changes, reason) => svc.correctRouting(key, routingId, changes, reason),
     },
     {
+      name: 'setFabricationData',
+      signature: 'setFabricationData(key, field, value)',
+      description: 'Updates one editable Fabrication field and returns the current Fabrication values, including any dependent fields cleared by the change.',
+      writes: true,
+      params: [
+        ...keyParams(example),
+        { name: 'field', label: 'Field', type: 'select', required: true, options: FABRICATION_FIELDS.map(f => f.key), example: 'weldMemo' },
+        { name: 'value', label: 'Value', type: 'text', help: 'Enter the stored value for a dropdown field. Leave blank to clear the field.' },
+      ],
+      call: a => [keyOf(a), str(a['field']), str(a['value'])],
+      fn: (k, f, v) => svc.setFabricationData(k, f, v),
+    },
+    {
       name: 'addReference',
       signature: 'addReference(key, name)',
       description: 'Adds a reference file name to the demo joint and returns its current references.',
@@ -65,7 +78,7 @@ export function jointRecordOperations(svc: JointRecordEditsService, example: Joi
   ];
 }
 
-export function jointRoutingOperations(svc: JointRoutingWritesService, signoff: JointSignoffService, example: JointKey): ServiceOperation[] {
+export function jointSignoffOperations(svc: JointSignoffService, example: JointKey): ServiceOperation[] {
   return [
     {
       name: 'signRouting',
@@ -74,8 +87,22 @@ export function jointRoutingOperations(svc: JointRoutingWritesService, signoff: 
       writes: true,
       params: [...keyParams(example), routingParam],
       call: a => [keyOf(a), str(a['routingId'])],
-      fn: (key, routingId) => signoff.signRouting(key, routingId),
+      fn: (key, routingId) => svc.signRouting(key, routingId),
     },
+    {
+      name: 'releaseToWelding',
+      signature: 'releaseToWelding(key)',
+      description: 'Releases a joint at Fit-Up Release and returns its next routing. Requires the Foreman persona and Fit-Up Release permission.',
+      writes: true,
+      params: keyParams(example),
+      call: a => [keyOf(a)],
+      fn: k => svc.releaseToWelding(k),
+    },
+  ];
+}
+
+export function jointRoutingOperations(svc: JointRoutingWritesService, example: JointKey): ServiceOperation[] {
+  return [
     {
       name: 'deprogress',
       signature: 'deprogress(key, reason)',
@@ -173,28 +200,6 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       ],
       call: a => [keyOf(a), sent({ section: (str(a['section']) || undefined) as HistoryEntry['section'] | undefined })],
       fn: (k, o) => svc.getHistory(k, o),
-    },
-    {
-      name: 'releaseToWelding',
-      signature: 'releaseToWelding(key)',
-      description: 'Releases a joint at Fit-Up Release and returns its next routing. Requires the Foreman persona and Fit-Up Release permission.',
-      writes: true,
-      params: keyParams(example),
-      call: a => [keyOf(a)],
-      fn: k => svc.releaseToWelding(k),
-    },
-    {
-      name: 'setFabricationData',
-      signature: 'setFabricationData(key, field, value)',
-      description: 'Updates one editable Fabrication field and returns the current Fabrication values, including any dependent fields cleared by the change.',
-      writes: true,
-      params: [
-        ...keyParams(example),
-        { name: 'field', label: 'Field', type: 'select', required: true, options: FABRICATION_FIELDS.map(f => f.key), example: 'weldMemo' },
-        { name: 'value', label: 'Value', type: 'text', help: 'Enter the stored value for a dropdown field. Leave blank to clear the field.' },
-      ],
-      call: a => [keyOf(a), str(a['field']), str(a['value'])],
-      fn: (k, f, v) => svc.setFabricationData(k, f, v),
     },
   ];
 }
