@@ -11,6 +11,8 @@ export default defineConfig({
   workers: 1,
   forbidOnly: !!process.env['CI'],
   retries: 0,
+  /* the longest joint flows take about 20s here and over 30s on the CI runner */
+  timeout: 60_000,
   reporter: process.env['CI'] ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${PORT}`,
