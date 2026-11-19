@@ -42,15 +42,16 @@ describe('MakeupService', () => {
     expect(svc.updateMakeupGrant('no-such-grant', today, today)).toEqual(refused('Not found'));
   });
 
-  it('refuses people who are not fitters or welders, bad dates and more days than remain', () => {
+  it('refuses people who are not fitters or welders, bad dates and end dates more than 60 days out', () => {
     viewer.select('foreman');
     expect(svc.addMakeupGrant('foreman', today, today)).toEqual(refused('Wrong value'));
     expect(svc.addMakeupGrant('E10238', today, inDays(-1))).toEqual(refused('Wrong value'));
     expect(svc.addMakeupGrant('E10238', inDays(-1), today)).toEqual(refused('Wrong value'));
     expect(svc.addMakeupGrant('E10238', today, '2026-02-31')).toEqual(refused('Wrong value'));
-    const tooLong = svc.addMakeupGrant('E10238', today, inDays(400));
-    expect(tooLong).toEqual(refused('Wrong value'));
-    expect(!tooLong.ok && tooLong.error).toContain('makeup days remain');
+    expect(svc.addMakeupGrant('E10238', today, inDays(60)).ok).toBeTrue();
+    const tooFar = svc.addMakeupGrant('E10238', today, inDays(61));
+    expect(tooFar).toEqual(refused('Wrong value'));
+    expect(!tooFar.ok && tooFar.error).toBe("End date can't be more than 60 days out.");
   });
 
   it('needs Manage Makeup to change grants and Makeup access to list them', () => {

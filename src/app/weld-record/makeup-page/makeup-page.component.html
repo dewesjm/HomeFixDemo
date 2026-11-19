@@ -23,8 +23,6 @@
         <th appSortHeader [table]="table" field="status" label="Status"></th>
         <th appSortHeader [table]="table" field="startDate" label="Start"></th>
         <th appSortHeader [table]="table" field="endDate" label="End"></th>
-        <th appSortHeader [table]="table" field="used" label="Days used"></th>
-        <th appSortHeader [table]="table" field="remaining" label="Days remaining"></th>
         <th appSortHeader [table]="table" field="changedBy" label="Changed by"></th>
         <th class="min-w-11"></th>
       </tr>
@@ -40,18 +38,12 @@
           </td>
           <td></td>
           <td>
-            <input type="date" class="input input-bordered input-xs" [attr.min]="today"
+            <input type="date" class="input input-bordered input-xs" [attr.min]="today" [attr.max]="latest"
                    [ngModel]="newStartDate()" (ngModelChange)="newStartDate.set($event)" />
           </td>
           <td>
-            <input type="date" class="input input-bordered input-xs" [attr.min]="newStartDate()"
+            <input type="date" class="input input-bordered input-xs" [attr.min]="newStartDate()" [attr.max]="latest"
                    [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
-          </td>
-          <td>{{ newPersonRemaining() !== null ? 0 : '' }}</td>
-          <td [class.text-error]="newPersonRemaining() !== null && newPersonRemaining()! <= 0">
-            @if (newPersonRemaining() !== null) {
-              {{ newPersonRemaining() }}
-            }
           </td>
           <td></td>
           <td>
@@ -72,7 +64,7 @@
           <td>{{ row.status }}</td>
           <td>
             @if (viewer.canManageMakeup() && editingId() === row.id) {
-              <input type="date" class="input input-bordered input-xs" [attr.min]="today"
+              <input type="date" class="input input-bordered input-xs" [attr.min]="today" [attr.max]="latest"
                      [ngModel]="editStart()" (ngModelChange)="editStart.set($event)" />
             } @else {
               {{ row.startDate | appDate }}
@@ -80,14 +72,12 @@
           </td>
           <td>
             @if (viewer.canManageMakeup() && editingId() === row.id) {
-              <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()"
+              <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()" [attr.max]="latest"
                      [ngModel]="editEnd()" (ngModelChange)="editEnd.set($event)" />
             } @else {
               {{ row.endDate | appDate }}
             }
           </td>
-          <td>{{ row.used }}</td>
-          <td [class.text-error]="row.remaining <= 0">{{ row.remaining }}</td>
           <td>{{ row.changedBy || '-' }}</td>
           <td>
             <div class="row-tight">
@@ -111,7 +101,7 @@
         </tr>
       } @empty {
         @if (!viewer.canManageMakeup() || !adding()) {
-          <tr><td colspan="8" class="empty">{{ grants().length ? 'No makeup status records to show.' : 'No makeup status has been set.' }}</td></tr>
+          <tr><td colspan="6" class="empty">{{ grants().length ? 'No makeup status records to show.' : 'No makeup status has been set.' }}</td></tr>
         }
       }
     </tbody>

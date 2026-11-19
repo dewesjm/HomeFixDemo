@@ -2,7 +2,7 @@ import { Injectable, computed, inject } from '@angular/core';
 import { makeupGrants, saveMakeupGrants, type MakeupGrant } from '../../data/makeup-grants';
 import { PEOPLE } from '../../data/people';
 import { ViewerService } from '../access-logic/viewer.service';
-import { daySpan, daysRemaining, MAKEUP_TITLES, makeupDate, validMakeupDate } from '../makeup-logic/makeup-rules';
+import { MAKEUP_MAX_DAYS_OUT, MAKEUP_TITLES, makeupDate, makeupLatestDate, validMakeupDate } from '../makeup-logic/makeup-rules';
 
 @Injectable({ providedIn: 'root' })
 export class MakeupService {
@@ -13,10 +13,6 @@ export class MakeupService {
     if (this.viewer.canManageMakeup()) return makeupGrants().filter(grant => grant.foremanId === viewerId);
     return makeupGrants().filter(grant => grant.personId === viewerId);
   });
-
-  remaining(personId: string, startDate: string, excludeGrantId?: string): number {
-    return daysRemaining(personId, Number(startDate.slice(0, 4)), makeupGrants(), excludeGrantId);
-  }
 
   getMakeupGrants() {
     if (!this.viewer.canViewMakeup()) return this.failure('Makeup access is required.', 'Access denied');
@@ -53,13 +49,14 @@ export class MakeupService {
   }
 
   private validate(grant: MakeupGrant, existing?: MakeupGrant): string | undefined {
-    const { personId, startDate, endDate } = grant;
+    const { startDate, endDate } = grant;
     if (!validMakeupDate(startDate) || !validMakeupDate(endDate) || endDate < startDate) {
       return 'Enter a valid date range with the end on or after the start.';
     }
     if (startDate !== existing?.startDate && startDate < makeupDate()) return "Start date can't be in the past.";
-    const remaining = this.remaining(personId, startDate, existing?.id);
-    if (daySpan(startDate, endDate) > remaining) return 'Only ' + remaining + ' makeup days remain for this year.';
+    if (endDate !== existing?.endDate && endDate > makeupLatestDate()) {
+      return "End date can't be more than " + MAKEUP_MAX_DAYS_OUT + ' days out.';
+    }
     return undefined;
   }
 

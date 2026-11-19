@@ -14,7 +14,7 @@ import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import { ViewerService } from '../access-logic/viewer.service';
 import { MakeupService } from '../services/makeup.service';
-import { daySpan, grantStatus, MAKEUP_TITLES, makeupDate, type GrantStatus } from '../makeup-logic/makeup-rules';
+import { grantStatus, MAKEUP_TITLES, makeupDate, makeupLatestDate, type GrantStatus } from '../makeup-logic/makeup-rules';
 
 interface GrantRow {
   id: string;
@@ -22,8 +22,6 @@ interface GrantRow {
   status: GrantStatus;
   startDate: string;
   endDate: string;
-  used: number;
-  remaining: number;
   changedBy: string;
 }
 
@@ -45,6 +43,7 @@ export class MakeupPageComponent {
   readonly grants = this.makeup.grants;
   readonly eligibleTitles = MAKEUP_TITLES;
   today = makeupDate();
+  latest = makeupLatestDate();
   showInactive = signal(false);
 
   personById = new Map<string, Person>(PEOPLE.map(p => [p.id, p]));
@@ -64,9 +63,6 @@ export class MakeupPageComponent {
         status: grantStatus(g, this.today),
         startDate: g.startDate,
         endDate: g.endDate,
-        used: daySpan(g.startDate, g.endDate),
-        /* the person's whole balance for the grant's year, this grant's own days included */
-        remaining: this.makeup.remaining(g.personId, g.startDate),
         changedBy: g.changedBy,
       }))
       .filter(r => this.showInactive() || r.status !== 'Inactive')
@@ -85,13 +81,6 @@ export class MakeupPageComponent {
   newPerson = signal<Person | null>(null);
   newStartDate = signal(this.today);
   newEndDate = signal('');
-
-  /* remaining days for whoever's picked in the add row, before this grant counts against it */
-  newPersonRemaining = computed(() => {
-    const p = this.newPerson();
-    if (!p) return null;
-    return this.makeup.remaining(p.id, this.newStartDate());
-  });
 
   addRow() {
     this.editingId.set(null);
@@ -155,8 +144,6 @@ export class MakeupPageComponent {
       { header: 'Status', value: (r: GrantRow) => r.status },
       { header: 'Start', value: (r: GrantRow) => formatDate(r.startDate) },
       { header: 'End', value: (r: GrantRow) => formatDate(r.endDate) },
-      { header: 'Days used', value: (r: GrantRow) => String(r.used) },
-      { header: 'Days remaining', value: (r: GrantRow) => String(r.remaining) },
       { header: 'Changed by', value: (r: GrantRow) => r.changedBy },
     ], this.table.sorted());
   }

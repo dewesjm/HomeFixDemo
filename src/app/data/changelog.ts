@@ -17,6 +17,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Groups: a Change History table under the groups lists every saved change: who made it, when, the group, and each permission or persona granted or removed, renames, description edits, and added or deleted groups (with what a deleted group had). Deleting a Signoff Type logs the permission it removed from each group. Some made-up past entries show how it reads.',
     ],
     changed: [
+      "Makeup: the Days used and Days remaining columns are gone, and there is no yearly day allowance. Instead a makeup end date can't be set more than 60 days from today.",
       'Signing Root no longer also signs Root NDT VT or 5X for someone without permission to sign that inspection. Root is blocked instead, with a message naming the inspection; it signs once the signer has the permission for that Type and persona on Admin > Groups.',
     ],
   },
