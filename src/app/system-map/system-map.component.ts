@@ -1,33 +1,11 @@
 /* Quick Links > System Map: how the app's systems and the outside systems feed each other, as a diagram
-   plus a short read-me per system. Text only; nothing here reads live data. */
+   plus a short read-me per system, then the intended service boundaries (service-boundaries.ts).
+   Text only; nothing here reads live data. */
 import { Component } from '@angular/core';
-
-interface MapBox {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  title: string;
-  lines: string[];
-  /* outside systems get a dashed border */
-  outside?: boolean;
-}
-
-interface MapArrow {
-  d: string;
-  label?: { x: number; y: number; text: string; anchor?: 'start' | 'end' | 'middle' };
-  /* planned link, not connected in the demo */
-  planned?: boolean;
-}
-
-/* one of the four systems, drawn as a shaded box around its parts */
-interface MapGroup {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  title: string;
-}
+import { MapArrow, MapBox, MapDiagramComponent, MapGroup, MapLegend } from './map-diagram.component';
+import {
+  BOUNDARY_ARROWS, BOUNDARY_BOXES, BOUNDARY_GROUPS, BOUNDARY_HEIGHT, BOUNDARY_LEGEND, BOUNDARY_RULES,
+} from './service-boundaries';
 
 interface SystemNote {
   title: string;
@@ -68,6 +46,8 @@ const ARROWS: MapArrow[] = [
   { d: 'M630 655 V608' },
   { d: 'M1010 120 H1055 V470 H1038', planned: true },
 ];
+
+const LEGEND: MapLegend = { flow: 'Data flow', outside: 'Outside system', planned: 'Not connected yet' };
 
 const NOTES: SystemNote[] = [
   {
@@ -115,68 +95,18 @@ const NOTES: SystemNote[] = [
 @Component({
   selector: 'app-system-map',
   standalone: true,
+  imports: [MapDiagramComponent],
   styles: [`
-    /* scrolls sideways on a phone instead of widening the page */
-    .map-wrap { overflow-x: auto; contain: inline-size; }
-    svg { display: block; width: 100%; min-width: 760px; max-width: 1100px; height: auto; }
-    .box { fill: var(--app-surface); stroke: var(--app-text); stroke-width: 1.5; }
-    .box.outside { stroke-dasharray: 7 5; }
-    .group { fill: var(--app-muted); stroke: var(--app-border); }
-    .box-title { font-weight: 700; font-size: 19px; fill: var(--app-text); }
-    .box-line, .label, .group-title, .legend { font-size: 17px; fill: var(--app-text); }
-    .group-title { font-weight: 700; font-size: 21px; }
-    .label { paint-order: stroke; stroke: var(--app-surface); stroke-width: 6px; stroke-linejoin: round; }
-    .arrow { fill: none; stroke: var(--color-primary); stroke-width: 2.5; }
-    .arrow.planned { stroke: var(--app-text); stroke-dasharray: 7 5; }
     .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
-    .notes ul { margin: 0.5rem 0 0; padding-left: 1.25rem; list-style: disc; display: flex; flex-direction: column; gap: 0.35rem; }
+    ul { margin: 0.5rem 0 0; padding-left: 1.25rem; list-style: disc; display: flex; flex-direction: column; gap: 0.35rem; }
   `],
   template: `
     <div class="table-page-wrap">
       <h2 class="section-title">System Map</h2>
 
       <section class="panel max-w-6xl">
-        <div class="map-wrap">
-          <svg viewBox="0 0 1080 830" role="img" aria-label="How the systems feed each other">
-            <defs>
-              <marker id="sm-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M0 0 L10 5 L0 10 z" fill="var(--color-primary)" />
-              </marker>
-              <marker id="sm-arrow-planned" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M0 0 L10 5 L0 10 z" fill="var(--app-text)" />
-              </marker>
-            </defs>
-
-            @for (g of groups; track g.title) {
-              <rect class="group" [attr.x]="g.x" [attr.y]="g.y" [attr.width]="g.w" [attr.height]="g.h" rx="10" />
-              <text class="group-title" [attr.x]="g.x + 20" [attr.y]="g.y + 32">{{ g.title }}</text>
-            }
-
-            @for (a of arrows; track a.d) {
-              <path class="arrow" [class.planned]="a.planned" [attr.d]="a.d"
-                    [attr.marker-end]="a.planned ? 'url(#sm-arrow-planned)' : 'url(#sm-arrow)'" />
-            }
-            @for (b of boxes; track b.title) {
-              <rect class="box" [class.outside]="b.outside" [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="8" />
-              <text class="box-title" [attr.x]="b.x + 16" [attr.y]="b.y + 32">{{ b.title }}</text>
-              @for (line of b.lines; track $index) {
-                <text class="box-line" [attr.x]="b.x + 16" [attr.y]="b.y + 58 + $index * 22">{{ line }}</text>
-              }
-            }
-            @for (a of arrows; track a.d) {
-              @if (a.label; as l) {
-                <text class="label" [attr.x]="l.x" [attr.y]="l.y" [attr.text-anchor]="l.anchor ?? 'start'">{{ l.text }}</text>
-              }
-            }
-
-            <line class="arrow" x1="20" y1="815" x2="60" y2="815" />
-            <text class="legend" x="70" y="821">Data flow</text>
-            <rect class="box outside" x="180" y="803" width="40" height="22" rx="4" />
-            <text class="legend" x="230" y="821">Outside system</text>
-            <line class="arrow planned" x1="380" y1="815" x2="420" y2="815" />
-            <text class="legend" x="430" y="821">Not connected yet</text>
-          </svg>
-        </div>
+        <app-map-diagram idPrefix="sm" label="How the systems feed each other" [height]="830"
+                         [groups]="groups" [boxes]="boxes" [arrows]="arrows" [legend]="legend" />
       </section>
 
       <div class="notes mt-4 max-w-6xl">
@@ -191,6 +121,19 @@ const NOTES: SystemNote[] = [
         }
       </div>
 
+      <h3 class="section-title mt-8">Service Boundaries</h3>
+      <p class="mt-2">How the systems are meant to split in the real system. The demo runs all of them in the browser.</p>
+      <section class="panel max-w-6xl mt-4">
+        <app-map-diagram idPrefix="sb" label="Intended service boundaries" [height]="boundaryHeight"
+                         [groups]="boundaryGroups" [boxes]="boundaryBoxes" [arrows]="boundaryArrows" [legend]="boundaryLegend" />
+      </section>
+      <section class="panel max-w-6xl mt-4">
+        <h3 class="panel-title">Boundary rules <span class="badge badge-ghost">Intended</span></h3>
+        <ul>
+          @for (rule of boundaryRules; track $index) { <li>{{ rule }}</li> }
+        </ul>
+      </section>
+
       <p class="mt-4">Everything runs in the browser. Saved changes stay in this browser only.</p>
     </div>
   `,
@@ -199,5 +142,12 @@ export class SystemMapComponent {
   readonly groups = GROUPS;
   readonly boxes = BOXES;
   readonly arrows = ARROWS;
+  readonly legend = LEGEND;
   readonly notes = NOTES;
+  readonly boundaryHeight = BOUNDARY_HEIGHT;
+  readonly boundaryGroups = BOUNDARY_GROUPS;
+  readonly boundaryBoxes = BOUNDARY_BOXES;
+  readonly boundaryArrows = BOUNDARY_ARROWS;
+  readonly boundaryLegend = BOUNDARY_LEGEND;
+  readonly boundaryRules = BOUNDARY_RULES;
 }

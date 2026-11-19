@@ -14,6 +14,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-19',
     added: [
+      'Quick Links > System Map: a second diagram, Service Boundaries, shows how Weld Planning, Weld Engineering, Weld Dispatch and Weld Record are meant to split as separate services in the real system and what passes between them, with a list of the boundary rules.',
       'Admin > Groups: a Change History table under the groups lists every saved change: who made it, when, the group, and each permission or persona granted or removed, renames, description edits, and added or deleted groups (with what a deleted group had). Deleting a Signoff Type logs the permission it removed from each group. Some made-up past entries show how it reads.',
     ],
     changed: [
