@@ -8,10 +8,11 @@ export const BOUNDARY_GROUPS: MapGroup[] = [
 ];
 
 export const BOUNDARY_BOXES: MapBox[] = [
-  { x: 20, y: 40, w: 280, h: 110, title: 'External joint services', lines: ["Today's joint source"], outside: true },
-  { x: 400, y: 30, w: 300, h: 140, title: 'Weld Engineering', lines: ['GWPs, WTNs, revisions', 'Weld positions, quals'] },
-  { x: 20, y: 260, w: 320, h: 150, title: 'Weld Planning', lines: ['Joint master data', 'Pipe and structural', 'Gives every joint its ID'] },
-  { x: 740, y: 260, w: 320, h: 150, title: 'Weld Dispatch', lines: ['WACCs: who works on', 'what, right now', 'Existing system'] },
+  { x: 230, y: 30, w: 280, h: 100, title: 'External joint services', lines: ['Joint data, today'], outside: true },
+  { x: 20, y: 280, w: 150, h: 110, title: 'Vendor Files', lines: ['Planned joints,', 'hourly'], outside: true },
+  { x: 590, y: 30, w: 280, h: 140, title: 'Weld Engineering', lines: ['GWPs, WTNs, revisions', 'Weld positions, quals'] },
+  { x: 230, y: 260, w: 300, h: 150, title: 'Weld Planning', lines: ['Joint master data', 'Pipe and structural', 'Gives every joint its ID'] },
+  { x: 780, y: 260, w: 280, h: 150, title: 'Weld Dispatch', lines: ['WACCs: who works on', 'what, right now', 'Existing system'] },
   { x: 220, y: 580, w: 126, h: 70, title: 'Routing', lines: [] },
   { x: 351, y: 580, w: 126, h: 70, title: 'Signoffs', lines: [] },
   { x: 482, y: 580, w: 126, h: 70, title: 'History', lines: [] },
@@ -20,12 +21,13 @@ export const BOUNDARY_BOXES: MapBox[] = [
 ];
 
 export const BOUNDARY_ARROWS: MapArrow[] = [
-  { d: 'M160 150 V252', planned: true, label: { x: 172, y: 210, text: 'Joint data' } },
-  { d: 'M400 100 H330 V252', label: { x: 342, y: 215, text: 'Procedures' } },
-  { d: 'M700 100 H900 V252', label: { x: 800, y: 88, text: 'Procedures', anchor: 'middle' } },
-  { d: 'M550 170 V512', label: { x: 562, y: 340, text: 'Procedure revisions' } },
-  { d: 'M240 410 V512', label: { x: 228, y: 465, text: 'Joint changes', anchor: 'end' } },
-  { d: 'M300 512 V418', label: { x: 312, y: 465, text: 'Has record data?' } },
+  { d: 'M370 130 V252', planned: true, label: { x: 382, y: 200, text: 'Joint data' } },
+  { d: 'M170 335 H222', label: { x: 196, y: 323, text: 'Hourly', anchor: 'middle' } },
+  { d: 'M590 150 H500 V252', label: { x: 512, y: 215, text: 'Procedures' } },
+  { d: 'M870 100 H920 V252', label: { x: 895, y: 88, text: 'Procedures', anchor: 'middle' } },
+  { d: 'M700 170 V512', label: { x: 712, y: 225, text: 'Procedure revisions' } },
+  { d: 'M300 410 V512', label: { x: 288, y: 465, text: 'Joint changes', anchor: 'end' } },
+  { d: 'M380 512 V418', label: { x: 392, y: 465, text: 'Has record data?' } },
   { d: 'M860 410 V512', label: { x: 848, y: 465, text: 'Assignments', anchor: 'end' } },
 ];
 
@@ -39,6 +41,7 @@ export const BOUNDARY_RULES: string[] = [
   "Each system owns its own data. The others read it through that system's calls and keep no copy.",
   'Weld Planning owns every joint and gives each one an ID that all the systems use, in place of hull + drawing + joint.',
   'Weld Planning is to replace the external joint services. Until then, Weld Record reads joints only through Weld Planning.',
+  'Vendor files load into Weld Planning, which checks and merges them.',
   'Weld Planning asks Weld Record before removing a joint that has weld record data.',
   'Weld Record stays one service: a signoff changes the routing, its undo and History together.',
   'A signoff keeps the GWP, WTN and procedure revision in force when it was signed.',
