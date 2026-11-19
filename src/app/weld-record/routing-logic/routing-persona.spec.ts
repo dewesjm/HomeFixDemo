@@ -7,8 +7,9 @@ import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from '.
 import { buildStages } from './build-stages';
 
 describe('Sold', () => {
-  beforeEach(() => localStorage.clear());
-  afterEach(() => localStorage.clear());
+  /* clearing storage alone leaves the cached Routing Settings; re-setting the type rows drops that cache */
+  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
   const soldRole = () => buildStages(JOBS[0]).find(s => s.id === 'sold')!.role;
 
   it('closes the joint and starts on the View persona', () => {
