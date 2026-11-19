@@ -30,6 +30,8 @@ export class ConditionBarComponent {
   valuesChange = output<FilterValues>();
   /* the "Add field" tile */
   adapt = output<void>();
+  /* the x beside a field's name: the page takes that field out of the bar */
+  removeField = output<string>();
 
   /* what the bar shows for a field: its conditions, or one empty one to type into */
   conditionsOf(f: BarField): Condition[] {

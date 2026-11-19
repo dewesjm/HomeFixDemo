@@ -292,6 +292,7 @@ html, body {
 /* Advanced Search: a filter field's stacked conditions (operator + value per line) */
 .facet-row.cond-bar { align-items: flex-start; }
 .cond-col { width: 19rem; gap: 0.25rem; }
+.cond-head { display: flex; align-items: center; gap: 0.25rem; }
 .cond-row { display: flex; align-items: center; gap: 0.25rem; }
 .cond-join { font-size: 0.875rem; color: var(--app-text-muted); width: 1.75rem; flex-shrink: 0; }
 .cond-op { flex-shrink: 0; padding-inline-end: 1.75rem; }

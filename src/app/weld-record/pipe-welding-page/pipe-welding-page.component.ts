@@ -311,6 +311,12 @@ export class PipeWeldingPageComponent {
     this.showAdapt.set(false);
   }
 
+  /* the x beside a field in the bar: same as unticking it in Add field */
+  removeFilterField(key: string) {
+    this.filterKeys.update(keys => keys.filter(k => k !== key));
+    this.values.update(v => Object.fromEntries(Object.entries(v).filter(([k]) => k !== key)));
+  }
+
   // --- Column picker ---
   showColPicker = signal(false);
   draftColKeys = signal<string[]>([]);

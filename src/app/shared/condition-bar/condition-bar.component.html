@@ -2,7 +2,13 @@
 <div class="facet-row facet-row-compact cond-bar">
   @for (f of fields(); track f.key) {
     <div class="field-col cond-col">
-      <label class="field-label">{{ f.label }}</label>
+      <div class="cond-head">
+        <label class="field-label">{{ f.label }}</label>
+        <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Remove this field"
+                [attr.aria-label]="'Remove ' + f.label + ' from the filters'" (click)="removeField.emit(f.key)">
+          <svg lucideX class="size-3.5"></svg>
+        </button>
+      </div>
       @for (c of conditionsOf(f); track $index; let i = $index, last = $last) {
         <div class="cond-row">
           @if (i > 0) { <span class="cond-join">{{ joinWord(c) }}</span> }

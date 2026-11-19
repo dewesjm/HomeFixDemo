@@ -48,7 +48,7 @@
 <!-- Filter bar: each field stacks its own conditions -->
 @if (!filtersHidden()) {
   <app-condition-bar [fields]="filterFields()" [values]="values()" [optionsFor]="optionsFn"
-                     (valuesChange)="setValues($event)" (adapt)="openAdapt()" />
+                     (valuesChange)="setValues($event)" (adapt)="openAdapt()" (removeField)="removeFilterField($event)" />
 }
 
 <!-- Role, release, active filters, then keyword search / columns / export -->

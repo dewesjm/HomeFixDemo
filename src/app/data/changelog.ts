@@ -14,6 +14,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-18',
     changed: [
+      'Pipe Welding and Weld Planning Advanced Search: each field in the filter bar has a small x beside its name that removes the field and its conditions. Add field still adds, removes and reorders fields.',
       'Pipe Welding: joints at Sold are listed only under View All, no longer under O63 Records or O04 Records. Sold\'s persona is now set on Admin > Routing Settings like any routing and starts at View. Sold is still never signed; Deprogress takes a joint off it. Saved joints and Routing Settings reset to the defaults.',
       'Admin > Signoff Types: Root\'s Additional Signoffs now list NQC Root NDT 5X/VT as its own rules. Each rule signs only the routing it names; a rule on a regular routing no longer signs its NQC row too. Saved Signoff Types reset to the defaults.',
       'Routing rules no longer switch to the NQC row of a routing on their own. Each Then go to, Reject routes to and Signs routing target signs or goes to only the exact routing it names.',
