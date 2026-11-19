@@ -4,7 +4,7 @@
 import { Component } from '@angular/core';
 import { MapArrow, MapBox, MapDiagramComponent, MapGroup, MapLegend } from './map-diagram.component';
 import {
-  BOUNDARY_ARROWS, BOUNDARY_BOXES, BOUNDARY_GROUPS, BOUNDARY_HEIGHT, BOUNDARY_LEGEND, BOUNDARY_RULES,
+  BOUNDARY_ARROWS, BOUNDARY_BOXES, BOUNDARY_HEIGHT, BOUNDARY_LEGEND, BOUNDARY_RULES,
 } from './service-boundaries';
 
 interface SystemNote {
@@ -125,7 +125,7 @@ const NOTES: SystemNote[] = [
       <p class="mt-2">How the systems are meant to split in the real system. The demo runs all of them in the browser.</p>
       <section class="panel max-w-6xl mt-4">
         <app-map-diagram idPrefix="sb" label="Intended service boundaries" [height]="boundaryHeight"
-                         [groups]="boundaryGroups" [boxes]="boundaryBoxes" [arrows]="boundaryArrows" [legend]="boundaryLegend" />
+                         [boxes]="boundaryBoxes" [arrows]="boundaryArrows" [legend]="boundaryLegend" />
       </section>
       <section class="panel max-w-6xl mt-4">
         <h3 class="panel-title">Boundary rules <span class="badge badge-ghost">Intended</span></h3>
@@ -145,7 +145,6 @@ export class SystemMapComponent {
   readonly legend = LEGEND;
   readonly notes = NOTES;
   readonly boundaryHeight = BOUNDARY_HEIGHT;
-  readonly boundaryGroups = BOUNDARY_GROUPS;
   readonly boundaryBoxes = BOUNDARY_BOXES;
   readonly boundaryArrows = BOUNDARY_ARROWS;
   readonly boundaryLegend = BOUNDARY_LEGEND;

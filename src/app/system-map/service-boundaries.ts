@@ -1,22 +1,14 @@
 /* System Map's second diagram: the intended service boundaries in the real system, not how the demo runs. */
-import { MapArrow, MapBox, MapGroup, MapLegend } from './map-diagram.component';
+import { MapArrow, MapBox, MapLegend } from './map-diagram.component';
 
-export const BOUNDARY_HEIGHT = 800;
-
-export const BOUNDARY_GROUPS: MapGroup[] = [
-  { x: 200, y: 520, w: 700, h: 220, title: 'Weld Record (one service)', caption: 'One store: a signoff changes these together' },
-];
+export const BOUNDARY_HEIGHT = 700;
 
 export const BOUNDARY_BOXES: MapBox[] = [
   { x: 20, y: 40, w: 280, h: 110, title: 'External joint services', lines: ["Today's joint source"], outside: true },
   { x: 400, y: 30, w: 300, h: 140, title: 'Weld Engineering', lines: ['GWPs, WTNs, revisions', 'Weld positions, quals'] },
   { x: 20, y: 260, w: 320, h: 150, title: 'Weld Planning', lines: ['Joint master data', 'Pipe and structural', 'Gives every joint its ID'] },
+  { x: 200, y: 520, w: 700, h: 110, title: 'Weld Record (one service)', lines: ['Routings, signoffs, History', 'Deviations and settings'] },
   { x: 740, y: 260, w: 320, h: 150, title: 'Weld Dispatch', lines: ['WACCs: who works on', 'what, right now', 'Existing system'] },
-  { x: 220, y: 580, w: 126, h: 70, title: 'Routing', lines: [] },
-  { x: 351, y: 580, w: 126, h: 70, title: 'Signoffs', lines: [] },
-  { x: 482, y: 580, w: 126, h: 70, title: 'History', lines: [] },
-  { x: 613, y: 580, w: 126, h: 70, title: 'Deviations', lines: [] },
-  { x: 744, y: 580, w: 126, h: 70, title: 'Settings', lines: [] },
 ];
 
 export const BOUNDARY_ARROWS: MapArrow[] = [
