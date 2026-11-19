@@ -48,6 +48,9 @@ type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: Form
             @if (part.kind === 'heading') {
               <div class="font-semibold text-sm -mb-1">{{ part.text }}</div>
             } @else {
+              @if (part.keys.includes('weldProcedure') && showsPrepopulatedNote()) {
+                <div class="text-sm italic -mb-1">Prepopulated from eWACC</div>
+              }
               <!-- fields on a line share its width, a field with a width up to that much; a checkbox
                    takes only what it needs, level with the boxes beside it -->
               @let mixed = hasCheckboxAndBox(part.keys, cells);
@@ -114,6 +117,13 @@ export class DefinitionFormComponent {
   private rule(key: string) {
     const wf = this.ctx().wf();
     return drawnFieldRule(this.stage(), buildConditionContext(this.stage(), this.ctx().job, wf.stages, wf.fabricationData), key);
+  }
+
+  /* demo only: says where the welding step's GWP/WTN/filler came from while the external system's
+     values are in place (not on an engineering entry step, under a Foreman Override, or once signed) */
+  showsPrepopulatedNote(): boolean {
+    const st = this.stage();
+    return !st.signed && !st.engineeringEntry && !!st.inputs['weldProcedure'] && this.ctx().assignedLocked(st, 'weldProcedure');
   }
 
   referencesDisabled(): boolean {
