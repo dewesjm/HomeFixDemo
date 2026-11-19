@@ -24,7 +24,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'The Type droplist on a signoff form now lists only the Types you can sign; the "(permission required)" options are gone.',
     ],
     added: [
-      'Welding steps show a small "Prepopulated from eWACC" note above GWP while GWP, WTN and Filler Metal come from the outside system (demo only). It isn\'t shown on a step whose values are typed in under Engineering Override, or once the step is signed.',
+      'Welding steps show a small "Prepopulated from eWACC #1234" note (a made-up number per step) above GWP while GWP, WTN and Filler Metal come from the outside system (demo only). It isn\'t shown on a step whose values are typed in under Engineering Override, or once the step is signed.',
       'Weld Engineering Admin > Procedure Sections has two new field types. Grid: set its columns (number or NC, number, text, min/max range or pick one) and each procedure adds its own rows, for example a table of temperatures. Images: each procedure can add up to 6 pictures with captions, for example a butt joint sketch.',
       'Grids and images show on the procedure edit form and the procedure PDF. Images are shrunk when added. Grids are in the Manage Procedures export and Load Procedures; images are not.',
       'Weld Engineering Admin > Services has getProcedureImage and uploadProcedureImage. Procedure reads answer each image\'s id, name and caption, and getProcedureImage fetches the file.',

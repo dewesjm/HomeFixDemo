@@ -22,6 +22,7 @@ import { SignoffHistoryComponent } from './signoff-history.component';
 import { SignoffTypeComponent } from './signoff-type.component';
 import { StageDecisionComponent } from './stage-decision.component';
 import { VerifyGridComponent } from './verify-grid.component';
+import { ewaccNumber } from '../weld-assignment-logic/weld-assignment-mock';
 
 /* what a key on the form draws: a step field, a sign-off field (Comments is one), Weld Build-Up's
    Affected Item, Inspection Results, the verify grid's rows, the joint's Signoff History, Type, or the
@@ -49,7 +50,7 @@ type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: Form
               <div class="font-semibold text-sm -mb-1">{{ part.text }}</div>
             } @else {
               @if (part.keys.includes('weldProcedure') && showsPrepopulatedNote()) {
-                <div class="text-sm italic -mb-1">Prepopulated from eWACC</div>
+                <div class="text-sm italic -mb-1">Prepopulated from eWACC #{{ ewacc() }}</div>
               }
               <!-- fields on a line share its width, a field with a width up to that much; a checkbox
                    takes only what it needs, level with the boxes beside it -->
@@ -124,6 +125,10 @@ export class DefinitionFormComponent {
   showsPrepopulatedNote(): boolean {
     const st = this.stage();
     return !st.signed && !st.engineeringEntry && !!st.inputs['weldProcedure'] && this.ctx().assignedLocked(st, 'weldProcedure');
+  }
+
+  ewacc(): string {
+    return ewaccNumber(this.ctx().job, this.stage());
   }
 
   referencesDisabled(): boolean {

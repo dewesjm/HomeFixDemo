@@ -31,6 +31,11 @@ export function isEngineeringEntryJoint(job: Job): boolean {
     || !getGwpOptions(job.materialType1 ?? '', job.materialType2 ?? '').length;
 }
 
+/* demo only: the eWACC number the step's values came from, 4 digits, fixed per joint and step */
+export function ewaccNumber(job: Job, stage: WorkflowStage): string {
+  return String(1000 + hash(`${job.id}:${stage.id}:ewacc`) % 9000);
+}
+
 /* one GWP per joint (qualified for its base metals); WTN and filler per step, preferring a WTN
    whose Welder Qualifications the welder holds. undefined when no GWP is qualified for the base metals. */
 function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): { gwp: string; wtn: string } | undefined {
