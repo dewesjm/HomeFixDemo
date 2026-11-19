@@ -1,4 +1,4 @@
-import { ADMINISTRATORS_GROUP_ID, FITTING_GROUP_ID, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, permissionsIn } from '../../data/admin-groups';
+import { ADMINISTRATORS_GROUP_ID, FITTING_GROUP_ID, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, permissionsIn, signoffPermission, WELDING_GROUP_ID } from '../../data/admin-groups';
 import { GroupsStore } from '../access-logic/groups.store';
 import { ViewerService } from '../access-logic/viewer.service';
 import { TestBed } from '@angular/core/testing';
@@ -72,6 +72,23 @@ describe('SignoffService', () => {
       expect(store.workflowFor(job)().stages.find(s => s.id === target.id)!.signed).toBeFalse();
     });
   }
+
+  it('blocks Root when the signer cannot sign its additional signoff', () => {
+    const viewer = TestBed.inject(ViewerService);
+    const groups = TestBed.inject(GroupsStore);
+    const job = weldingJob({ ndtRoot: 'VT' });
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-weld'
+      ? { ...s, inputs: { ...s.inputs, performed5x: 'yes' } } : s) }));
+    viewer.select('welder');
+    expect(service.previewSignoff(store.workflowFor(job)(), job, 'root-weld').blocked).toContain('do not have permission');
+    expect(service.signStage(job, 'root-weld')).toBeFalse();
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'root-weld')!.signed).toBeFalse();
+
+    const welding = groups.groups().find(group => group.id === WELDING_GROUP_ID)!;
+    groups.save({ ...welding, personas: [...welding.personas, 'Inspector'], allowed: [...welding.allowed, signoffPermission('vt')] });
+    expect(service.signStage(job, 'root-weld')).toBeTrue();
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeTrue();
+  });
 
   it('a rule names one routing exactly: the regular row\'s rule does not sign the NQC row', () => {
     const job = weldingJob({ ndtRoot: 'VT', nInd: '1' });

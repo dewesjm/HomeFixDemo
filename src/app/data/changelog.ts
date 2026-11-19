@@ -12,6 +12,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-19',
+    changed: [
+      'Signing Root no longer also signs Root NDT VT or 5X for someone without permission to sign that inspection. Root is blocked instead, with a message naming the inspection; it signs once the signer has the permission for that Type and persona on Admin > Groups.',
+    ],
+  },
+  {
     date: '2026-11-18',
     changed: [
       'Pipe Welding and Weld Planning Advanced Search: each field in the filter bar has a small x beside its name that removes the field and its conditions. Add field still adds, removes and reorders fields.',

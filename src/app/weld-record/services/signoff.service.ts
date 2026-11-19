@@ -24,6 +24,7 @@ const FITUP_RELEASE = 'fitup-release';
 import { WorkflowStore } from './workflow-store.service';
 import { additionalSignoffs } from '../signoff-forms-logic/additional-signoffs';
 import { typeValues } from '../signoff-forms-logic/stage-rules';
+import { typeLabel } from '../../data/signoff-types';
 
 /* History names a signoff with a Type other than the step's own (Weld Build-Up) and Layer's Interim
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
@@ -134,6 +135,9 @@ export class SignoffService {
     const source = wf.stages.find(s => s.id === stageId)!;
     if (!engineeringHold && !routedBack && signed.stages.find(s => s.id === recordedId)?.signed) {
       for (const extra of additionalSignoffs(source, signed.stages, job, signed.fabricationData)) {
+        /* an additional signoff needs the same permission and persona as signing that routing directly */
+        if (!this.viewer.canSignRouting(extra.stage, extra.type)) throw new RoutingConfigurationError(
+          `Signing ${signedLabel} also signs ${extra.stage.label} as ${typeLabel(extra.type)}, which you do not have permission to sign.`);
         const target = { ...extra.stage, ...typeValues(extra.type), result: 'sat' as const, signed: true, signedAt: st.signedAt, attribution };
         signed = this.store.withHistory(signed, { ...signed, stages: signed.stages.map(s => s.id === target.id ? target : s) }, {
           section: 'Sign-off', who, ...signer, stageId: target.id, action: `${target.label} - Signed off`, to: 'SAT',
