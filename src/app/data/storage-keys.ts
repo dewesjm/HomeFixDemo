@@ -19,6 +19,7 @@ export const STORAGE = {
   materialClassification: 'welding:material-classification:v5',
   banner: 'welding:banner',
   adminGroups: 'welding:admin-groups:v10',
+  adminGroupHistory: 'welding:admin-group-history:v1',
   viewer: 'welding:viewer:v1',
   theme: 'welding:theme',
   searchState: 'welding:search-state:v1',

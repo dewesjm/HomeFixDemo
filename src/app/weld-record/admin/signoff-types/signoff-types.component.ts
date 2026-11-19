@@ -109,7 +109,7 @@ export class AdminSignoffTypesComponent {
     this.confirm.confirmDelete(`${row.label} (removed from every routing that offers it)`, () => {
       this.rows.update(r => r.filter(x => x.uid !== row.uid));
       this.persist();
-      this.groups.removePermission(signoffPermission(row.value));
+      this.groups.removePermission(signoffPermission(row.value), `Sign ${row.label}`);
       this.messages.add({ severity: 'info', summary: 'Deleted', detail: row.label, life: 3000 });
     });
   }

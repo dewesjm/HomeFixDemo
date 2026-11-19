@@ -1,4 +1,5 @@
-/* Admin → Groups: one row per AD group with its description and the permissions it allows; edited in the row */
+/* Admin → Groups: one row per AD group with its description and the permissions it allows; edited in the row.
+   Change History below lists every saved change (GroupsStore.history), newest first. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,13 +13,15 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { AdminGroup, API_ACCESS_PERMISSION, PERMISSION_CATEGORIES, isPrivilegedGroup, permissionSummary, permissionsIn } from '../../../data/admin-groups';
 
 import { ROUTING_PERSONAS } from '../../../data/roles';
+import type { GroupChange } from '../../../data/admin-group-history';
+import { AppDateTimePipe } from '../../../shared/date-format';
 import { GroupsStore } from '../../access-logic/groups.store';
 
 @Component({
   selector: 'app-admin-groups',
   standalone: true,
   imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
-    LucidePencil, LucideCheck, LucideX, LucideTrash2],
+    LucidePencil, LucideCheck, LucideX, LucideTrash2, AppDateTimePipe],
   templateUrl: './groups.component.html',
 })
 export class AdminGroupsComponent {
@@ -42,9 +45,13 @@ export class AdminGroupsComponent {
       : [draft, ...groups];
   });
   table = new TableState<AdminGroup>(['name', 'description']);
+  history = new TableState<GroupChange>(['who', 'group', 'action', 'changes']);
 
   constructor() {
     effect(() => this.table.setRows(this.groups()));
+    effect(() => this.history.setRows(this.store.history()));
+    this.history.sortField.set('when');
+    this.history.sortOrder.set(-1);
   }
 
   addRow() {

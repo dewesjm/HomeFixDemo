@@ -104,3 +104,37 @@
   </tbody>
 </table>
 </div>
+
+<h2 class="section-title mt-8">Change History</h2>
+<p class="text-sm mb-sm">Every saved change to a group: who made it, when, and what changed.</p>
+
+<app-table-toolbar [table]="history" searchPlaceholder="Search history…" [showExport]="false" />
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th appSortHeader [table]="history" field="when" label="When" class="min-w-40"></th>
+      <th appSortHeader [table]="history" field="who" label="Changed By" class="min-w-32"></th>
+      <th appSortHeader [table]="history" field="group" label="AD Group" class="min-w-40"></th>
+      <th appSortHeader [table]="history" field="action" label="Action" class="min-w-24"></th>
+      <th class="min-w-64">Changes</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of history.sorted(); track row.id) {
+      <tr>
+        <td class="align-top">{{ row.when | appDateTime }}</td>
+        <td class="align-top">{{ row.who }}</td>
+        <td class="align-top font-semibold">{{ row.group }}</td>
+        <td class="align-top">{{ row.action }}</td>
+        <td class="align-top">
+          @for (line of row.changes; track $index) { <div>{{ line }}</div> }
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="5" class="empty">{{ history.hasRows() ? 'No changes match your search.' : 'No changes yet.' }}</td></tr>
+    }
+  </tbody>
+</table>
+</div>
