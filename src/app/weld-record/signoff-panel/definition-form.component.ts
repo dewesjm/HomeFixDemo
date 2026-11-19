@@ -50,7 +50,7 @@ type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: Form
               <div class="font-semibold text-sm -mb-1">{{ part.text }}</div>
             } @else {
               @if (part.keys.includes('weldProcedure') && showsPrepopulatedNote()) {
-                <div class="text-sm italic -mb-1">Prepopulated from eWACC #{{ ewacc() }}</div>
+                <div class="text-sm italic -mb-1"><span class="font-semibold">Demo Only -</span> Prepopulated from eWACC #{{ ewacc() }}</div>
               }
               <!-- fields on a line share its width, a field with a width up to that much; a checkbox
                    takes only what it needs, level with the boxes beside it -->
