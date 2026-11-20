@@ -14,10 +14,19 @@ function request(query, method = 'GET') {
   return handler.fetch(new Request(`https://ewr.example${path}?${query}`, { method }));
 }
 
-test('returns only the canonical eWR link for a joint without an XREFID', async () => {
+test('returns the canonical eWR link and an empty string for a joint without an XREFID', async () => {
   const response = request('hull=%20d1034%20&drawing=s731-5003&joint=fo-10939');
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { url: `https://ewr.example${jointPage}` });
+  assert.deepEqual(await response.json(), { url: `https://ewr.example${jointPage}`, xrefid: '' });
+});
+
+test('returns the matched joint XREFID as a string', async () => {
+  const response = request('hull=S3969&drawing=H731-5002&joint=ST-11541');
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    url: 'https://ewr.example/jobs/S3969/H731-5002/ST-11541',
+    xrefid: 'HFTEU',
+  });
 });
 
 test('requires each identity field and returns 404 for an unknown joint', () => {
@@ -71,6 +80,6 @@ test('a browser on a separate origin can read the link and error statuses', asyn
     return { status: success.status, body: await success.json(), missing: missing.status, unknown: unknown.status };
   }, { endpoint: ewr + path, key });
   assert.deepEqual(responses, {
-    status: 200, body: { url: ewr + jointPage }, missing: 400, unknown: 404,
+    status: 200, body: { url: ewr + jointPage, xrefid: '' }, missing: 400, unknown: 404,
   });
 });

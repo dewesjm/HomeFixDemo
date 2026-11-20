@@ -31,6 +31,9 @@ export default {
     if (!found.ok) {
       return Response.json({ error: 'No unique joint matches.' }, { status: 404, headers });
     }
-    return Response.json({ url: jointUrl(found.data, origin) }, { headers });
+    return Response.json(
+      { url: jointUrl(found.data, origin), xrefid: found.data.xrefid },
+      { headers },
+    );
   },
 };

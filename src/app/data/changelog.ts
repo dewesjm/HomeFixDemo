@@ -13,6 +13,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-20',
+    changed: ['The Weld Record joint lookup now gives MWQ the joint’s XREFID along with its Joint Details link.'],
     fixed: [
       'MWQ\'s Open in eWR button opens the joint again. The joint link lookup it calls was failing on the live site.',
     ],
