@@ -1,11 +1,8 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./api/tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
     "rootDir": ".",
-    "outDir": "./dist/joint-url-test",
-    "types": []
+    "outDir": "./dist/joint-url-test"
   },
   "files": ["api/joint-url.ts"],
   "include": []

@@ -12,6 +12,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-20',
+    fixed: [
+      'MWQ\'s Open in eWR button opens the joint again. The joint link lookup it calls was failing on the live site.',
+    ],
+  },
+  {
     date: '2026-11-19',
     added: [
       'Quick Links > System Map: a second diagram, Service Boundaries, shows how Weld Planning, Weld Engineering, Weld Dispatch and Weld Record are meant to split as separate services in the real system and what passes between them, with a list of the boundary rules.',

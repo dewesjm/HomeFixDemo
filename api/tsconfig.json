@@ -1,0 +1,10 @@
+/* Vercel compiles api/ functions with the nearest tsconfig.json. package.json has no "type": "module",
+   so Node loads them as CommonJS; ES module output crashes the function on load. */
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "types": []
+  }
+}
