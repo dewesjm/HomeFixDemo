@@ -258,6 +258,7 @@
         <details #qlDetails (toggle)="onQlToggle()">
           <summary title="Quick Links"><svg lucideExternalLink class="size-4"></svg></summary>
           <ul class="dropdown-menu">
+            <li><a href="https://compass-rosy-mu.vercel.app/"><svg lucideExternalLink class="size-4"></svg> Back to Forge</a></li>
             @for (link of quickLinks(); track link.id) {
               <li><a [href]="link.url" target="_blank" rel="noopener"><svg lucideExternalLink class="size-4"></svg> {{ link.label }}</a></li>
             } @empty {

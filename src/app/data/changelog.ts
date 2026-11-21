@@ -11,6 +11,7 @@ interface ChangeLogDay {
 }
 
 export const CHANGE_LOG: ChangeLogDay[] = [
+  { date: '2026-11-21', added: ['Open the Forge launchpad from Quick Links.'] },
   {
     date: '2026-11-20',
     changed: ['The Weld Record joint lookup now gives MWQ the joint’s XREFID along with its Joint Details link.'],
