@@ -6,6 +6,78 @@
 @plugin 'daisyui' {
   themes: all;
 }
+/*
+ * Brand themes: navy, white and gold.
+ * Gold is a muted metallic so it never reads as the amber "Expiring" status (warning).
+ * Neutral is slate grey because it doubles as the "Unknown" status color.
+ */
+@plugin 'daisyui/theme' {
+  name: 'navy';
+  default: true;
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f3f5f9;
+  --color-base-300: #e1e6ef;
+  --color-base-content: #13213b;
+  --color-primary: #1b2f5b;
+  --color-primary-content: #ffffff;
+  --color-secondary: #2e4c86;
+  --color-secondary-content: #ffffff;
+  --color-accent: #b8962e;
+  --color-accent-content: #13213b;
+  --color-neutral: #64748b;
+  --color-neutral-content: #ffffff;
+  --color-info: #2563eb;
+  --color-info-content: #ffffff;
+  --color-success: #15803d;
+  --color-success-content: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-content: #1f1300;
+  --color-error: #b91c1c;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin 'daisyui/theme' {
+  name: 'navy-dark';
+  color-scheme: dark;
+  --color-base-100: #0f1a30;
+  --color-base-200: #0b1426;
+  --color-base-300: #08101e;
+  --color-base-content: #e6ebf5;
+  --color-primary: #13254a;
+  --color-primary-content: #e6ebf5;
+  --color-secondary: #3b5b99;
+  --color-secondary-content: #ffffff;
+  --color-accent: #d4af37;
+  --color-accent-content: #0f1a30;
+  --color-neutral: #94a3b8;
+  --color-neutral-content: #0f1a30;
+  --color-info: #60a5fa;
+  --color-info-content: #0f1a30;
+  --color-success: #22c55e;
+  --color-success-content: #0f1a30;
+  --color-warning: #f59e0b;
+  --color-warning-content: #1f1300;
+  --color-error: #dc2626;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
 /* tooltip.directive.ts builds tooltip-<position> at runtime, so Tailwind can't find it in the source */
 @source inline("tooltip-{top,bottom,left,right}");
 

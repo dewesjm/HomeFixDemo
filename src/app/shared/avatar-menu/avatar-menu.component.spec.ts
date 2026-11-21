@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { SharedThemeService } from './shared-theme-service';
 import { TestBed } from '@angular/core/testing';
 import { STORAGE } from '../../data/storage-keys';
 import { AvatarMenuComponent } from './avatar-menu.component';
@@ -16,6 +18,22 @@ describe('AvatarMenuComponent', () => {
     const el = fixture.nativeElement as HTMLElement;
     return { fixture, el, button: el.querySelector('button')!, panel: el.querySelector('.absolute')! };
   }
+
+  it('follows the shared theme once an app-only override is cleared', () => {
+    localStorage.setItem(STORAGE.theme, 'forest');
+    TestBed.configureTestingModule({
+      providers: [{ provide: SharedThemeService, useValue: {
+        theme: signal('navy-dark'),
+        refresh: jasmine.createSpy('refresh'),
+      } }],
+    });
+    const { fixture, el } = create();
+    el.querySelector<HTMLButtonElement>('[role="radio"]')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem(STORAGE.theme)).toBeNull();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('navy-dark');
+    expect(document.documentElement.getAttribute('data-scheme')).toBe('dark');
+  });
 
   it('applies the saved theme while the menu is closed', () => {
     localStorage.setItem(STORAGE.theme, 'dark');
@@ -50,8 +68,9 @@ describe('AvatarMenuComponent', () => {
   });
 
   it('saves a picked theme', () => {
-    const { el } = create();
+    const { fixture, el } = create();
     (el.querySelector('[data-theme-option="forest"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
     expect(localStorage.getItem(STORAGE.theme)).toBe('forest');
     expect(document.documentElement.getAttribute('data-theme')).toBe('forest');
   });

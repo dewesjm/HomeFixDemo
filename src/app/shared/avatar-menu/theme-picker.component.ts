@@ -1,12 +1,15 @@
 /* Theme list, in the avatar menu (same look as Compass): one row per DaisyUI theme with that theme's
    colour swatches and a check on the active one. Switches the theme at runtime, persisted. */
 import { STORAGE } from '../../data/storage-keys';
-import { Component, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { SharedThemeService, SHARED_THEME_DEFAULT } from './shared-theme-service';
 import { LucideCheck } from '@lucide/angular';
 
 interface ThemeOption { name: string; label: string; dark?: boolean; }
 
 const THEMES: ThemeOption[] = [
+  { name: 'navy', label: 'Navy & Gold' },
+  { name: 'navy-dark', label: 'Navy & Gold Dark', dark: true },
   { name: 'light', label: 'Light' },
   { name: 'dark', label: 'Dark', dark: true },
   { name: 'cupcake', label: 'Cupcake' },
@@ -50,10 +53,17 @@ const THEME_KEY = STORAGE.theme;
   template: `
     <div role="radiogroup" aria-label="Theme">
       <div class="px-2 pt-1 pb-2 text-xs font-semibold uppercase opacity-70">Theme</div>
+      <button type="button" role="radio"
+              class="flex w-full items-center gap-3 rounded-field px-2 py-1.5 text-left text-sm hover:bg-base-200 focus-visible:bg-base-200"
+              [attr.aria-checked]="following()" (click)="follow()">
+        <span class="grow">Same as my other apps</span>
+        @if (following()) { <svg lucideCheck class="size-4"></svg> }
+      </button>
+      <div class="px-2 pt-2 pb-2 text-xs font-semibold uppercase opacity-70">Theme for this app</div>
       @for (t of themes; track t.name) {
         <button type="button" role="radio"
                 class="flex w-full items-center gap-3 rounded-field px-2 py-1.5 text-left text-sm hover:bg-base-200 focus-visible:bg-base-200"
-                [attr.aria-checked]="active() === t.name" [attr.data-theme-option]="t.name" (click)="pick(t.name)">
+                [attr.aria-checked]="!following() && active() === t.name" [attr.data-theme-option]="t.name" (click)="pick(t.name)">
           <!-- data-theme on the swatch shows that theme's own colours -->
           <span [attr.data-theme]="t.name" class="flex shrink-0 gap-0.5 rounded-selector border border-base-300 bg-base-100 p-1" aria-hidden="true">
             <span class="size-2.5 rounded-full bg-primary"></span>
@@ -62,24 +72,53 @@ const THEME_KEY = STORAGE.theme;
             <span class="size-2.5 rounded-full bg-neutral"></span>
           </span>
           <span class="grow">{{ t.label }}</span>
-          @if (active() === t.name) { <svg lucideCheck class="size-4"></svg> }
+          @if (!following() && active() === t.name) { <svg lucideCheck class="size-4"></svg> }
         </button>
       }
     </div>
   `
 })
 export class ThemePickerComponent {
-  themes = THEMES;
-  active = signal<string>(localStorage.getItem(THEME_KEY) ?? 'light');
+  readonly themes = THEMES;
+  private readonly shared = inject(SharedThemeService);
+  private readonly override = signal(this.readOverride());
+  readonly following = computed(() => this.override() === null);
+  readonly active = computed(() => {
+    const shared = this.shared.theme();
+    return this.override() ?? (THEMES.some((theme) => theme.name === shared) ? shared : SHARED_THEME_DEFAULT);
+  });
 
   constructor() {
-    this.apply(this.active());
+    effect(() => this.apply(this.active()));
   }
 
   pick(name: string) {
-    this.active.set(name);
-    this.apply(name);
-    localStorage.setItem(THEME_KEY, name);
+    this.override.set(name);
+    this.saveOverride(name);
+  }
+
+  follow() {
+    this.override.set(null);
+    this.saveOverride(null);
+    void this.shared.refresh();
+  }
+
+  private readOverride(): string | null {
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      return THEMES.find((theme) => theme.name === saved)?.name ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private saveOverride(name: string | null): void {
+    try {
+      if (name === null) localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, name);
+    } catch {
+      // The current choice still applies for this visit.
+    }
   }
 
   /* data-scheme lets global CSS style fields per light/dark (editable inputs go black in dark themes) */

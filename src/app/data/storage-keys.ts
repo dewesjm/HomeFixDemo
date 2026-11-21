@@ -21,7 +21,7 @@ export const STORAGE = {
   adminGroups: 'welding:admin-groups:v10',
   adminGroupHistory: 'welding:admin-group-history:v1',
   viewer: 'welding:viewer:v1',
-  theme: 'welding:theme',
+  theme: 'welding:theme-override',
   searchState: 'welding:search-state:v1',
   advancedSearchState: 'welding:advanced-search-state:v2',
   advancedSearchDefault: 'welding:advanced-search-default:v1',
