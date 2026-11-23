@@ -19,7 +19,7 @@ import { ThemePickerComponent } from './theme-picker.component';
   template: `
     <button type="button" class="btn btn-ghost btn-circle btn-sm avatar avatar-placeholder" title="User menu" aria-label="User menu"
             [attr.aria-expanded]="open()" (click)="open.set(!open())">
-      <div class="bg-primary text-primary-content w-8 rounded-full">
+      <div class="bg-accent text-accent-content w-8 rounded-full">
         <svg lucideUser class="size-4"></svg>
       </div>
     </button>
