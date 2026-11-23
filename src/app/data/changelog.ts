@@ -11,7 +11,7 @@ interface ChangeLogDay {
 }
 
 export const CHANGE_LOG: ChangeLogDay[] = [
-  { date: '2026-11-23', changed: ['The avatar button is gold, matching Forge.'] },
+  { date: '2026-11-23', changed: ['The avatar button is gold, matching Forge.'], added: ['A gold spark icon sits next to the system name in the header.'] },
   { date: '2026-11-21', changed: ['The avatar menu now follows the shared theme by default. You can still choose a theme for this app.'], added: ['Open the Forge launchpad from Quick Links.'] },
   {
     date: '2026-11-20',
