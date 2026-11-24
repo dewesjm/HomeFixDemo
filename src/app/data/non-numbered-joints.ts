@@ -86,7 +86,7 @@ function generateNonNumberedJoints(): NonNumberedJoint[] {
         order: '',
         sequenceNumber: String(s),
         findNumber1: findNumber(),
-        findNumber2: rand() < 0.4 ? '' : findNumber(),
+        findNumber2: findNumber(),
         manufacturingDrawingItem: `${drawingItem}-${String(s).padStart(3, '0')}`,
         additionalDescription1: material1,
         additionalDescription2: material2,
