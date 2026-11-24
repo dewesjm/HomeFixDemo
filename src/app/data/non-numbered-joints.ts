@@ -5,7 +5,7 @@ import { HULLS, MCL_POOL, N_IND_POOL, PIPE_SIZES, WALL_THICKNESSES } from './job
 import { seeded } from './seed-fabrication';
 import { getBaseMaterialCodes } from '../future/weld-engineering/procedure-service/procedure-catalog-service';
 import { JOINT_DESIGN_LABELS } from './joint-design-seed';
-import { procedures } from './procedures';
+import { getGwpOptions, getAllGwpOptions } from '../future/weld-engineering/procedure-service/procedure-usage';
 
 export interface NonNumberedJoint {
   interimPartNumber: string;
@@ -41,10 +41,8 @@ const PART_COUNT = 18;
 
 /* the GWPs for a base material pair (either order), else any GWP */
 function gwpsFor(material1: string, material2: string): string[] {
-  const all = procedures();
-  const fits = all.filter(p => (p.extraFields['baseMetal1Type'] === material1 && p.extraFields['baseMetal2Type'] === material2)
-    || (p.extraFields['baseMetal1Type'] === material2 && p.extraFields['baseMetal2Type'] === material1));
-  return [...new Set((fits.length ? fits : all).map(p => p.gwp))];
+  const fits = [...getGwpOptions(material1, material2), ...getGwpOptions(material2, material1)];
+  return [...new Set((fits.length ? fits : getAllGwpOptions()).map(o => o.value))];
 }
 
 function generateNonNumberedJoints(): NonNumberedJoint[] {
