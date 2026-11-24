@@ -1,0 +1,51 @@
+<!-- Non-Numbered Joints: keyword search on order / interim part number, sortable and filterable columns, pager. -->
+<div class="table-page-wrap">
+<div class="page-header search-head">
+  <h2 class="section-title">Non-Numbered Joints</h2>
+</div>
+
+<div class="facet-row">
+  <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Order or interim part number" aria-label="Search by order or interim part number"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+    @if (table.globalFilter()) {
+      <button type="button" class="btn btn-ghost btn-xs p-0" title="Clear search" (click)="table.setGlobalFilter('')">
+        <svg lucideX class="size-3.5 opacity-60"></svg>
+      </button>
+    }
+  </label>
+  <span class="text-sm" style="color: var(--app-text-muted)">{{ table.total() }} joints</span>
+  @if (hasFilters()) {
+    <button type="button" class="btn btn-sm btn-ghost" (click)="clearAll()">Clear all</button>
+  }
+  <span class="spacer"></span>
+  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
+  </button>
+</div>
+
+<div class="flex-1" style="overflow-x: auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        @for (col of columns; track col.key) {
+          <th appSortHeader class="min-w-28" [table]="table" [field]="col.key" [label]="col.label" filter="text"></th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of table.paged(); track row.interimPartNumber + '|' + row.order + '|' + row.sequenceNumber) {
+        <tr>
+          @for (col of columns; track col.key) {
+            <td [class.font-semibold]="$index < 3">{{ cell(row, col.key) }}</td>
+          }
+        </tr>
+      } @empty {
+        <tr><td [attr.colspan]="columns.length" class="empty">No non-numbered joints match your search.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+<app-table-pager [state]="table" />
+</div>

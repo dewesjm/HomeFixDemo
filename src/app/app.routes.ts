@@ -10,6 +10,7 @@ import { featureToggles } from './data/feature-toggles';
 import { PipeWeldingClassicPageComponent } from './future/weld-record/pipe-welding-classic-page/pipe-welding-classic-page.component';
 import { HistoryPageComponent } from './weld-record/history-page/history-page.component';
 import { PipeWeldingPageComponent } from './weld-record/pipe-welding-page/pipe-welding-page.component';
+import { NonNumberedJointsPageComponent } from './weld-record/non-numbered-joints-page/non-numbered-joints-page.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
 import { AdminRoutingSettingsComponent } from './weld-record/admin/routing-settings/routing-settings.component';
 import { AdminAttributeCodesComponent } from './weld-record/admin/attribute-codes/attribute-codes.component';
@@ -69,6 +70,7 @@ export const routes: Routes = [
     canActivate: [requireWeldRecordAccess(viewer => viewer.canViewJoint())] },
   /* Pipe Welding is the Advanced Search page */
   { path: 'pipe-welding', component: PipeWeldingPageComponent, title: 'EWR - Pipe Welding' },
+  { path: 'non-numbered-joints', component: NonNumberedJointsPageComponent, title: 'EWR - Non-Numbered Joints' },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
      is on; kept so it can be turned back on without a rewrite */
   { path: 'pipe-welding-classic', component: PipeWeldingClassicPageComponent, title: 'EWR - Pipe Welding (Classic)',
