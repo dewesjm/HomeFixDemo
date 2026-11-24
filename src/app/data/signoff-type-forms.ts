@@ -187,9 +187,10 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
 
 /* ── Storage ── */
 
-/* the starting definitions of a joint type's table: Pipe's seeds, Structural none */
+/* the starting definitions of a joint type's table: Pipe's seeds, Structural Pipe's for the Types Fit offers */
+const STRUCTURAL_TYPE_DEFINITIONS = DEFAULT_TYPE_DEFINITIONS.filter(d => ['fit', WELD_BUILDUP_TYPE].includes(d.typeId));
 export function defaultTypeDefinitions(jointType: JointType): TypeDefinition[] {
-  return jointType === 'pipe' ? DEFAULT_TYPE_DEFINITIONS : [];
+  return jointType === 'pipe' ? DEFAULT_TYPE_DEFINITIONS : STRUCTURAL_TYPE_DEFINITIONS;
 }
 
 let version = 0;

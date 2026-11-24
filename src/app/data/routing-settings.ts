@@ -1,14 +1,14 @@
 /* Admin > Routing Settings rows: the starting rows (welding-steps.ts) with the saved changes (localStorage)
    applied, and saving them. Checks before a save and the Type options each row offers are in
    weld-record/routing-logic/routing-settings-rules.ts. One table per joint type: Pipe starts from the
-   built-in rows, Structural starts empty. */
+   built-in rows, Structural from Pipe's Fit row. */
 import { settingsKey } from './storage-keys';
 import type { JointType } from './jobs';
 import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ADDED_STAGE_TEMPLATES } from './welding-steps';
 import { StageTemplate } from '../weld-record/model/stage-template';
 import { ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
 import { RouteToRule } from '../weld-record/routing-logic/route-to-rules';
-import { isFitupInspId } from './welding-step-ids';
+import { isFitupInspId, STRUCTURAL_STEP_IDS } from './welding-step-ids';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
@@ -21,6 +21,9 @@ const STATIC_TEMPLATES: StageTemplate[] = withFabricationEditable(WELDING_STEPS
   .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
   .map(s => ({ ...s, thenRules: DEFAULT_THEN_RULES[s.id] ?? [] }))
   .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)).concat(ADDED_STAGE_TEMPLATES);
+
+/* Structural's starting rows: Pipe's, for the steps Structural has so far */
+const STRUCTURAL_TEMPLATES = STATIC_TEMPLATES.filter(s => STRUCTURAL_STEP_IDS.includes(s.id));
 
 /* ── Saved Admin > Routing Settings changes (localStorage) ── */
 
@@ -93,7 +96,7 @@ function saveOverrides(jointType: JointType, overrides: SerializedStage[]) {
 /* starting rows with the saved changes: saved order wins (Admin > Routing Settings reorders); a built-in
    row the save doesn't have goes in after the built-in row before it */
 export function loadRoutingSettings(jointType: JointType): StageTemplate[] {
-  const statics = jointType === 'pipe' ? STATIC_TEMPLATES : [];
+  const statics = jointType === 'pipe' ? STATIC_TEMPLATES : STRUCTURAL_TEMPLATES;
   const saved = loadSavedOverrides(jointType);
   let list = statics;
   if (saved) {

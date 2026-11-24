@@ -29,3 +29,6 @@ export const excavationIdForRepair = (repairId: string, definitionId = 'excavati
 export const repairIdForExcavation = (excavationId: string) => `repair${roundSuffix(excavationId)}`;
 /* round number after the first, e.g. "Repair 2" */
 export const roundLabel = (label: string, id: string) => roundSuffix(id) ? `${label} ${roundSuffix(id).slice(1)}` : label;
+
+/* the steps Structural's settings tables start with, copied from Pipe's */
+export const STRUCTURAL_STEP_IDS = ['fit'];

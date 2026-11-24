@@ -1,4 +1,4 @@
-/* The four per-joint-type settings tables: Structural has its own, starting empty, and saving one joint
+/* The four per-joint-type settings tables: Structural has its own, starting with Pipe's Fit, and saving one joint
    type's table leaves the other's alone. */
 import { loadRoutingSettings } from './routing-settings';
 import { getSignoffTypes, setSignoffTypes } from './signoff-types';
@@ -18,12 +18,13 @@ describe('settings per joint type', () => {
     localStorage.clear();
   });
 
-  it('Structural starts with empty tables; Pipe keeps its starting rows', () => {
+  it("Structural starts with Pipe's Fit; Pipe keeps its starting rows", () => {
     localStorage.clear();
-    expect(loadRoutingSettings('structural')).toEqual([]);
-    expect(getSignoffTypes('structural')).toEqual([]);
-    expect(getSignoffTypeRoutingRows('structural')).toEqual([]);
-    expect(getStepFieldConfig('structural')).toEqual([]);
+    const pipeFit = loadRoutingSettings('pipe').find(s => s.id === 'fit');
+    expect(loadRoutingSettings('structural')).toEqual([pipeFit!]);
+    expect(getSignoffTypes('structural').map(t => t.value)).toEqual(['fit', 'weld-buildup']);
+    expect(getSignoffTypeRoutingRows('structural')).toEqual(getSignoffTypeRoutingRows('pipe').filter(r => r.stepId === 'fit'));
+    expect(getStepFieldConfig('structural')).toEqual(getStepFieldConfig('pipe').filter(d => ['fit', 'weld-buildup'].includes(d.typeId)));
     expect(loadRoutingSettings('pipe').length).toBeGreaterThan(0);
     expect(getSignoffTypes('pipe').length).toBeGreaterThan(0);
   });
@@ -39,9 +40,11 @@ describe('settings per joint type', () => {
     expect(getStepFieldConfig('pipe').some(d => d.typeId === 'vt')).toBeTrue();
   });
 
-  it('a structural joint gets its routings from the Structural table (none yet)', () => {
+  it('a structural joint gets its routings from the Structural table (Fit only)', () => {
     localStorage.clear();
-    expect(buildStages(testJob({ jointType: 'structural' }))).toEqual([]);
+    const structural = buildStages(testJob({ jointType: 'structural' }));
+    expect(structural.map(s => s.id)).toEqual(['fit']);
+    expect(structural[0].jointType).toBe('structural');
     const pipe = buildStages(testJob());
     expect(pipe.length).toBeGreaterThan(0);
     expect(pipe.every(s => s.jointType === 'pipe')).toBeTrue();

@@ -22,7 +22,7 @@ test('Structural Details opens the joint page, and Back returns to Structural', 
   await page.goto('/structural-welding');
   await page.getByRole('button', { name: 'Details' }).first().click();
   await expect(page).toHaveURL(/\/structural\/[^/]+\/[^/]+\/[^/]+$/);
-  await expect(page.getByText('Routing:')).toBeVisible();
+  await expect(page.locator('strong', { hasText: 'Routing:' }).locator('..')).toContainText('Routing: Fit');
   await expect(page.getByRole('heading', { name: 'Joint details' })).toBeVisible();
   await page.locator('.back-link').click();
   await expect(page).toHaveURL(/\/structural-welding$/);

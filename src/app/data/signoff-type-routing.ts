@@ -2,13 +2,13 @@
    default Type, when each Type is enabled, and the Type source and exceptions for Excavation NDT. The
    starting rows, load and save (localStorage). The rules that read them are in
    weld-record/signoff-forms-logic/signoff-type-routing-rules.ts. One table per joint type: Pipe
-   starts from the seed rows, Structural starts empty. */
+   starts from the seed rows, Structural from Pipe's Fit row. */
 import { settingsKey } from './storage-keys';
 import type { JointType } from './jobs';
 import { TypeException } from '../weld-record/signoff-forms-logic/type-exceptions';
 import { ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
 import { NDT_KINDS } from './welding-steps';
-import { PHASE_NDT_KINDS, nqcStepId } from './welding-step-ids';
+import { PHASE_NDT_KINDS, nqcStepId, STRUCTURAL_STEP_IDS } from './welding-step-ids';
 import { WELD_BUILDUP_TYPE, signoffTypesVersion } from './signoff-types';
 
 /* one Type a step offers, by its Signoff Types value */
@@ -76,8 +76,10 @@ const SEED_ROWS: SignoffTypeRoutingRow[] = [
 let version = 0;
 export const signoffTypeRoutingVersion = () => version * 1000 + signoffTypesVersion();
 
+const STRUCTURAL_SEED_ROWS = SEED_ROWS.filter(r => STRUCTURAL_STEP_IDS.includes(r.stepId));
+
 function seedRows(jointType: JointType): SignoffTypeRoutingRow[] {
-  return jointType === 'pipe' ? SEED_ROWS : [];
+  return jointType === 'pipe' ? SEED_ROWS : STRUCTURAL_SEED_ROWS;
 }
 
 export function getSignoffTypeRoutingRows(jointType: JointType): SignoffTypeRoutingRow[] {
