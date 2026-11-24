@@ -15,7 +15,8 @@ export interface SearchField extends MatchField {
 const f = (key: keyof SearchRow & string, label: string, group: string, kind: FieldKind = 'text', width = 'min-w-28'): SearchField =>
   ({ key, label, group, kind, width });
 
-/* list = picked from the values joints have; List of Hulls holds several hulls per joint */
+/* list = picked from the values joints have; List of Hulls holds several hulls per joint; the two
+   additional descriptions hold material types */
 export const SEARCH_FIELDS: SearchField[] = [
   f('interimPartNumber', 'Interim Part Number', 'Identification'),
   f('sequenceNumber', 'Sequence Number', 'Identification', 'text', 'min-w-20'),
@@ -24,8 +25,8 @@ export const SEARCH_FIELDS: SearchField[] = [
   f('manufacturingDrawingItem', 'Manufacturing Drawing Item', 'Identification'),
   f('hulls', 'List of Hulls', 'Identification', 'list'),
   f('description', 'Description', 'Description', 'text', 'min-w-32'),
-  f('additionalDescription1', 'Additional Description 1', 'Description', 'text', 'min-w-32'),
-  f('additionalDescription2', 'Additional Description 2', 'Description', 'text', 'min-w-32'),
+  f('additionalDescription1', 'Additional Description 1', 'Description', 'list', 'min-w-32'),
+  f('additionalDescription2', 'Additional Description 2', 'Description', 'list', 'min-w-32'),
   f('weldClass', 'Weld Class', 'Weld', 'list'),
   f('jointType', 'Joint Type', 'Weld', 'list'),
   f('nominalSize', 'Nominal Size', 'Weld', 'list'),
