@@ -1,0 +1,178 @@
+<!-- Structural Welding (paired with structural-welding-page.component.ts). -->
+<div class="table-page-wrap">
+<!-- Title, saved views and filter actions on one line -->
+<div class="page-header search-head">
+  <h2 class="section-title">Structural Welding</h2>
+  <span class="spacer"></span>
+  <span class="fw-bold">View</span>
+  <select class="select select-sm select-bordered w-auto"
+          [ngModel]="selectedVariant()" (ngModelChange)="pickVariant($event)">
+    <option [value]="STANDARD">{{ STANDARD }}{{ isDefault(STANDARD) ? ' (default)' : '' }}</option>
+    @for (v of variants(); track v.name) {
+      <option [value]="v.name">{{ v.name }}{{ isDefault(v.name) ? ' (default)' : '' }}</option>
+    }
+  </select>
+  @if (savingVariant()) {
+    <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="View name"
+           [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
+           (keydown.enter)="saveCurrentVariant()" (keydown.escape)="savingVariant.set(false)" />
+    <button type="button" class="btn btn-sm btn-primary" [disabled]="!canSaveVariant()"
+            (click)="saveCurrentVariant()">
+      <svg lucideSave class="size-4"></svg> Save
+    </button>
+    <button type="button" class="btn btn-sm btn-ghost" (click)="savingVariant.set(false)">Cancel</button>
+  } @else {
+    <app-menu-button label="View options">
+      <li><button type="button" (click)="startSaveVariant()"><svg lucideSave class="size-4"></svg> Save view…</button></li>
+      @if (defaultMenuLabel(); as label) {
+        <li><button type="button" (click)="toggleDefault()">
+          <svg lucideStar class="size-4" [class.fill-current]="isDefault(selectedVariant())"></svg> {{ label }}
+        </button></li>
+      }
+      @if (selectedVariant() !== STANDARD) {
+        <li><button type="button" class="text-error" (click)="deleteVariant(selectedVariant())">
+          <svg lucideTrash2 class="size-4"></svg> Delete view
+        </button></li>
+      }
+    </app-menu-button>
+  }
+  <button type="button" class="btn btn-sm btn-outline ml-4" (click)="filtersHidden.set(!filtersHidden())">
+    @if (filtersHidden()) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronUp class="size-4"></svg> }
+    Filters{{ filterFields().length ? ' (' + filterFields().length + ')' : '' }}
+  </button>
+</div>
+
+<!-- Filter bar: each field stacks its own conditions -->
+@if (!filtersHidden()) {
+  <app-condition-bar [fields]="filterFields()" [values]="values()" [optionsFor]="optionsFn"
+                     (valuesChange)="setValues($event)" (adapt)="openAdapt()" (removeField)="removeFilterField($event)" />
+}
+
+<!-- Active filters, then keyword search / columns / export -->
+<div class="facet-row facet-row-compact">
+  <span class="fw-bold">{{ table.total() }} of {{ totalJoints }} match</span>
+  @for (c of activeChips(); track c.key) {
+    <span class="badge badge-outline gap-1 h-auto py-0.5">
+      {{ c.label }}
+      <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="clearField(c.key)">
+        <svg lucideX class="size-3"></svg>
+      </button>
+    </span>
+  }
+  @if (isFiltering()) {
+    <button type="button" class="btn btn-sm btn-ghost" (click)="clear()">
+      <svg lucideListFilter class="size-4"></svg> Clear all
+    </button>
+  }
+  <span class="spacer"></span>
+  <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search XREFID, hull, drawing, joint, order or sequence…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+    @if (table.globalFilter()) {
+      <button type="button" class="btn btn-ghost btn-xs p-0" title="Clear search" (click)="table.setGlobalFilter('')">
+        <svg lucideX class="size-3.5 opacity-60"></svg>
+      </button>
+    }
+  </label>
+  <app-menu-button [alignEnd]="true">
+    <li><button type="button" (click)="openColPicker()"><svg lucideColumns3 class="size-4"></svg> Columns…</button></li>
+    <li><button type="button" (click)="exportCsv()"><svg lucideFileSpreadsheet class="size-4"></svg> Export</button></li>
+  </app-menu-button>
+</div>
+
+<div class="flex-1 min-h-0 min-w-0">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      @for (col of visibleColumns(); track col.key) {
+        <!-- drag a heading (not its filter box) onto another to move the column -->
+        <th appSortHeader [class]="(col.width || '') + ' col-drag'" [table]="table" [field]="col.key" [label]="col.label"
+            [filter]="headerFilter(col)" [options]="optionsFor(col.key)" [clickToFilter]="true"
+            [attr.draggable]="colDrag.armedCol() === col.key" [class.dragging]="colDrag.dragCol() === col.key"
+            [class.drop-before]="colDrag.dropAt()?.key === col.key && colDrag.dropAt()?.before" [class.drop-after]="colDrag.dropAt()?.key === col.key && !colDrag.dropAt()?.before"
+            (mousedown)="colDrag.arm($event, col.key)" (mouseup)="colDrag.armedCol.set(null)"
+            (dragstart)="colDrag.start($event, col.key)" (dragover)="colDrag.over($event, col.key)"
+            (drop)="colDrag.drop($event)" (dragend)="colDrag.end()"></th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of table.paged(); track row.id) {
+      <tr>
+        @for (col of visibleColumns(); track col.key) {
+          <td>{{ cellText(row, col) }}</td>
+        }
+      </tr>
+    } @empty {
+      <tr><td [attr.colspan]="visibleColumns().length" class="empty">No joints match your filters.</td></tr>
+    }
+  </tbody>
+</table>
+</div>
+
+<app-table-pager [state]="table" />
+</div>
+
+<!-- Customize Filters dialog -->
+<dialog #adaptDlg class="modal">
+  @if (showAdapt()) {
+    <div class="modal-box max-w-3xl">
+      <h3 class="text-lg font-semibold mb-2">Customize filters</h3>
+      <p class="dialog-hint">
+        Check the fields you want in the filter bar, then drag them (or use the arrows) into the order you want.
+        Taking a field out of the bar clears its conditions.
+      </p>
+
+      <div class="row mb-sm">
+        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Search fields…"
+               [ngModel]="adaptFilter()" (ngModelChange)="adaptFilter.set($event)" />
+        <button type="button" class="btn btn-ghost btn-sm" (click)="draftKeys.set([])">Clear</button>
+      </div>
+
+      <div class="field-scroll">
+        <app-ordered-pick-list [items]="fields" [(keys)]="draftKeys" [filter]="adaptFilter()" />
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="showAdapt.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="applyAdapt()">
+          <svg lucideCheck class="size-4"></svg> Apply
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="showAdapt.set(false)">close</button>
+    </form>
+  }
+</dialog>
+
+<!-- Column Picker dialog -->
+@if (showColPicker()) {
+  <dialog class="modal" [class.modal-open]="showColPicker()" (close)="showColPicker.set(false)">
+    <div class="modal-box max-w-lg">
+      <h3 class="text-lg font-semibold mb-2">Pick result columns</h3>
+      <p class="dialog-hint">Check the columns you want in the results grid, then drag them (or use the arrows) into the order you want.</p>
+
+      <div class="row mb-sm">
+        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Search columns…"
+               [ngModel]="colFilter()" (ngModelChange)="colFilter.set($event)" />
+        <button type="button" class="btn btn-ghost btn-sm" (click)="draftColKeys.set([])">Clear</button>
+      </div>
+
+      <div class="field-scroll">
+        <app-ordered-pick-list [items]="fields" [(keys)]="draftColKeys" [filter]="colFilter()" />
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="showColPicker.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="applyColPicker()">
+          <svg lucideCheck class="size-4"></svg> Apply
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="showColPicker.set(false)">close</button>
+    </form>
+  </dialog>
+}

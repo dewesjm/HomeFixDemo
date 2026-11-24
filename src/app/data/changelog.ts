@@ -11,7 +11,7 @@ interface ChangeLogDay {
 }
 
 export const CHANGE_LOG: ChangeLogDay[] = [
-  { date: '2026-11-24', added: ["Weld Record > Non-Numbered Joints: a new page listing non-numbered joints, with sample data. Search by order or interim part number; every column sorts and filters, and Export downloads the list."] },
+  { date: '2026-11-24', added: ["Weld Record > Non-Numbered Joints: a new page listing non-numbered joints, with sample data. Search by order or interim part number; every column sorts and filters, and Export downloads the list.", 'Weld Record > Structural: a new page with the same search as Pipe Welding (keyword search, filters, column picker, saved views and Export) over its own sample structural joints. Routing, Details and History come later.'], changed: ["Weld Record's menu entries are shorter: Pipe, Structural and Non-Numbered."] },
   { date: '2026-11-23', changed: ['The avatar button is gold, matching Forge.'], added: ['A gold spark icon sits next to the system name in the header.'] },
   { date: '2026-11-21', changed: ['The avatar menu now follows the shared theme by default. You can still choose a theme for this app.'], added: ['Open the Forge launchpad from Quick Links.'] },
   {

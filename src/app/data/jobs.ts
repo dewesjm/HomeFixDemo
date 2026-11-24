@@ -181,12 +181,16 @@ const HULL_COUNT = 48;
 export const HULLS = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
 export const SHIP_BY_HULL = new Map(HULLS.map((h, k) => [h, makeShip(k + 1)]));
 
-function generateJobs(count = 480): Job[] {
-  const rand = seeded(42);
-  const codeRand = seeded(7);   /* attribute codes and the NDT they bring, apart so other values don't shift */
+/* another joint set (Structural Welding's) passes its own seed and id offset, so its values and
+   internal ids differ from Pipe Welding's */
+export interface JobSeedOptions { seed: number; idOffset: number }
+
+export function generateJobs(count = 480, { seed, idOffset }: JobSeedOptions = { seed: 42, idOffset: 0 }): Job[] {
+  const rand = seeded(seed);
+  const codeRand = seeded(seed === 42 ? 7 : seed + 1);   /* attribute codes and the NDT they bring, apart so other values don't shift */
   const out: Job[] = [];
   const usedIdentity = new Set<string>();
-  const joints = jointNumbers(count, 7);
+  const joints = jointNumbers(count, seed === 42 ? 7 : seed + 2);
   for (let i = 0; i < count; i++) {
     const technician = TECHNICIAN_NAMES[Math.floor(rand() * TECHNICIAN_NAMES.length)];
     rand();   /* a draw no field uses, kept so every seeded joint keeps its values */
@@ -207,7 +211,7 @@ function generateJobs(count = 480): Job[] {
     } while (usedIdentity.has(`${hull}|${drawing}|${joint}`));
     usedIdentity.add(`${hull}|${drawing}|${joint}`);
 
-    const id = makeJobId(i + 1);
+    const id = makeJobId(i + 1 + idOffset);
     const xrefidBlank = i % 4 === 0;
     /* placeholder until real engineering notes text is wired up: a couple of "SEE NOTE ####" references */
     /* real data never has UT alongside an RT degree for the same phase */
