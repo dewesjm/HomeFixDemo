@@ -42,8 +42,8 @@ export interface RoutingRow {
   current: boolean;
 }
 
-/* the keys a findJoints condition can name: every field any joint has (never the internal id) plus routing */
-export const JOINT_FIELDS: string[] = [...new Set(JOBS.flatMap(j => Object.keys(j)))].filter(k => k !== 'id' && k !== '_fresh').concat('routing');
+/* the keys a findJoints condition can name: every field any joint has (never the internal id or type) plus routing */
+export const JOINT_FIELDS: string[] = [...new Set(JOBS.flatMap(j => Object.keys(j)))].filter(k => k !== 'id' && k !== 'jointType' && k !== '_fresh').concat('routing');
 
 export interface JointFieldDefinition {
   key: string;
@@ -67,7 +67,7 @@ export class JointService {
   private store = inject(WorkflowStore);
 
   private record(job: Job): JointRecord {
-    const { id: _id, _fresh, ...fields } = job;
+    const { id: _id, jointType: _type, _fresh, ...fields } = job;
     return { ...fields, routing: currentRoutingLabel(this.store.workflowFor(job)().stages), url: jointUrl(job) };
   }
 

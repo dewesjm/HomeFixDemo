@@ -5,7 +5,11 @@ import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes
 import { attributeDemoJobs } from './attribute-demo-jobs';
 import { JOINT_DESIGN_LABELS } from './joint-design-seed';
 
+/* which joint set a record comes from; in real life pipe and structural are separate sources */
+export type JointType = 'pipe' | 'structural';
+
 export interface Job {
+  jointType: JointType;  /* internal, never shown; with id, it names the joint's saved workflow */
   id: string;          /* internal key, always present — never shown; the real (sometimes-missing) source
                            identifier users see is xrefid, below */
   xrefid: string;       /* XREFID as captured from the source system; blank ~25% of the time, same
@@ -181,11 +185,11 @@ const HULL_COUNT = 48;
 export const HULLS = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
 export const SHIP_BY_HULL = new Map(HULLS.map((h, k) => [h, makeShip(k + 1)]));
 
-/* another joint set (Structural Welding's) passes its own seed and id offset, so its values and
-   internal ids differ from Pipe Welding's */
-export interface JobSeedOptions { seed: number; idOffset: number }
+/* another joint set (Structural Welding's) passes its own seed, id offset and joint type, so its values
+   and internal ids differ from Pipe Welding's */
+export interface JobSeedOptions { seed: number; idOffset: number; jointType: JointType }
 
-export function generateJobs(count = 480, { seed, idOffset }: JobSeedOptions = { seed: 42, idOffset: 0 }): Job[] {
+export function generateJobs(count = 480, { seed, idOffset, jointType }: JobSeedOptions = { seed: 42, idOffset: 0, jointType: 'pipe' }): Job[] {
   const rand = seeded(seed);
   const codeRand = seeded(seed === 42 ? 7 : seed + 1);   /* attribute codes and the NDT they bring, apart so other values don't shift */
   const out: Job[] = [];
@@ -227,6 +231,7 @@ export function generateJobs(count = 480, { seed, idOffset }: JobSeedOptions = {
       : '';
 
     out.push({
+      jointType,
       id,
       xrefid: xrefidBlank ? '' : id,
       ship: SHIP_BY_HULL.get(hull)!,

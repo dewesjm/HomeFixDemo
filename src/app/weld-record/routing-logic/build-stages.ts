@@ -62,6 +62,7 @@ export function baseRequired(t: StageTemplate, job: Job, stages: WorkflowStage[]
 export function newWorkflow(job: Job): JobWorkflow {
   const fabricationData = seedFabricationData(job);
   return {
+    jointType: job.jointType,
     jobId: job.id,
     technician: job.technician,
     stages: buildStages(job, fabricationData),

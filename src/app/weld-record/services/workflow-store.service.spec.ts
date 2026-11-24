@@ -30,6 +30,17 @@ describe('WorkflowStore', () => {
       expect(reloaded.inputs['verifyMic1']).toBe('yes');
     });
 
+    it('keeps a pipe and a structural joint with the same id apart', () => {
+      const structural = testJob({ ...job, jointType: 'structural' });
+      store.update(job, wf => ({ ...wf, technician: 'Pipe Tech' }));
+      store.update(structural, wf => ({ ...wf, technician: 'Structural Tech' }));
+      jasmine.clock().tick(300);
+      TestBed.resetTestingModule();
+      const reloaded = TestBed.inject(WorkflowStore);
+      expect(reloaded.workflowFor(job)().technician).toBe('Pipe Tech');
+      expect(reloaded.workflowFor(structural)().technician).toBe('Structural Tech');
+    });
+
     it('debounces persistence: an update is written to localStorage once the 250 ms window ends', () => {
       store.update(job, wf => ({ ...wf, technician: 'Persisted Tech' }));
       jasmine.clock().tick(249);

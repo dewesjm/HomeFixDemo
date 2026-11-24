@@ -6,8 +6,8 @@
                     list = any of those values exactly), sort, optional paging and a total; answers flat rows. */
 import type { Job } from '../../data/jobs';
 
-/* a joint as the calls see it: its record fields (never the internal id), current routing and link */
-export type JointRecord = Omit<Job, 'id' | '_fresh'> & { routing: string; url: string };
+/* a joint as the calls see it: its record fields (never the internal id or type), current routing and link */
+export type JointRecord = Omit<Job, 'id' | 'jointType' | '_fresh'> & { routing: string; url: string };
 
 /* the keys a findJoints condition can name: every joint field plus routing */
 export type JointField = Exclude<keyof JointRecord, 'url'>;

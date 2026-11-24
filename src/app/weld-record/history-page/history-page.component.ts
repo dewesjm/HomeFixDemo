@@ -108,7 +108,7 @@ export class HistoryPageComponent {
   /* every pipe joint's history flattened newest-first (structural joints' History isn't built yet) */
   private allActivity = computed<HistoryRow[]>(() =>
     this.store.everyWorkflow()
-      .filter(wf => this.jobById.has(wf.jobId))
+      .filter(wf => wf.jointType === 'pipe')
       .flatMap(wf => historyRows(wf, this.jobById.get(wf.jobId)))
       .sort((a, b) => b.when.localeCompare(a.when)));
 

@@ -21,7 +21,10 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.79';
+const CURRENT_VERSION = '2.10.80';
+
+/* a joint's workflow key: type + id, since ids are only unique within one joint type */
+const workflowKey = (job: Pick<Job, 'jointType' | 'id'>) => `${job.jointType}|${job.id}`;
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -41,7 +44,7 @@ export class WorkflowStore {
   /* the workflow object each signal started with; a signal whose value differs has been edited */
   private baseline = new Map<string, JobWorkflow>();
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
-  /* per job: what is saved instead of the live workflow. The joint page sets one so unsigned edits stay
+  /* per job (by workflow key): what is saved instead of the live workflow. The joint page sets one so unsigned edits stay
      in memory only and a reload drops them; nothing typed is saved until it is signed. */
   private saveFilters = new Map<string, (wf: JobWorkflow) => JobWorkflow>();
 
@@ -53,13 +56,14 @@ export class WorkflowStore {
 
   /* reactive workflow for a job, built from the Routing Settings rows */
   workflowFor(job: Job): WritableSignal<JobWorkflow> {
-    let sig = this.store.get(job.id);
+    const key = workflowKey(job);
+    let sig = this.store.get(key);
     if (!sig) {
-      sig = signal(this.persisted[job.id] ?? (job._fresh ? newWorkflow(job) : seededWorkflow(job)));
+      sig = signal(this.persisted[key] ?? (job._fresh ? newWorkflow(job) : seededWorkflow(job)));
       /* a seeded Repair's Repair #, copied onto the job like a saved workflow's is on load */
-      if (!this.persisted[job.id] && sig().repairNumber) job.repairNumber = sig().repairNumber!;
-      this.store.set(job.id, sig);
-      this.baseline.set(job.id, sig());
+      if (!this.persisted[key] && sig().repairNumber) job.repairNumber = sig().repairNumber!;
+      this.store.set(key, sig);
+      this.baseline.set(key, sig());
     }
     return sig;
   }
@@ -79,9 +83,9 @@ export class WorkflowStore {
   }
 
   /* set (or clear, with null) what is saved for a job in place of its live workflow; see saveFilters */
-  setSaveFilter(jobId: string, filter: ((wf: JobWorkflow) => JobWorkflow) | null) {
-    if (filter) this.saveFilters.set(jobId, filter);
-    else this.saveFilters.delete(jobId);
+  setSaveFilter(job: Job, filter: ((wf: JobWorkflow) => JobWorkflow) | null) {
+    if (filter) this.saveFilters.set(workflowKey(job), filter);
+    else this.saveFilters.delete(workflowKey(job));
   }
 
   /* apply a mutation to a job's workflow signal and schedule a save */
@@ -102,7 +106,7 @@ export class WorkflowStore {
          (e.g. a stage's own "Signed off" entry records that stage, not the next one) */
       routing,
       /* sign-offs also capture fabrication data as it stood at that moment, not just the stage's own fields */
-      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData, findJointById(next.jobId)?.hull ?? '') : e.fabInputs
+      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData, findJointById(next.jointType, next.jobId)?.hull ?? '') : e.fabInputs
     };
     return { ...next, history: [...prev.history, entry] };
   }
@@ -130,7 +134,7 @@ export class WorkflowStore {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
       for (const wf of Object.values(parsed)) {
-        const job = findJointById(wf.jobId);
+        const job = findJointById(wf.jointType, wf.jobId);
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
         if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
 

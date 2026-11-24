@@ -290,7 +290,7 @@ describe('Ordinary insertion execution and preview', () => {
     definition(); rule('pre-fit', insertionTarget('extra')); sign('pre-fit'); sign();
     tick(250);
     window.dispatchEvent(new Event('pagehide'));
-    const saved = JSON.parse(localStorage.getItem(STORAGE.workflows)!)[job.id];
+    const saved = JSON.parse(localStorage.getItem(STORAGE.workflows)!)[`${job.jointType}|${job.id}`];
     const reloaded = TestBed.runInInjectionContext(() => new WorkflowStore()).workflowFor(job)();
     expect(reloaded.stages).toEqual(saved.stages);
     expect(reloaded.history).toEqual(saved.history);

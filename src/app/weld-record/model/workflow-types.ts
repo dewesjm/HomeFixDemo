@@ -2,6 +2,7 @@
    deviation.ts, Routing Settings rows stage-template.ts; the persona list is data/roles.ts */
 import type { HistoryEntry, SignoffUndo } from './history';
 import type { Deviation } from './deviation';
+import type { JointType } from '../../data/jobs';
 import type { StageTemplate, StageOption } from './stage-template';
 import type { AttributeStageRules } from '../attribute-codes-logic/exception-effects';
 
@@ -63,6 +64,7 @@ export interface Reference {
 }
 
 export interface JobWorkflow {
+  jointType: JointType;   /* with jobId, names the joint: ids are only unique within one type */
   jobId: string;
   technician: string;
   stages: WorkflowStage[];

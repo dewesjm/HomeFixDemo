@@ -6,7 +6,7 @@ import type { Job } from '../data/jobs';
 /* a plain joint: no attribute codes, no engineering notes, N Ind 3, VT on every NDT phase, no RT */
 export function testJob(overrides: Partial<Job> = {}): Job {
   return {
-    id: 'TEST-0001', xrefid: 'TEST-0001', ship: '100', hull: 'T0001', technician: 'Test Technician',
+    jointType: 'pipe', id: 'TEST-0001', xrefid: 'TEST-0001', ship: '100', hull: 'T0001', technician: 'Test Technician',
     drawing: 'H000-0001', drawingRev: 'A', joint: '1', jointDesign: 'C-24', weldType: 'Butt',
     pipeSize: '2"', wallThickness: '0.154"', materialType1: '02-CS', materialType2: '02-CS',
     mcl1: 'STD', mcl2: 'STD', joiningItem: 'Pipe A', joinToItem: 'Pipe B', sequenceNumber: '1',

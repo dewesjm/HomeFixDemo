@@ -17,9 +17,10 @@ describe('joint-route', () => {
     expect(findJointByRoute(p.hull, p.drawing, p.joint)).toBe(p);
   });
 
-  it('finds a pipe or structural joint by id', () => {
-    expect(findJointById(JOBS[0].id)).toBe(JOBS[0]);
-    expect(findJointById(STRUCTURAL_JOINTS[0].id)).toBe(STRUCTURAL_JOINTS[0]);
-    expect(findJointById('nope')).toBeUndefined();
+  it('finds a pipe or structural joint by type and id', () => {
+    expect(findJointById('pipe', JOBS[0].id)).toBe(JOBS[0]);
+    expect(findJointById('structural', STRUCTURAL_JOINTS[0].id)).toBe(STRUCTURAL_JOINTS[0]);
+    expect(findJointById('structural', JOBS[0].id)).toBeUndefined();
+    expect(findJointById('pipe', 'nope')).toBeUndefined();
   });
 });

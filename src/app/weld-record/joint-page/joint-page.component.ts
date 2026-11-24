@@ -99,7 +99,7 @@ export class JointPageComponent implements OnDestroy {
       this.formErrors.init({ job: this.job, wf: () => wf() });
       /* nothing typed is saved until it is signed: the saved copy always has this visit's unsigned edits taken out */
       const snapshot = this.loadSnapshot;
-      this.store.setSaveFilter(this.job.id, w => discardUnsignedEdits(w, snapshot));
+      this.store.setSaveFilter(this.job, w => discardUnsignedEdits(w, snapshot));
     }
   }
 
@@ -130,7 +130,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job || !this.wf || !this.loadSnapshot) return;
     const snapshot = this.loadSnapshot;
     const pending = this.overrides.pendingEngineering(this.wf().stages);
-    this.store.setSaveFilter(this.job.id, null);
+    this.store.setSaveFilter(this.job, null);
     this.wf.update(wf => discardUnsignedEdits(wf, snapshot));
     /* engineering doesn't sign: its override is kept, not discarded */
     for (const p of pending) this.overrides.recordEngineering(p.stage, p.values);
