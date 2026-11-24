@@ -343,6 +343,9 @@ html, body {
 /* Row action buttons (History, Details) show just their icon on phones; the title keeps the name */
 @media (max-width: 640px) { .btn-label { display: none; } }
 
+/* Actions column shrinks to its buttons, so they sit at the table's right edge however few columns show */
+.col-freeze-actions { width: 1%; white-space: nowrap; }
+
 /* Frozen columns — Actions pinned right, checkbox pinned left when scrolling horizontally */
 @media (max-width: 640px) {
   .table-page-wrap table { min-width: 40rem; }
