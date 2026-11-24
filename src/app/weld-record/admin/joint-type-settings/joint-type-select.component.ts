@@ -8,7 +8,8 @@ import { SETTINGS_JOINT_TYPE, SETTINGS_JOINT_TYPE_CHOICES, jointTypeParam } from
 @Component({
   selector: 'app-joint-type-select',
   template: `
-    <div class="mb-sm">
+    <!-- pl-1: room for the focus ring, which the page's content area would clip at its left edge -->
+    <div class="mb-sm pl-1">
       <label class="select select-sm w-64">
         <span class="label">Joint type</span>
         <select [value]="jointType" (change)="pick($any($event.target).value)">
