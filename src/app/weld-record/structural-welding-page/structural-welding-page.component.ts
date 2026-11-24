@@ -1,6 +1,7 @@
 /* Structural Welding: Pipe Welding's search over the structural joints. Stacked-condition filter bar
    (shared condition bar), keyword search, column header filters, a column picker with draggable headings,
-   saved views (with a default per browser) and Export. No role, routing, Release, Details or History yet. */
+   saved views (with a default per browser) and Export, and Details opens a joint's Joint Details. No role,
+   routing column, Release or History yet. */
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +23,8 @@ import { downloadCsv } from '../../shared/export-csv';
 import { formatDate } from '../../shared/date-format';
 import { FilterValues, activeConditions, applyFilters, chipLabel } from '../../shared/filter-engine';
 import { ViewerService } from '../access-logic/viewer.service';
+import { Router } from '@angular/router';
+import { jointRoute } from '../joint-link-logic/joint-route';
 
 import { STRUCTURAL_JOINTS } from '../../data/structural-joints';
 import {
@@ -47,8 +50,9 @@ const PAGE_SIZES = [10, 25, 50, 100];
 export class StructuralWeldingPageComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
-  /* History and Details show for the same roles as on Pipe Welding; they open nothing yet */
+  /* History and Details show for the same roles as on Pipe Welding; History opens nothing yet */
   readonly viewer = inject(ViewerService);
+  private router = inject(Router);
   readonly STANDARD = STANDARD_VARIANT;
   fields = SEARCH_FIELDS;
   private fieldMap = new Map(this.fields.map(f => [f.key, f]));
@@ -291,6 +295,8 @@ export class StructuralWeldingPageComponent {
   headerFilter(f: SearchField): 'text' | 'select' | 'none' {
     return f.kind === 'list' ? 'select' : f.kind === 'text' ? 'text' : 'none';
   }
+
+  openDetails(row: SearchRow) { this.router.navigate(jointRoute(row, 'structural')); }
 
   cellText(row: SearchRow, f: SearchField): string {
     const v = row[f.key];

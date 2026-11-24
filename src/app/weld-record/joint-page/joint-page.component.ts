@@ -21,7 +21,7 @@ import { SignoffFormEditsService } from '../signoff-validation-logic/signoff-for
 import { SignoffFormErrorsService } from '../signoff-validation-logic/signoff-form-errors.service';
 
 import { Job } from '../../data/jobs';
-import { findJointByRoute } from '../joint-link-logic/joint-route';
+import { DetailsJointType, SEARCH_PAGE, findJointByRoute } from '../joint-link-logic/joint-route';
 import { JointRoutingWritesService } from '../joint-service/joint-routing-writes.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
@@ -82,7 +82,9 @@ export class JointPageComponent implements OnDestroy {
   private formEdits = inject(SignoffFormEditsService);
   private formErrors = inject(SignoffFormErrorsService);
 
-  job: Job | undefined = findJointByRoute(this.route.snapshot.paramMap.get('hull'), this.route.snapshot.paramMap.get('drawing'), this.route.snapshot.paramMap.get('joint'));
+  /* pipe or structural, from the route the page was opened on */
+  private readonly jointType: DetailsJointType = this.route.snapshot.data?.['jointType'] ?? 'pipe';
+  job: Job | undefined = findJointByRoute(this.route.snapshot.paramMap.get('hull'), this.route.snapshot.paramMap.get('drawing'), this.route.snapshot.paramMap.get('joint'), this.jointType);
   wf = this.job ? this.store.workflowFor(this.job) : null;
 
   /* snapshot of state as loaded, so unsigned/unsaved edits (Fab data, stage inputs, sign-off
@@ -442,7 +444,7 @@ export class JointPageComponent implements OnDestroy {
     const from = this.route.snapshot.queryParamMap.get('from');
     if (from === 'assignments') return '/assignments';
     if (from === 'history' && this.viewer.canViewHistoryPage()) return '/history';
-    return '/pipe-welding';
+    return SEARCH_PAGE[this.jointType];
   }
 
   back() {

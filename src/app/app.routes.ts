@@ -121,6 +121,7 @@ export const routes: Routes = [
   { path: 'admin/feature-toggles', component: AdminFeatureTogglesComponent, title: 'EWR - Feature Toggles', canActivate: [requireAdminTablesAccess] },
 
   { path: 'jobs/:hull/:drawing/:joint', component: JointPageComponent, title: 'EWR - Hull Details', canActivate: [requireWeldRecordAccess(viewer => viewer.canViewJoint())], canDeactivate: [canDeactivateGuard] },
+  { path: 'structural/:hull/:drawing/:joint', component: JointPageComponent, title: 'EWR - Hull Details', data: { jointType: 'structural' }, canActivate: [requireWeldRecordAccess(viewer => viewer.canViewJoint())], canDeactivate: [canDeactivateGuard] },
 
   /* ── Weld Planning routes (separate system) ── */
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'EWP - Joint Search' },

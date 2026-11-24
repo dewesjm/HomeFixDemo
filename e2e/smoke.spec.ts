@@ -1,4 +1,4 @@
-/* Smoke journeys: the app starts from its seed data, a joint opens from Pipe Welding, and saved
+/* Smoke journeys: the app starts from its seed data, a joint opens from Pipe Welding and Structural, and saved
    browser data stays within one test. Full workflow journeys are test-coverage package 2. */
 import { test, expect } from '@playwright/test';
 
@@ -16,6 +16,16 @@ test('Details opens the joint page for that row', async ({ page }) => {
   await expect(page).toHaveTitle('EWR - Hull Details');
   await expect(page.getByText('Routing:')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Joint details' })).toBeVisible();
+});
+
+test('Structural Details opens the joint page, and Back returns to Structural', async ({ page }) => {
+  await page.goto('/structural-welding');
+  await page.getByRole('button', { name: 'Details' }).first().click();
+  await expect(page).toHaveURL(/\/structural\/[^/]+\/[^/]+\/[^/]+$/);
+  await expect(page.getByText('Routing:')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Joint details' })).toBeVisible();
+  await page.locator('.back-link').click();
+  await expect(page).toHaveURL(/\/structural-welding$/);
 });
 
 test.describe('storage isolation', () => {

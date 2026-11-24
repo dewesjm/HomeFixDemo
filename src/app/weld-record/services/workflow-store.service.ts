@@ -5,6 +5,7 @@ import { STORAGE, clearStaleCaches } from '../../data/storage-keys';
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { SyncService } from '../../shared/sync-status/sync.service';
 import { JOBS, Job } from '../../data/jobs';
+import { findJointById } from '../joint-link-logic/joint-route';
 import { stampWho } from '../../data/people';
 import { JobWorkflow } from '../model/workflow-types';
 import { HistoryEntry } from '../model/history';
@@ -101,7 +102,7 @@ export class WorkflowStore {
          (e.g. a stage's own "Signed off" entry records that stage, not the next one) */
       routing,
       /* sign-offs also capture fabrication data as it stood at that moment, not just the stage's own fields */
-      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData, JOBS.find(j => j.id === next.jobId)?.hull ?? '') : e.fabInputs
+      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData, findJointById(next.jobId)?.hull ?? '') : e.fabInputs
     };
     return { ...next, history: [...prev.history, entry] };
   }
@@ -129,7 +130,7 @@ export class WorkflowStore {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
       for (const wf of Object.values(parsed)) {
-        const job = JOBS.find(j => j.id === wf.jobId);
+        const job = findJointById(wf.jobId);
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
         if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
 

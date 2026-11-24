@@ -112,7 +112,7 @@
               </button>
             }
             @if (viewer.canViewJoint()) {
-              <button type="button" class="btn btn-primary btn-xs" title="Details" disabled>
+              <button type="button" class="btn btn-primary btn-xs" title="Details" (click)="openDetails(row)">
                 <svg lucideArrowUpRight class="size-3"></svg><span class="btn-label"> Details</span>
               </button>
             }
