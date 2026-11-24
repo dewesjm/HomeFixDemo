@@ -10,10 +10,10 @@ describe('Non-Numbered Joints page', () => {
     TestBed.configureTestingModule({ imports: [NonNumberedJointsPageComponent] });
   });
 
-  it('seeds joints unique by interim part number + order + sequence, with repeating orders and parts', () => {
-    const keys = NON_NUMBERED_JOINTS.map(j => `${j.interimPartNumber}|${j.order}|${j.sequenceNumber}`);
+  it('seeds joints with order blank, unique by interim part number + sequence, with repeating parts', () => {
+    expect(NON_NUMBERED_JOINTS.every(j => j.order === '')).toBeTrue();
+    const keys = NON_NUMBERED_JOINTS.map(j => `${j.interimPartNumber}|${j.sequenceNumber}`);
     expect(new Set(keys).size).toBe(keys.length);
-    expect(new Set(NON_NUMBERED_JOINTS.map(j => j.order)).size).toBeLessThan(keys.length);
     expect(new Set(NON_NUMBERED_JOINTS.map(j => j.interimPartNumber)).size).toBeLessThan(keys.length);
   });
 
@@ -23,18 +23,23 @@ describe('Non-Numbered Joints page', () => {
     fixture.detectChanges();
     expect(page.selectedVariant()).toBe('Standard');
     expect(page.visibleColumns().map(c => c.key)).toEqual(
-      ['interimPartNumber', 'order', 'sequenceNumber', 'findNumber1', 'findNumber2', 'manufacturingDrawingItem', 'currentRouting']);
+      ['interimPartNumber', 'sequenceNumber', 'findNumber1', 'findNumber2', 'manufacturingDrawingItem', 'currentRouting']);
     expect(page.table.total()).toBe(NON_NUMBERED_JOINTS.length);
     expect(page.table.paged().every(r => r.currentRouting === '')).toBeTrue();
+    expect(page.fields.some(f => f.key === 'order')).toBeFalse();
   });
 
-  it('keyword search matches order or interim part number only', () => {
+  it('keyword search matches interim part number or either find number only', () => {
     const fixture = TestBed.createComponent(NonNumberedJointsPageComponent);
     const page = fixture.componentInstance;
     fixture.detectChanges();
     const part = NON_NUMBERED_JOINTS[0].interimPartNumber;
     page.table.setGlobalFilter(part);
     expect(page.table.total()).toBe(NON_NUMBERED_JOINTS.filter(j => j.interimPartNumber === part).length);
+    const find = NON_NUMBERED_JOINTS[0].findNumber1;
+    page.table.setGlobalFilter(find);
+    expect(page.table.total()).toBe(NON_NUMBERED_JOINTS.filter(j =>
+      [j.interimPartNumber, j.findNumber1, j.findNumber2].some(v => v.toLowerCase().includes(find.toLowerCase()))).length);
     page.table.setGlobalFilter(NON_NUMBERED_JOINTS[0].description);
     expect(page.table.total()).toBe(0);
   });

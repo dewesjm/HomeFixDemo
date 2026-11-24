@@ -1,6 +1,7 @@
 /* Non-Numbered Joints' search: its fields, the rows it searches, and saved views (localStorage).
    Same model as Pipe Welding and Structural Welding, matched by shared/filter-engine.ts. Routing stays
-   blank until non-numbered joints have a routing. */
+   blank until non-numbered joints have a routing. Order is left out: it is part of the table key but
+   always blank in the real data. */
 import { STORAGE } from '../../../data/storage-keys';
 import type { NonNumberedJoint } from '../../../data/non-numbered-joints';
 import { FieldKind, FilterValues, MatchField } from '../../../shared/filter-engine';
@@ -17,7 +18,6 @@ const f = (key: keyof SearchRow & string, label: string, group: string, kind: Fi
 /* list = picked from the values joints have; List of Hulls holds several hulls per joint */
 export const SEARCH_FIELDS: SearchField[] = [
   f('interimPartNumber', 'Interim Part Number', 'Identification'),
-  f('order', 'Order', 'Identification'),
   f('sequenceNumber', 'Sequence Number', 'Identification', 'text', 'min-w-20'),
   f('findNumber1', 'Find Number 1', 'Identification', 'text', 'min-w-20'),
   f('findNumber2', 'Find Number 2', 'Identification', 'text', 'min-w-20'),
@@ -39,7 +39,7 @@ export const SEARCH_FIELDS: SearchField[] = [
   f('currentRouting', 'Routing', 'Routing', 'list', 'min-w-36'),
 ];
 
-/* a row is the joint plus its key as one id (interim part number + order + sequence number) and Routing */
+/* a row is the joint plus its table key as one id (interim part number + order + sequence number) and Routing */
 export type SearchRow = NonNumberedJoint & { id: string; currentRouting: string } & Record<string, any>;
 export const buildRow = (j: NonNumberedJoint): SearchRow =>
   ({ ...j, id: `${j.interimPartNumber}|${j.order}|${j.sequenceNumber}`, currentRouting: '' });
@@ -59,7 +59,7 @@ export interface SearchLayout {
 export interface FilterVariant extends SearchLayout { name: string }
 
 export const STANDARD_VARIANT = 'Standard';
-export const STANDARD_COLUMNS = ['interimPartNumber', 'order', 'sequenceNumber', 'findNumber1', 'findNumber2', 'manufacturingDrawingItem', 'currentRouting'];
+export const STANDARD_COLUMNS = ['interimPartNumber', 'sequenceNumber', 'findNumber1', 'findNumber2', 'manufacturingDrawingItem', 'currentRouting'];
 export function standardLayout(): SearchLayout {
   return {
     filterKeys: [],

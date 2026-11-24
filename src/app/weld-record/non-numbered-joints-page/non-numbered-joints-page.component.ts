@@ -1,5 +1,5 @@
 /* Non-Numbered Joints: Structural Welding's search over the non-numbered joints. Stacked-condition filter bar
-   (shared condition bar), keyword search on order / interim part number, column header filters, a column
+   (shared condition bar), keyword search on interim part number and find numbers, column header filters, a column
    picker with draggable headings, saved views (with a default per browser) and Export. */
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -56,7 +56,7 @@ export class NonNumberedJointsPageComponent {
   /* column header filters: list columns get a multiselect, so they need the in-list predicate;
      List of Hulls matches when the joint has any picked hull */
   table = new TableState<SearchRow>(
-    ['order', 'interimPartNumber'],
+    ['interimPartNumber', 'findNumber1', 'findNumber2'],
     {
       ...Object.fromEntries(this.fields.filter(f => f.kind === 'list').map(f => [f.key, inArray])),
       hulls: (cell, picked) => (cell as string[]).some(h => (picked as string[]).includes(h)),

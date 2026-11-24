@@ -67,7 +67,7 @@
   <span class="spacer"></span>
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search order or interim part number…"
+    <input type="text" class="grow" placeholder="Search interim part number or find number…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
     @if (table.globalFilter()) {
       <button type="button" class="btn btn-ghost btn-xs p-0" title="Clear search" (click)="table.setGlobalFilter('')">
