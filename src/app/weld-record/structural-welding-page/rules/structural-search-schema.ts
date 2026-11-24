@@ -1,6 +1,7 @@
 /* Structural Welding's search: its fields, the rows it searches, and saved views (localStorage).
    Same model as Pipe Welding (pipe-welding-page/filter-schema.ts), matched by shared/filter-engine.ts.
-   Only the joint's own fields: structural joints have no routing, Fabrication or step answers yet. */
+   The joint's own fields plus Routing, which stays blank until structural joints have a routing;
+   no Fabrication or step answers yet. */
 import { STORAGE } from '../../../data/storage-keys';
 import type { Job } from '../../../data/jobs';
 import { FilterValues, MatchField } from '../../../shared/filter-engine';
@@ -14,17 +15,15 @@ export interface SearchField extends MatchField {
 }
 
 const WIDTHS: Record<string, string> = {
-  xrefid: 'min-w-16', ship: 'min-w-16', joint: 'min-w-20', engineeringNotes: 'min-w-32', order: 'min-w-28',
+  xrefid: 'min-w-16', ship: 'min-w-16', joint: 'min-w-20', currentRouting: 'min-w-36', engineeringNotes: 'min-w-32', order: 'min-w-28',
 };
 
-export const SEARCH_FIELDS: SearchField[] = JOINT_FIELD_CATALOG
-  .filter(f => f.key !== 'currentRouting')
-  .map(f => ({ ...f, width: WIDTHS[f.key] ?? 'min-w-24' }));
+export const SEARCH_FIELDS: SearchField[] = JOINT_FIELD_CATALOG.map(f => ({ ...f, width: WIDTHS[f.key] ?? 'min-w-24' }));
 
-export type SearchRow = Job & Record<string, any>;
+export type SearchRow = Job & { currentRouting: string } & Record<string, any>;
 
-/* UT and VT as Joint Details shows them */
-export const buildRow = (j: Job): SearchRow => ({ ...j, ut: jointDetailsUt(j), vt: jointDetailsVt(j) });
+/* UT and VT as Joint Details shows them; Routing blank for now */
+export const buildRow = (j: Job): SearchRow => ({ ...j, currentRouting: '', ut: jointDetailsUt(j), vt: jointDetailsVt(j) });
 
 /* ── Layouts (the page's own state and saved views) ── */
 
@@ -40,13 +39,13 @@ export interface SearchLayout {
 
 export interface FilterVariant extends SearchLayout { name: string }
 
-/* "Standard": Pipe Welding's columns without Routing */
+/* "Standard": Pipe Welding's columns */
 export const STANDARD_VARIANT = 'Standard';
 export function standardLayout(): SearchLayout {
   return {
     filterKeys: [],
     values: {},
-    columnKeys: ['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber'],
+    columnKeys: ['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber', 'currentRouting'],
     columnFilters: {},
     globalFilter: '',
     sortField: null,

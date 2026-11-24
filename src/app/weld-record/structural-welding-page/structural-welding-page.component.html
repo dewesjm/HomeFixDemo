@@ -95,6 +95,7 @@
             (dragstart)="colDrag.start($event, col.key)" (dragover)="colDrag.over($event, col.key)"
             (drop)="colDrag.drop($event)" (dragend)="colDrag.end()"></th>
       }
+      <th class="col-freeze-actions">Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -103,9 +104,23 @@
         @for (col of visibleColumns(); track col.key) {
           <td>{{ cellText(row, col) }}</td>
         }
+        <td class="col-freeze-actions">
+          <div class="row-tight">
+            @if (viewer.canViewJointHistory()) {
+              <button type="button" class="btn btn-ghost btn-xs" title="History" disabled>
+                <svg lucideHistory class="size-3"></svg><span class="btn-label"> History</span>
+              </button>
+            }
+            @if (viewer.canViewJoint()) {
+              <button type="button" class="btn btn-primary btn-xs" title="Details" disabled>
+                <svg lucideArrowUpRight class="size-3"></svg><span class="btn-label"> Details</span>
+              </button>
+            }
+          </div>
+        </td>
       </tr>
     } @empty {
-      <tr><td [attr.colspan]="visibleColumns().length" class="empty">No joints match your filters.</td></tr>
+      <tr><td [attr.colspan]="visibleColumns().length + 1" class="empty">No joints match your filters.</td></tr>
     }
   </tbody>
 </table>

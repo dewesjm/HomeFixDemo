@@ -17,16 +17,16 @@ describe('Structural Welding page', () => {
     expect(STRUCTURAL_JOINTS.some(j => pipeIds.has(j.id))).toBeFalse();
   });
 
-  it('opens on Standard with every structural joint and searches like Pipe Welding', () => {
+  it('opens on Standard (Routing blank) with every structural joint and searches like Pipe Welding', () => {
     const fixture = TestBed.createComponent(StructuralWeldingPageComponent);
     const page = fixture.componentInstance;
     fixture.detectChanges();
     expect(page.selectedVariant()).toBe('Standard');
-    expect(page.visibleColumns().map(c => c.key)).toEqual(['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber']);
+    expect(page.visibleColumns().map(c => c.key)).toEqual(['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber', 'currentRouting']);
+    expect(page.table.paged().every(r => r.currentRouting === '')).toBeTrue();
     expect(page.table.total()).toBe(STRUCTURAL_JOINTS.length);
     page.table.setGlobalFilter(STRUCTURAL_JOINTS[3].order);
     fixture.detectChanges();
     expect(page.table.total()).toBe(STRUCTURAL_JOINTS.filter(j => j.order.includes(STRUCTURAL_JOINTS[3].order)).length);
-    expect(page.fields.some(f => f.key === 'currentRouting')).toBeFalse();
   });
 });

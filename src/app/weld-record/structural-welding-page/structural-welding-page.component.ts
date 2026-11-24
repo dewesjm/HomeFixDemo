@@ -1,12 +1,13 @@
 /* Structural Welding: Pipe Welding's search over the structural joints. Stacked-condition filter bar
    (shared condition bar), keyword search, column header filters, a column picker with draggable headings,
    saved views (with a default per browser) and Export. No role, routing, Release, Details or History yet. */
-import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch,
-  LucideFileSpreadsheet, LucideCheck, LucideColumns3, LucideStar, LucideChevronDown, LucideChevronUp
+  LucideFileSpreadsheet, LucideCheck, LucideColumns3, LucideStar, LucideChevronDown, LucideChevronUp,
+  LucideHistory, LucideArrowUpRight
 } from '@lucide/angular';
 
 import { TableState, inArray } from '../../shared/table-state';
@@ -20,6 +21,7 @@ import { ConfirmService } from '../../shared/confirm.service';
 import { downloadCsv } from '../../shared/export-csv';
 import { formatDate } from '../../shared/date-format';
 import { FilterValues, activeConditions, applyFilters, chipLabel } from '../../shared/filter-engine';
+import { ViewerService } from '../access-logic/viewer.service';
 
 import { STRUCTURAL_JOINTS } from '../../data/structural-joints';
 import {
@@ -37,13 +39,16 @@ const PAGE_SIZES = [10, 25, 50, 100];
     CommonModule, FormsModule,
     TablePagerComponent, SortHeaderComponent,
     LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch,
-    LucideFileSpreadsheet, LucideCheck, LucideColumns3, LucideStar, LucideChevronDown, LucideChevronUp
+    LucideFileSpreadsheet, LucideCheck, LucideColumns3, LucideStar, LucideChevronDown, LucideChevronUp,
+    LucideHistory, LucideArrowUpRight
   ],
   templateUrl: './structural-welding-page.component.html'
 })
 export class StructuralWeldingPageComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
+  /* History and Details show for the same roles as on Pipe Welding; they open nothing yet */
+  readonly viewer = inject(ViewerService);
   readonly STANDARD = STANDARD_VARIANT;
   fields = SEARCH_FIELDS;
   private fieldMap = new Map(this.fields.map(f => [f.key, f]));
