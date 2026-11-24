@@ -34,7 +34,7 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 
 /* The first matching reject rule wins; otherwise use the routing's reject destination. */
 function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stageId: string, fab: Record<string, string>) {
-  const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
+  const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates(job.jointType).find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
   const at = stages.findIndex(s => s.id === stageId);
   const targetId = rule ? resolveRuleTarget(stages, st, rule.to) : '';
   const targetAt = stages.findIndex(s => s.id === targetId);
@@ -70,7 +70,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
   const asStepId = signedAsStep(wf.stages, signing);
   if (isRepairStageId(stageId) && signing.result !== 'unsat') {
-    const error = repairCodeRoutingError(signing, job, wf.stages, getTemplates().find(t => t.id === 'repair'), wf.fabricationData);
+    const error = repairCodeRoutingError(signing, job, wf.stages, getTemplates(job.jointType).find(t => t.id === 'repair'), wf.fabricationData);
     if (error) throw new RoutingConfigurationError(error);
   }
   const now = new Date().toISOString();
@@ -119,7 +119,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   const executeTarget = (destination: string, reason = '') => {
     const currentIdx = stages.findIndex(s => s.id === stageId);
     if (insertionDefinitionId(destination)) {
-      const templates = getTemplates().map(t => t.id === st.insertion?.definition.id ? st.insertion.definition : t);
+      const templates = getTemplates(job.jointType).map(t => t.id === st.insertion?.definition.id ? st.insertion.definition : t);
       const errors = insertionConfigurationErrors(templates);
       if (errors.length) throw new RoutingConfigurationError(errors.join(' '));
       const inserted = resolveInsertion(templates, stages, job, st, destination, wf.history.flatMap(h => h.stageId ? [h.stageId] : []), fabricationData);
@@ -141,7 +141,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       return;
     }
     if (destination === 'repair') {
-      const repairStage = stageFromTemplate(nextRepairStage(stages, job), {
+      const repairStage = stageFromTemplate(job.jointType, nextRepairStage(stages, job), {
         originPhase: st.insertion?.originPhase || st.inputs['originPhase'] || baseStepId(stageId).split('-ndt-')[0],
         originStageId: st.insertion?.originStageId || st.inputs['originStageId'] || stageId,
         originInspectionType: st.insertion?.originInspectionType || st.inputs['originInspectionType'] || st.inspectionType,
@@ -186,7 +186,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     /* Returned inspection context is data; the target's saved Type rules decide availability. */
     stages = stages.map(s => {
       if (s.id !== target.id) return s;
-      const inputs = usesReturningInspectionType(s.id) ? { ...s.inputs, returningInspectionType: st.inspectionType } : s.inputs;
+      const inputs = usesReturningInspectionType(s.jointType, s.id) ? { ...s.inputs, returningInspectionType: st.inspectionType } : s.inputs;
       const settings = attributeTypeSettings(s.id, job, stages, fabricationData, inputs);
       const typeOptions = s.insertion ? s.typeOptions : settings.typeOptions;
       const { attributeRules: _old, ...rest } = s;
@@ -197,15 +197,15 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   if (st.result === 'unsat' && !rejectsToItself) {
     const { to, rule } = rejectTarget(stages, job, st, stageId, fabricationData);
     if (to) {
-      reasons.push(rule ? `Reject rule ${describeConditions([rule.when], stageConditionFields(st))} -> ${to}` : `Rejected (UNSAT) -> ${to}`);
+      reasons.push(rule ? `Reject rule ${describeConditions([rule.when], job.jointType, stageConditionFields(job.jointType, st))} -> ${to}` : `Rejected (UNSAT) -> ${to}`);
       executeTarget(to, rule ? rejectHoldReason(st, rule) : `${st.label} was UNSAT`);
     }
   }
   if (st.result !== 'unsat') {
-    const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
+    const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates(job.jointType).find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
     if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stages.some(s => s.id === resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
-      reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stages.find(s => s.id === rule.to)?.label ?? rule.to}`);
+      reasons.push(`Then go to rule ${describeConditions([rule.when], job.jointType, stageConditionFields(job.jointType, signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stages.find(s => s.id === rule.to)?.label ?? rule.to}`);
     }
   }
 

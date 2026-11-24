@@ -5,8 +5,9 @@ import type { WorkflowStage } from '../model/workflow-types';
 import { signoffTypeOptions } from './signoff-type-routing-rules';
 import { isExcavationNdtStageId } from '../../data/welding-step-ids';
 import {
-  DEFAULT_TYPE_DEFINITIONS, FieldActivation, TYPE_KEY, TypeDefinition, VerifyAgainst, getStepFieldConfig,
+  FieldActivation, TYPE_KEY, TypeDefinition, VerifyAgainst, defaultTypeDefinitions, getStepFieldConfig,
 } from '../../data/signoff-type-forms';
+import type { JointType } from '../../data/jobs';
 
 export function isHeadingItem(a: FieldActivation): boolean {
   return a.heading !== undefined;
@@ -25,16 +26,18 @@ export function definitionFields(items: FieldActivation[]): FieldActivation[] {
 /* what a step whose Type hasn't been picked yet shows: only the Type droplist */
 const TYPE_ONLY: TypeDefinition = { typeId: '', fields: [{ key: TYPE_KEY, line: 1 }] };
 
-/* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
-export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions' | 'attributeRules' | 'inputs'>>;
+/* a definition by its id (a Type's value) in a joint type's Signoff Type Forms, or a step, which reads
+   the definition of its Type in its joint type's table */
+export type StepRef = { jointType: JointType; typeId: string }
+  | Pick<WorkflowStage, 'jointType' | 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions' | 'attributeRules' | 'inputs'>>;
 
 /* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
    routing without a Signoff Type to Routing row), which has no form */
 export function definitionId(step: StepRef): string | undefined {
-  if (typeof step === 'string') return step;
+  if ('typeId' in step) return step.typeId;
   if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;
-  const options = step.insertion || step.attributeRules ? step.typeOptions : signoffTypeOptions(step.id);
+  const options = step.insertion || step.attributeRules ? step.typeOptions : signoffTypeOptions(step.jointType, step.id);
   if (!options) return undefined;
   return options.some(o => o.value === step.signoffType) ? step.signoffType : '';
 }
@@ -43,7 +46,7 @@ function findDefinition(step: StepRef): TypeDefinition | undefined {
   const id = definitionId(step);
   if (id === undefined) return undefined;
   if (!id) return TYPE_ONLY;
-  return getStepFieldConfig().find(a => a.typeId === id) ?? DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === id);
+  return getStepFieldConfig(step.jointType).find(a => a.typeId === id) ?? defaultTypeDefinitions(step.jointType).find(a => a.typeId === id);
 }
 
 /* whether a step's fields come from a definition (otherwise from its template): its Type has one */
@@ -66,7 +69,7 @@ export function definitionHas(step: StepRef, key: string): boolean {
 /* the definition a step reads, or an empty one when it has none */
 export function getActivationForStep(step: StepRef): TypeDefinition {
   const definition = findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
-  if (typeof step === 'string' || !(step.attributeRules?.accessible.length || step.attributeRules?.askAccessible)) return definition;
+  if ('typeId' in step || !(step.attributeRules?.accessible.length || step.attributeRules?.askAccessible)) return definition;
   /* Attribute Code Exceptions accessible rules: "ID is accessible" is asked above the Type, on its own line */
   const fields = definition.fields.filter(f => f.key !== 'idAccessible');
   const at = Math.max(0, fields.findIndex(f => f.key === TYPE_KEY));
@@ -79,5 +82,5 @@ export function getActivationForStep(step: StepRef): TypeDefinition {
 export function verifyAgainst(step: StepRef): VerifyAgainst {
   const id = definitionId(step);
   return getActivationForStep(step).verifyAgainst
-    ?? DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === id)?.verifyAgainst ?? 'record';
+    ?? defaultTypeDefinitions(step.jointType).find(a => a.typeId === id)?.verifyAgainst ?? 'record';
 }

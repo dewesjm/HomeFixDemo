@@ -3,6 +3,7 @@ import { API_ACCESS_PERMISSION, DEVELOPER_GROUP_ID, EDIT_FABRICATION_PERMISSION,
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE, demoPersonName } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
+import type { JointType } from '../../data/jobs';
 import { isExcavationNdtStageId } from '../../data/welding-step-ids';
 import type { WorkflowStage } from '../model/workflow-types';
 import { STORAGE } from '../../data/storage-keys';
@@ -80,18 +81,18 @@ export class ViewerService {
     return roles[0] ?? null;
   });
 
-  canSignType(type: string): boolean {
-    return this.hasFullWorkflowAccess() || (!!findSignoffType(type) &&
+  canSignType(jointType: JointType, type: string): boolean {
+    return this.hasFullWorkflowAccess() || (!!findSignoffType(jointType, type) &&
       this.signoffGroups().some(group => group.allowed.includes(signoffPermission(type))));
   }
 
   /* a group signs a routing as a Type when it has that Type's permission (Admin > Groups; Excavation NDT
      has its own) and one of its personas is the routing's persona on this joint (Admin > Routing
      Settings Persona and persona rules; "A|B" names several) */
-  canSignRouting(stage: Pick<WorkflowStage, 'id' | 'role'>, type: string): boolean {
+  canSignRouting(stage: Pick<WorkflowStage, 'jointType' | 'id' | 'role'>, type: string): boolean {
     if (closesJoint(stage.id)) return false;
     if (this.hasFullWorkflowAccess()) return true;
-    if (!findSignoffType(type)) return false;
+    if (!findSignoffType(stage.jointType, type)) return false;
 
     const permission = isExcavationNdtStageId(stage.id) ? SIGN_EXCAVATION_NDT_PERMISSION : signoffPermission(type);
     const personas = (stage.role ?? '').split('|').filter(Boolean);

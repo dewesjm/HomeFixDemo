@@ -8,7 +8,7 @@
      to and Then go to (stageConditionFields)
    - Qualifications and Advanced Search: allStepAnswerFields
    - Attribute Code Exceptions: exceptionConditionFields, built from these */
-import { Job } from '../../data/jobs';
+import { Job, JointType } from '../../data/jobs';
 import { getSignoffTypes } from '../../data/signoff-types';
 import { isExcavationNdtStageId, isRepairStageId } from '../../data/welding-step-ids';
 import { ConditionCatalogField, FIELD_CATALOG, FORM_FIELDS, RuleEntry, StageAnswers } from './field-catalog';
@@ -70,20 +70,21 @@ interface StepTemplateShape extends StageShape { id: string; label: string }
 
 /* Registered with templates to keep condition evaluation independent of form initialization. */
 interface RoutingField { key: string; label: string; type: string; options?: { label: string; value: string }[]; ownFormSteps?: string[]; }
-let routingFields: (stageId: string, options?: StageShape['typeOptions']) => RoutingField[] = () => [];
+let routingFields: (jointType: JointType, stageId: string, options?: StageShape['typeOptions']) => RoutingField[] = () => [];
 let fieldsVersion: () => number = () => 0;
 export function registerRoutingFields(fn: typeof routingFields, version: () => number) { routingFields = fn; fieldsVersion = version; }
-export const routingAnswerFields = (stage: StageShape) => routingFields(stage.id ?? '', stage.typeOptions);
+export const routingAnswerFields = (jointType: JointType, stage: StageShape) => routingFields(jointType, stage.id ?? '', stage.typeOptions);
 
-/* routing-settings-rules.ts registers its templates at load (it imports this file, so it can't be imported back) */
-let stepTemplates: () => StepTemplateShape[] = () => [];
-export function registerStepTemplates(fn: () => StepTemplateShape[]) { stepTemplates = fn; }
+/* routing-settings-rules.ts registers its templates at load (it imports this file, so it can't be imported
+   back): a joint type's Routing Settings rows */
+let stepTemplates: (jointType: JointType) => StepTemplateShape[] = () => [];
+export function registerStepTemplates(fn: (jointType: JointType) => StepTemplateShape[]) { stepTemplates = fn; }
 
 /* covered by the fixed fields above (the built-in rules use those keys) */
 const isFixedAnswer = (stageId: string, key: string) => FIXED_ANSWERS.some(({ row, answer }) => row.key === key && answer.stageIds.includes(stageId));
 
 /* one routing's answers as condition fields; blank until that routing is signed */
-function answersOf(t: StepTemplateShape): ConditionCatalogField[] {
+function answersOf(jointType: JointType, t: StepTemplateShape): ConditionCatalogField[] {
   const out: ConditionCatalogField[] = [];
   const add = (key: string, label: string, type: string, opts?: { label: string; value: string }[], signoff = false) => {
     if (isFixedAnswer(t.id, key) || out.some(f => f.key === `step.${t.id}.${key}`)) return;
@@ -103,45 +104,47 @@ function answersOf(t: StepTemplateShape): ConditionCatalogField[] {
     });
   };
   if ((t.typeOptions?.length ?? 0) > 1) add('inspectionType', 'Type', 'select', t.typeOptions);
-  for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, f.options, !!f.ownFormSteps?.includes(t.id));
+  for (const f of routingAnswerFields(jointType, t)) add(f.key, f.label, f.type, f.options, !!f.ownFormSteps?.includes(t.id));
   return out;
 }
 
-/* the routings (id, label, fields), in routing order (Admin > Qualifications builds its sign-off fields from these) */
-export const routingsInOrder = (): StepTemplateShape[] => stepTemplates();
+/* a joint type's routings (id, label, fields), in routing order (Admin > Qualifications builds its sign-off fields from these) */
+export const routingsInOrder = (jointType: JointType): StepTemplateShape[] => stepTemplates(jointType);
 
 /* the answers of the routings before `stageId`, in routing order (what a rule on that routing can use) */
-export function stepAnswerFieldsBefore(stageId: string): ConditionCatalogField[] {
-  const list = stepTemplates();
+export function stepAnswerFieldsBefore(jointType: JointType, stageId: string): ConditionCatalogField[] {
+  const list = stepTemplates(jointType);
   const at = list.findIndex(t => t.id === stageId);
-  return (at < 0 ? list : list.slice(0, at)).flatMap(answersOf);
+  return (at < 0 ? list : list.slice(0, at)).flatMap(t => answersOf(jointType, t));
 }
 
 /* every routing's answers, in routing order, with Fit's and Fit-Up Insp's fixed ones under
    their own routing (Advanced Search) */
-export function allStepAnswerFields(): ConditionCatalogField[] {
+export function allStepAnswerFields(jointType: JointType): ConditionCatalogField[] {
   const fixedOf = (stageId: string) => FIXED_ANSWER_FIELDS.filter((_, i) => FIXED_ANSWERS[i].answer.stageIds.includes(stageId));
-  return stepTemplates().flatMap(t => [...fixedOf(t.id), ...answersOf(t)]);
+  return stepTemplates(jointType).flatMap(t => [...fixedOf(t.id), ...answersOf(jointType, t)]);
 }
 
-/* every routing's answers, for looking a saved clause's field up by key */
-let cache: { src: StepTemplateShape[]; fields: Map<string, ConditionCatalogField>; version: number } | null = null;
-function stepAnswerField(key: string): ConditionCatalogField | undefined {
-  const src = stepTemplates();
-  if (cache?.src !== src || cache?.version !== fieldsVersion()) {
+/* a joint type's routings' answers, for looking a saved clause's field up by key */
+const cache = new Map<JointType, { src: StepTemplateShape[]; fields: Map<string, ConditionCatalogField>; version: number }>();
+function stepAnswerField(jointType: JointType, key: string): ConditionCatalogField | undefined {
+  const src = stepTemplates(jointType);
+  let entry = cache.get(jointType);
+  if (entry?.src !== src || entry?.version !== fieldsVersion()) {
     const fields = new Map<string, ConditionCatalogField>();
-    for (const f of src.flatMap(answersOf)) if (!fields.has(f.key)) fields.set(f.key, f);
-    cache = { src, fields, version: fieldsVersion() };
+    for (const f of src.flatMap(t => answersOf(jointType, t))) if (!fields.has(f.key)) fields.set(f.key, f);
+    entry = { src, fields, version: fieldsVersion() };
+    cache.set(jointType, entry);
   }
-  return cache.fields.get(key);
+  return entry.fields.get(key);
 }
 
-/* a saved clause's field, wherever in the catalog it lives */
-export const catalogField = (key: string) =>
-  ROUTING_CONDITION_FIELDS.find(f => f.key === key) ?? (key.startsWith('step.') ? stepAnswerField(key) : undefined);
+/* a saved clause's field, wherever in the catalog it lives; routing answers come from the joint type's routings */
+export const catalogField = (key: string, jointType: JointType) =>
+  ROUTING_CONDITION_FIELDS.find(f => f.key === key) ?? (key.startsWith('step.') ? stepAnswerField(jointType, key) : undefined);
 
 /* a routing's own answers a Reject routes to or Then go to rule can test: its Type, and every field */
-export function stageConditionFields(stage: StageShape): ConditionCatalogField[] {
+export function stageConditionFields(jointType: JointType, stage: StageShape): ConditionCatalogField[] {
   const out: ConditionCatalogField[] = [];
   const add = (key: string, label: string, opts: { label: string; value: string }[]) => {
     if (out.some(f => f.key === `self.${key}`)) return;
@@ -150,10 +153,10 @@ export function stageConditionFields(stage: StageShape): ConditionCatalogField[]
       valueLabel: v => labels.get(v) ?? v, get: () => '' });
   };
   if (stage.typeOptions?.length) add('inspectionType', 'Type', stage.typeOptions);
-  for (const f of routingAnswerFields(stage)) add(f.key, f.label, formFieldValues(f));   /* no options = a typed value */
+  for (const f of routingAnswerFields(jointType, stage)) add(f.key, f.label, formFieldValues(f));   /* no options = a typed value */
   const repair = isRepairStageId(stage.id ?? '');
   if (repair || isExcavationNdtStageId(stage.id ?? '') || stage.insertion || (stage.classification === 'added' && stage.lifecycle === 'ordinary')) {
-    const types = [{ label: 'Blank', value: '' }, ...getSignoffTypes().map(t => ({ label: t.label, value: t.value }))];
+    const types = [{ label: 'Blank', value: '' }, ...getSignoffTypes(jointType).map(t => ({ label: t.label, value: t.value }))];
     add('originalInspectionType', 'Original rejecting inspection Type', types);
     if (!repair) add('performedInspectionType', 'Performed inspection Type', types);
   }

@@ -1,10 +1,12 @@
-import { StepRef, definitionHas } from './signoff-type-form-rules';
+import { definitionHas } from './signoff-type-form-rules';
 
-const showsReferences = (step: StepRef) => definitionHas(step, 'references');
+/* a Pipe Type's definition by id, or a Pipe step */
+const showsReferences = (step: string | { id: string; signoffType: string }) =>
+  definitionHas(typeof step === 'string' ? { jointType: 'pipe', typeId: step } : { jointType: 'pipe', ...step }, 'references');
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 
 describe('showsReferences', () => {
-  afterEach(() => resetStepFieldConfig());
+  afterEach(() => resetStepFieldConfig('pipe'));
 
   it('shows on RT, UT and Repair by default, on every step and round that offers them', () => {
     for (const id of ['rt', 'ut', 'repair']) expect(showsReferences(id)).withContext(id).toBeTrue();
@@ -21,7 +23,7 @@ describe('showsReferences', () => {
   });
 
   it('follows the definition when References is ticked or unticked', () => {
-    setStepFieldConfig([
+    setStepFieldConfig('pipe', [
       ...DEFAULT_TYPE_DEFINITIONS.filter(a => a.typeId !== 'rt' && a.typeId !== 'sold'),
       { typeId: 'rt', fields: [] },
       { typeId: 'sold', fields: [{ key: 'references' }] },

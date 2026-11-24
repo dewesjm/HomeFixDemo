@@ -1,8 +1,9 @@
 /* Admin > Routing Settings: the dialog for a routing's plain-English description (reference text only). */
-import { Component, input, output, OnInit } from '@angular/core';
+import { Component, input, output, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { StageTemplate } from '../../model/stage-template';
 import { updateStageTemplate } from '../../routing-logic/routing-settings-rules';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
 
 @Component({
   selector: 'app-routing-description', standalone: true, imports: [FormsModule],
@@ -26,6 +27,8 @@ import { updateStageTemplate } from '../../routing-logic/routing-settings-rules'
   `,
 })
 export class RoutingDescriptionComponent implements OnInit {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   routing = input.required<StageTemplate>();
   closed = output<void>();
   description = '';
@@ -35,7 +38,7 @@ export class RoutingDescriptionComponent implements OnInit {
 
   save() {
     try {
-      updateStageTemplate(this.routing().id, { description: this.description.trim() });
+      updateStageTemplate(this.jointType, this.routing().id, { description: this.description.trim() });
       this.closed.emit();
     } catch {
       this.error = 'The description could not be saved. Try again.';

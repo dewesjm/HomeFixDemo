@@ -5,7 +5,7 @@ import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../d
 
 describe('Signoff Type to Routing admin', () => {
   it('exports readable ordered exception conditions with the routing and source', async () => {
-    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'fit' }], typeExceptions: [
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'fit', types: [{ type: 'fit' }], typeExceptions: [
       { from: 'fit', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] }]);
     const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeRoutingComponent());
     TestBed.flushEffects();
@@ -20,7 +20,7 @@ describe('Signoff Type to Routing admin', () => {
     expect(text).toContain('Fit -> VT ((N Ind. is 3))');
   });
   beforeEach(() => localStorage.clear());
-  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); });
   it('shows Type source read-only while editing and re-adds Excavation on the rejecting inspection', async () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const f = TestBed.createComponent(AdminSignoffTypeRoutingComponent); f.detectChanges(); await f.whenStable();
@@ -47,14 +47,14 @@ describe('Signoff Type to Routing admin', () => {
     component.startEdit(restored);
     restored.types[0].enableWhen = [];
     component.saveEdit(restored);
-    expect(getSignoffTypeRoutingRows().find(r => r.stepId === row.stepId)!.types[0].enableWhen).toEqual([]);
+    expect(getSignoffTypeRoutingRows('pipe').find(r => r.stepId === row.stepId)!.types[0].enableWhen).toEqual([]);
   });
   it('retains Excavation Type rules when another routing is edited and saved', () => {
     const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeRoutingComponent());
-    const expected = getSignoffTypeRoutingRows().find(r => r.stepId === 'excavation-ndt');
+    const expected = getSignoffTypeRoutingRows('pipe').find(r => r.stepId === 'excavation-ndt');
     const row = component.rows().find(r => r.stepId === 'tack')!;
     component.startEdit(row); component.saveEdit(row);
-    expect(getSignoffTypeRoutingRows().find(r => r.stepId === 'excavation-ndt')).toEqual(expected);
+    expect(getSignoffTypeRoutingRows('pipe').find(r => r.stepId === 'excavation-ndt')).toEqual(expected);
     expect(component.steps.filter(s => s.id === 'repair').length).toBe(1);
   });
 });

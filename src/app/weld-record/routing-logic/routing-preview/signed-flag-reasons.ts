@@ -13,7 +13,7 @@ const codeText = (e: RoutingEffect) => `attribute code${e.codes.length > 1 ? 's'
 
 /* `before`/`after`: the stages around applySignedFlags; `fab` is the joint's Fabrication values */
 export function signedFlagChanges(before: WorkflowStage[], after: WorkflowStage[], job: Job, fab?: Record<string, string>): SignedFlagChange[] {
-  const templates = getTemplates();
+  const templates = getTemplates(job.jointType);
   return after.flatMap((s, i) => {
     const was = before[i];
     const typesChanged = typesKey(s) !== typesKey(was);
@@ -31,7 +31,7 @@ export function signedFlagChanges(before: WorkflowStage[], after: WorkflowStage[
       else if (s.required && prev?.drop) out.push(change(`${name} is now required (${codeText(prev)} no longer drops it)`));
       else if (!s.required && prev?.add) out.push(change(`${name} is skipped (${codeText(prev)} no longer adds it)`));
       else {
-        const rule = describeConditions(template?.includeWhen);
+        const rule = describeConditions(template?.includeWhen, job.jointType);
         out.push(change(s.required ? `${name} is now required (included when ${rule})` : `${name} is skipped (included only when ${rule})`));
       }
     }

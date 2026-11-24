@@ -46,8 +46,8 @@ describe('field catalog', () => {
     expect(lookupCatalogField('ss')).toBeUndefined();
     expect(lookupCatalogField('deferTack')?.source).toBe('Signoff Form');
     expect(FORM_FIELDS.every(f => f.source === 'Signoff Form')).toBeTrue();
-    expect(catalogField('drawingRev')?.label).toBe('Drawing Rev');
-    expect(catalogField('fab.drawingRev')?.label).toBe('Fabrication: Drawing Rev Execution');
+    expect(catalogField('drawingRev', 'pipe')?.label).toBe('Drawing Rev');
+    expect(catalogField('fab.drawingRev', 'pipe')?.label).toBe('Fabrication: Drawing Rev Execution');
   });
 
   it('keeps admin-edited option lists live and values imported at load', () => {
@@ -58,23 +58,23 @@ describe('field catalog', () => {
 
   it('builds the fixed answers from their Signoff Form rows', () => {
     const signed = (id: string, signoffInputs: Record<string, string>, inputs: Record<string, string> = {}) => [{ id, signed: true, inputs, signoffInputs }];
-    expect(catalogField('fitDeferTack')?.get(job(), signed('fit', { deferTack: 'yes' }))).toBe('Yes');
-    expect(catalogField('inspReleaseToWelding')?.get(job(), signed('nqc-fitup-insp', {}, { releaseToWelding: 'yes' }))).toBe('Yes');
-    expect(catalogField('inspReleaseToWelding')?.get(job(), [])).toBe('');
-    expect(keysOf(allStepAnswerFields()).filter(k => /deferTack|releaseToWelding/i.test(k))).toEqual(['fitDeferTack', 'inspReleaseToWelding', 'inspReleaseToWelding']);
+    expect(catalogField('fitDeferTack', 'pipe')?.get(job(), signed('fit', { deferTack: 'yes' }))).toBe('Yes');
+    expect(catalogField('inspReleaseToWelding', 'pipe')?.get(job(), signed('nqc-fitup-insp', {}, { releaseToWelding: 'yes' }))).toBe('Yes');
+    expect(catalogField('inspReleaseToWelding', 'pipe')?.get(job(), [])).toBe('');
+    expect(keysOf(allStepAnswerFields('pipe')).filter(k => /deferTack|releaseToWelding/i.test(k))).toEqual(['fitDeferTack', 'inspReleaseToWelding', 'inspReleaseToWelding']);
   });
 
   it('treats only Fabrication-dependent rows as reading Fabrication', () => {
-    expect(readsFabrication(catalogField('fab.id1'))).toBeTrue();
-    expect(readsFabrication(catalogField('consumableInsertRequired'))).toBeTrue();
-    expect(readsFabrication(catalogField('controlledMaterial'))).toBeFalse();
-    expect(usesFabrication([[{ field: 'fabricationShipboard', op: 'is', values: ['Yes'] }]])).toBeTrue();
-    expect(usesFabrication([[{ field: 'controlledMaterial', op: 'is', values: ['Yes'] }]])).toBeFalse();
+    expect(readsFabrication(catalogField('fab.id1', 'pipe'))).toBeTrue();
+    expect(readsFabrication(catalogField('consumableInsertRequired', 'pipe'))).toBeTrue();
+    expect(readsFabrication(catalogField('controlledMaterial', 'pipe'))).toBeFalse();
+    expect(usesFabrication([[{ field: 'fabricationShipboard', op: 'is', values: ['Yes'] }]], 'pipe')).toBeTrue();
+    expect(usesFabrication([[{ field: 'controlledMaterial', op: 'is', values: ['Yes'] }]], 'pipe')).toBeFalse();
   });
 });
 
 describe('what each screen offers', () => {
-  const steps = () => getTemplates();
+  const steps = () => getTemplates('pipe');
 
   it('leaves Fabrication-dependent rows out of personas and Signoff Type to Routing', () => {
     const keys = keysOf(JOINT_DETAIL_FIELDS);
@@ -85,18 +85,18 @@ describe('what each screen offers', () => {
 
   it('heads Routing Settings droplists with the Source, in order', () => {
     const t = steps().find(s => s.id === 'fit')!;
-    const groups = conditionFieldGroups([...stageConditionFields(t), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore('fit')]);
+    const groups = conditionFieldGroups([...stageConditionFields('pipe', t), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore('pipe', 'fit')]);
     expect(groups.map(g => g.label)).toEqual(['This routing', 'Joint Details', 'Calculated', 'Fabrication', 'Earlier routings (once signed)']);
     expect(keysOf(groups.find(g => g.label === 'Calculated')!.fields)).toEqual(keysOf(FIELD_CATALOG.filter(f => f.source === 'Calculated')));
   });
 
   it('names a droplist field with its Source once, leaving rule text to the plain label', () => {
-    expect(fieldChoiceLabel(catalogField('nInd')!)).toBe('Joint Details: N Ind.');
-    expect(fieldChoiceLabel(catalogField('controlledMaterial')!)).toBe('Calculated: Controlled Material');
-    expect(fieldChoiceLabel(catalogField('fab.id1')!)).toBe('Fabrication: Joining Item MIC');
-    expect(fieldChoiceLabel(catalogField('fitDeferTack')!)).toBe('Fit: Defer Tack (once Fit is signed)');
+    expect(fieldChoiceLabel(catalogField('nInd', 'pipe')!)).toBe('Joint Details: N Ind.');
+    expect(fieldChoiceLabel(catalogField('controlledMaterial', 'pipe')!)).toBe('Calculated: Controlled Material');
+    expect(fieldChoiceLabel(catalogField('fab.id1', 'pipe')!)).toBe('Fabrication: Joining Item MIC');
+    expect(fieldChoiceLabel(catalogField('fitDeferTack', 'pipe')!)).toBe('Fit: Defer Tack (once Fit is signed)');
     expect(fieldChoiceLabel({ label: 'Returning inspection Type' })).toBe('Returning inspection Type');
-    expect(catalogField('nInd')!.label).toBe('N Ind.');
+    expect(catalogField('nInd', 'pipe')!.label).toBe('N Ind.');
   });
 
   it('starts each flat list name with the Source, without doubling Fabrication', () => {
@@ -116,14 +116,14 @@ describe('condition catalog', () => {
     const labels = JOINT_AND_FABRICATION_FIELDS.map(f => f.label);
     expect(new Set(keys).size).toBe(keys.length);
     expect(new Set(labels).size).toBe(labels.length);
-    expect(catalogField('titanium')).toBeUndefined();
-    expect(catalogField('materialTraceability')).toBeUndefined();
-    expect(catalogField('material.titanium')?.label).toBe('Either material is titanium');
-    expect(catalogField('controlledMaterial')?.label).toBe('Controlled Material');
+    expect(catalogField('titanium', 'pipe')).toBeUndefined();
+    expect(catalogField('materialTraceability', 'pipe')).toBeUndefined();
+    expect(catalogField('material.titanium', 'pipe')?.label).toBe('Either material is titanium');
+    expect(catalogField('controlledMaterial', 'pipe')?.label).toBe('Controlled Material');
   });
 
   it('has every Fabrication value, read from the joint\'s Fabrication data', () => {
-    const mic = catalogField('fab.id1')!;
+    const mic = catalogField('fab.id1', 'pipe')!;
     expect(mic.label).toBe('Fabrication: Joining Item MIC');
     expect(mic.get(job(), [], { id1: 'MIC-1' })).toBe('MIC-1');
     expect(mic.get(job(), [])).toBe('');
@@ -140,7 +140,7 @@ describe('condition catalog', () => {
 
   it('shows checkboxes as Yes and No', () => {
     expect(formFieldValues({ type: 'checkbox' }).map(o => o.label)).toEqual(['Yes', 'No']);
-    expect(stageConditionFields({ id: 'fit' }).find(f => f.key === 'self.deferTack')?.valueLabel?.('yes') ?? 'Yes').toBe('Yes');
+    expect(stageConditionFields('pipe', { id: 'fit' }).find(f => f.key === 'self.deferTack')?.valueLabel?.('yes') ?? 'Yes').toBe('Yes');
   });
 
   it('form conditions read the catalog and keep their sentences', () => {
@@ -155,13 +155,13 @@ describe('condition catalog', () => {
 
 describe('rules on Fabrication', () => {
   const rule: ConditionRule[] = [[{ field: 'fab.weldMemo', op: 'is', values: ['M1'] }]];
-  const before = getTemplates().find(t => t.id === 'tack')!.includeWhen;
-  afterEach(() => { updateStageTemplate('tack', { includeWhen: before }); localStorage.clear(); });
+  const before = getTemplates('pipe').find(t => t.id === 'tack')!.includeWhen;
+  afterEach(() => { updateStageTemplate('pipe', 'tack', { includeWhen: before }); localStorage.clear(); });
 
   it('count as later answers and are re-checked when a value changes', () => {
-    expect(usesStepAnswers(rule)).toBeTrue();
-    expect(usesFabrication(rule)).toBeTrue();
-    updateStageTemplate('tack', { includeWhen: rule });
+    expect(usesStepAnswers(rule, 'pipe')).toBeTrue();
+    expect(usesFabrication(rule, 'pipe')).toBeTrue();
+    updateStageTemplate('pipe', 'tack', { includeWhen: rule });
     const j = job();
     const stages = newWorkflow(j).stages;
     const tack = (s: WorkflowStage[]) => s.find(x => x.id === 'tack')!;
@@ -192,7 +192,7 @@ describe('Qualifications', () => {
   it('offers the same catalog as Routing Settings, each field once', () => {
     const keys = conditionFields().map(f => f.key);
     expect(new Set(keys).size).toBe(keys.length);
-    for (const f of [...ROUTING_CONDITION_FIELDS, ...allStepAnswerFields()]) expect(keys).toContain(f.key);
+    for (const f of [...ROUTING_CONDITION_FIELDS, ...allStepAnswerFields('pipe')]) expect(keys).toContain(f.key);
     expect(conditionField('step.root-weld.weldProcess')?.group).toBe('Routing answers');
   });
 

@@ -3,7 +3,7 @@ import { AdminSignoffTypeFormsComponent } from './signoff-type-forms.component';
 import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
 
 describe('Shared inspection Type forms admin', () => {
-  afterEach(() => resetStepFieldConfig());
+  afterEach(() => resetStepFieldConfig('pipe'));
   it('shows immutable catalog field types in the field choices and saved form rows', () => {
     const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeFormsComponent());
     expect(component.fieldChoices.find(f => f.key === 'deferTack')?.typeLabel).toBe('Checkbox');

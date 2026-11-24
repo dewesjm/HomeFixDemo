@@ -55,5 +55,6 @@ export function allRequiredSigned(stages: WorkflowStage[]): boolean {
    Excavation NDT and a finished joint lock them. */
 export function fabricationEditable(stages: WorkflowStage[]): boolean {
   const id = activeStageId(stages);
-  return !!id && !!getTemplates().find(t => t.id === id)?.fabricationEditable;
+  const stage = stages.find(s => s.id === id);
+  return !!stage && !!getTemplates(stage.jointType).find(t => t.id === id)?.fabricationEditable;
 }

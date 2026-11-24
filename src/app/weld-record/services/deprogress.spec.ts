@@ -33,13 +33,13 @@ describe('Deprogress', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypes(getSignoffTypes());
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
     TestBed.configureTestingModule({});
     signoff = TestBed.inject(SignoffService);
     routing = TestBed.inject(RoutingService);
     store = TestBed.inject(WorkflowStore);
   });
-  afterEach(() => { localStorage.clear(); setSignoffTypes(getSignoffTypes()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypes('pipe', getSignoffTypes('pipe')); });
 
   const wf = (job: Job) => store.workflowFor(job)();
   const stage = (job: Job, id: string) => wf(job).stages.find(s => s.id === id)!;

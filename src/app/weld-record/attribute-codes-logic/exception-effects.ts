@@ -2,7 +2,7 @@
    in any of the joint's four attribute code slots and its Applies when conditions match. Rows whose
    conditions read a later answer (a weld's Weld Process, Fabrication Location once Fit is signed)
    are re-checked as the joint is signed (route-changes.ts applySignedFlags). */
-import { Job } from '../../data/jobs';
+import { Job, JointType } from '../../data/jobs';
 import { StageOption, StageTemplate } from '../model/stage-template';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions-logic/joint-conditions';
@@ -42,8 +42,8 @@ function applies(row: AttributeCodeException, job: Job, stages: WorkflowStage[],
 }
 
 /* conditions known only once something on the joint is signed */
-function readsLaterAnswers(rules: ConditionRule[] | undefined): boolean {
-  return usesStepAnswers(rules);
+function readsLaterAnswers(rules: ConditionRule[] | undefined, jointType: JointType): boolean {
+  return usesStepAnswers(rules, jointType);
 }
 
 const rowsFor = (routingId: string, job: Job) => {
@@ -53,18 +53,18 @@ const rowsFor = (routingId: string, job: Job) => {
 
 /* whether any of the joint's codes has a row for this routing that waits on a later answer */
 export function hasLaterAnswerRows(routingId: string, job: Job): boolean {
-  return rowsFor(routingId, job).some(r => readsLaterAnswers(r.when));
+  return rowsFor(routingId, job).some(r => readsLaterAnswers(r.when, job.jointType));
 }
 
 /* whether any row for one of the joint's codes reads a Fabrication value */
 export function hasFabricationRows(job: Job): boolean {
   const codes = jointCodeSlots(job);
-  return getAttributeCodeExceptions().some(r => codes.includes(r.code.trim().toUpperCase()) && usesFabrication(r.when));
+  return getAttributeCodeExceptions().some(r => codes.includes(r.code.trim().toUpperCase()) && usesFabrication(r.when, job.jointType));
 }
 
 /* a later-answer row that may add this routing, so it is on the joint (not required) from the start */
 export function mayBeAddedLater(routingId: string, job: Job): boolean {
-  return rowsFor(routingId, job).some(r => r.routingChange === 'add' && readsLaterAnswers(r.when));
+  return rowsFor(routingId, job).some(r => r.routingChange === 'add' && readsLaterAnswers(r.when, job.jointType));
 }
 
 /* every matching row for one routing, combined; null when none matches */
@@ -96,9 +96,9 @@ export function isJointsTwin(t: Pick<StageTemplate, 'id' | 'includeWhen'>, job: 
 }
 
 /* the routing's Types after the matching rows: only = just those, add = those as well */
-function withExceptionTypes(options: StageOption[] | undefined, effect: RoutingEffect | null): StageOption[] | undefined {
+function withExceptionTypes(jointType: JointType, options: StageOption[] | undefined, effect: RoutingEffect | null): StageOption[] | undefined {
   if (!effect || (!effect.only && !effect.added.length)) return options;
-  const catalog = getSignoffTypes();
+  const catalog = getSignoffTypes(jointType);
   const option = (value: string): StageOption[] => {
     const own = options?.find(o => o.value === value);
     if (own) return [own];
@@ -121,7 +121,7 @@ function stageRules(effect: RoutingEffect | null): AttributeStageRules | undefin
 export function attributeTypeSettings(stageId: string, job: Job, stages: WorkflowStage[] = [], fab?: Record<string, string>,
   inputs: Record<string, string> = {}): { typeOptions: StageOption[] | undefined; attributeRules: AttributeStageRules | undefined } {
   const effect = routingEffect(stageId, job, stages, fab);
-  return { typeOptions: withExceptionTypes(signoffTypeOptions(stageId, job, inputs), effect), attributeRules: stageRules(effect) };
+  return { typeOptions: withExceptionTypes(job.jointType, signoffTypeOptions(job.jointType, stageId, job, inputs), effect), attributeRules: stageRules(effect) };
 }
 
 /* the Types left to pick once "ID is accessible" is answered on the signoff */

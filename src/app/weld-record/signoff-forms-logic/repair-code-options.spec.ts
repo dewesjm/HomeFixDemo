@@ -5,6 +5,7 @@ import { stageConditionFields } from '../catalogs/field-choices';
 import { stageFieldOptions } from '../signoff-validation-logic/stage-form';
 import { stageFromTemplate, nextRepairStage } from '../routing-logic/inserted-routing/added-routings';
 import { conditionText } from './field-rules';
+import { testJob } from '../../testing/test-job';
 
 describe('Repair Code form and condition options', () => {
   beforeEach(() => localStorage.clear());
@@ -12,13 +13,13 @@ describe('Repair Code form and condition options', () => {
   it('resolves saved names and retired choices in form and routing condition editors', () => {
     const rows = [...getRepairCodes(), { code: 'extra', name: 'Extra inspection', active: true }];
     setRepairCodes(rows);
-    const field = () => stageConditionFields({ id: 'repair-2' }).find(f => f.key === 'self.repairType')!;
+    const field = () => stageConditionFields('pipe', { id: 'repair-2' }).find(f => f.key === 'self.repairType')!;
     expect(field().values).toContain('extra');
     expect(field().valueLabel!('extra')).toBe('Extra inspection');
     setRepairCodes(rows.map(r => r.code === 'extra' ? { ...r, name: 'Recheck', active: false } : r));
     expect(repairCodeOptions().map(r => r.value)).not.toContain('extra');
     expect(field().valueLabel!('extra')).toBe('Recheck (inactive)');
-    const stage = stageFromTemplate(nextRepairStage([]), { repairType: 'extra' });
+    const stage = stageFromTemplate('pipe', nextRepairStage([], testJob()), { repairType: 'extra' });
     const catalog = lookupCatalogField('repairType')!;
     expect(catalog.options!.some(o => o.value === 'extra')).toBeTrue();
     expect(stageFieldOptions(catalog, stage, { job: undefined, stages: [stage], offListUnlocked: false }).options)

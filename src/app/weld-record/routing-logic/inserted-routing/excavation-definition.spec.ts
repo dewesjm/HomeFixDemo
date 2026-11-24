@@ -41,7 +41,7 @@ describe('Configured regular and NQC Excavation', () => {
   }
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
     job = Object.assign({ ...JOBS[0], id: 'excavation-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: '', ndtFinal: '',
@@ -53,7 +53,7 @@ describe('Configured regular and NQC Excavation', () => {
     window.dispatchEvent(new Event('pagehide'));
     JOBS.splice(JOBS.indexOf(job), 1);
     localStorage.clear();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
   });
   for (const indicator of ['1', '2', '3']) {
     it(`keeps round returns, original inspection and undo for indicator ${indicator}`, () => {
@@ -86,9 +86,9 @@ describe('Configured regular and NQC Excavation', () => {
     });
   }
   it('routes another configured original/performed combination with preview parity', () => {
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'excavation-ndt'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'excavation-ndt'
       ? { ...r, typeExceptions: [{ from: 'pt', to: 'mt' }] } : r));
-    updateStageTemplate('excavation-ndt', { thenRules: [
+    updateStageTemplate('pipe', 'excavation-ndt', { thenRules: [
       { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] },
         { field: 'self.performedInspectionType', op: 'is', values: ['mt'] }], to: 'tack' },
       { when: [], to: 'rejecting-ndt' },
@@ -105,33 +105,33 @@ describe('Configured regular and NQC Excavation', () => {
   });
 
   it('selects by editable applicability rather than fixed nuclear checks and rejects ambiguity', () => {
-    updateStageTemplate('excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
-    updateStageTemplate('nqc-excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['2', '3'] }]] });
+    updateStageTemplate('pipe', 'excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
+    updateStageTemplate('pipe', 'nqc-excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['2', '3'] }]] });
     expect(excavationDefinition(job).id).toBe('nqc-excavation-ndt');
-    updateStageTemplate('excavation-ndt', { includeWhen: [] });
+    updateStageTemplate('pipe', 'excavation-ndt', { includeWhen: [] });
     rejectOriginal();
     patch('repair', { repairType: 'weld-repair' });
     const before = structuredClone(wf());
     expect(signoff.signStage(job, 'repair')).toBeFalse();
     expect(wf()).toEqual(before);
     expect(signoff.previewSignoff(wf(), job, 'repair').reasons.join(' ')).toContain('found 2');
-    updateStageTemplate('excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
-    updateStageTemplate('nqc-excavation-ndt', { status: 'inactive' });
+    updateStageTemplate('pipe', 'excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
+    updateStageTemplate('pipe', 'nqc-excavation-ndt', { status: 'inactive' });
     expect(signoff.signStage(job, 'repair')).toBeFalse();
     expect(wf()).toEqual(before);
   });
   it('uses independently saved Type options and enable conditions, and keeps existing instances', () => {
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'nqc-excavation-ndt'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'nqc-excavation-ndt'
       ? { stepId: r.stepId, types: [{ type: 'ut', enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] } : r));
     expect(excavationNdtStageFor({ ...job, nInd: '1' }, 'pt', 'repair-2').typeOptions?.map(o => o.value)).toEqual(['ut']);
     expect(excavationNdtStageFor({ ...job, nInd: '2' }, 'pt', 'repair-2').typeOptions).toEqual([]);
     const regular = excavationNdtStageFor(job, 'pt', 'repair-2');
     expect(regular.typeOptions?.map(o => o.value)).toEqual(['5x']);
-    updateStageTemplate('excavation-ndt', { label: 'Regular excavation', persona: 'Engineering' });
+    updateStageTemplate('pipe', 'excavation-ndt', { label: 'Regular excavation', persona: 'Engineering' });
     expect(regular.label).toBe('Excavation NDT 2');
     expect(regular.role).toBe('Inspector');
     expect(routingTemplateId('nqc-excavation-ndt-2')).toBe('nqc-excavation-ndt');
-    expect(getTemplates().find(t => t.id === 'nqc-excavation-ndt')!.persona).toBe('NQC Inspector');
+    expect(getTemplates('pipe').find(t => t.id === 'nqc-excavation-ndt')!.persona).toBe('NQC Inspector');
   });
   it('retains variant identities and multiple rounds after persistence and reload', fakeAsync(() => {
     job.nInd = '2';

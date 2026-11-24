@@ -14,11 +14,11 @@ const NEVER = { all: [{ source: 'field' as const, key: 'nothing', equals: 'x' }]
 
 describe('form rules on the fields drawn their own way', () => {
   let saved: TypeDefinition[];
-  beforeEach(() => { saved = getStepFieldConfig(); });
-  afterEach(() => { setStepFieldConfig(saved); localStorage.clear(); });
+  beforeEach(() => { saved = getStepFieldConfig('pipe'); });
+  afterEach(() => { setStepFieldConfig('pipe', saved); localStorage.clear(); });
 
   const onField = (key: string, patch: Partial<FieldActivation>) =>
-    setStepFieldConfig(saved.map(d => ({ ...d, fields: d.fields.map(a => a.key === key ? { ...a, ...patch } : a) })));
+    setStepFieldConfig('pipe', saved.map(d => ({ ...d, fields: d.fields.map(a => a.key === key ? { ...a, ...patch } : a) })));
   const fixture = (base: string, more: Partial<WorkflowStage> = {}) => {
     const wf = newWorkflow(job);
     const id = wf.stages.find(s => s.id === base || s.id === `nqc-${base}`)!.id;
@@ -75,10 +75,10 @@ describe('form rules on the fields drawn their own way', () => {
   it('References can be required, and a hidden one is not', () => {
     const { stage } = fixture('fitup-insp');
     const key = `${stage.id}:references`;
-    setStepFieldConfig(saved.map(d => ({ ...d, fields: [...d.fields.filter(a => a.key !== 'references'), { key: 'references', required: true }] })));
+    setStepFieldConfig('pipe', saved.map(d => ({ ...d, fields: [...d.fields.filter(a => a.key !== 'references'), { key: 'references', required: true }] })));
     expect(stageFieldErrors(stage, signCtx([stage], 0))[key]).toBe('References is required');
     expect(stageFieldErrors(stage, signCtx([stage], 1))[key]).toBeUndefined();
-    setStepFieldConfig(saved.map(d => ({ ...d, fields: [...d.fields.filter(a => a.key !== 'references'), { key: 'references', required: true, showIf: NEVER }] })));
+    setStepFieldConfig('pipe', saved.map(d => ({ ...d, fields: [...d.fields.filter(a => a.key !== 'references'), { key: 'references', required: true, showIf: NEVER }] })));
     expect(stageFieldErrors(stage, signCtx([stage], 0))[key]).toBeUndefined();
   });
 

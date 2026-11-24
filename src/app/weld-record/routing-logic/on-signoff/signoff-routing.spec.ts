@@ -15,11 +15,11 @@ describe('Inserted routing table decisions', () => {
   let wf: JobWorkflow;
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
     job = Object.assign({ ...JOBS[0], id: 'signoff-routing-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: 'PT', ndtFinal: 'PT', materialType1: '02-CS', materialType2: '02-CS', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' });
     wf = newWorkflow(job);
   });
-  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); resetStepFieldConfig(); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); resetStepFieldConfig('pipe'); });
   const stage = (wf: JobWorkflow, id: string) => wf.stages.find(s => s.id === id)!;
   function sign(id: string, patch: Partial<WorkflowStage> = {}) {
     wf = { ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) };
@@ -60,14 +60,14 @@ describe('Inserted routing table decisions', () => {
 
   it('an edited Repair rule changes the destination for numbered rounds', () => {
     repair();
-    updateStageTemplate('repair', { thenRules: [{ when: [], to: 'tack' }] });
+    updateStageTemplate('pipe', 'repair', { thenRules: [{ when: [], to: 'tack' }] });
     sign('repair', { inputs: { ...stage(wf, 'repair').inputs, repairType: 'grind' } });
     expect(activeStageId(wf.stages)).toBe('tack');
     expect(stage(wf, 'root-ndt-mtpt').signed).toBeFalse();
   });
   it('removing the Repair rules removes the coded repair branching', () => {
     repair();
-    updateStageTemplate('repair', { thenRules: [] });
+    updateStageTemplate('pipe', 'repair', { thenRules: [] });
     weldRepair();
     expect(wf.stages.some(s => s.id === 'excavation-ndt')).toBeFalse();
   });
@@ -97,7 +97,7 @@ describe('Inserted routing table decisions', () => {
   });
   it('evaluates the Type actually selected at Excavation rather than an earlier replacement outcome', () => {
     job.materialType2 = '12-SS304';
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'excavation-ndt'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'excavation-ndt'
       ? { ...r, typeSource: undefined, types: [{ type: '5x' }, { type: 'pt' }] } : r));
     repair(); weldRepair(); selectExcavation('5x'); selectExcavation('pt');
     expect(originalInspectionType(stage(wf, 'excavation-ndt'), wf.stages)).toBe('pt');
@@ -107,13 +107,13 @@ describe('Inserted routing table decisions', () => {
   it('returning from Excavation cannot restore a Type removed in configuration', () => {
     job.materialType2 = '12-SS304';
     repair(); weldRepair(); selectExcavation('5x');
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'root-ndt-vt5x'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'root-ndt-vt5x'
       ? { ...r, types: r.types.filter(t => t.type !== '5x') } : r));
     sign('excavation-ndt', { result: 'sat' });
     expect(stage(wf, 'root-ndt-vt5x').typeOptions?.map(t => t.value)).toEqual(['vt']);
   });
   it('applies enable conditions to added Repair routings', () => {
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'repair'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'repair'
       ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
     repair();
     expect(stage(wf, 'repair').typeOptions).toEqual([]);
@@ -121,27 +121,27 @@ describe('Inserted routing table decisions', () => {
   });
   it('an edited Excavation rule replaces the default return to rejecting NDT', () => {
     repair(); weldRepair(); selectExcavation('pt');
-    updateStageTemplate('excavation-ndt', { thenRules: [{ when: [], to: 'fit' }] });
+    updateStageTemplate('pipe', 'excavation-ndt', { thenRules: [{ when: [], to: 'fit' }] });
     sign('excavation-ndt', { result: 'sat' });
     expect(activeStageId(wf.stages)).toBe('fit');
   });
   it('an Excavation reject rule can add Engineering Hold instead of returning to Repair', () => {
     repair(); weldRepair(); selectExcavation('pt');
-    updateStageTemplate('excavation-ndt', { rejectRules: [{ when: [], to: 'engineering-hold' }], rejectRulesEdited: true });
+    updateStageTemplate('pipe', 'excavation-ndt', { rejectRules: [{ when: [], to: 'engineering-hold' }], rejectRulesEdited: true });
     sign('excavation-ndt', { result: 'unsat' });
     expect(activeStageId(wf.stages)).toBe('engineering-hold');
   });
   it('an accepted signoff can add Repair or Engineering Hold', () => {
-    updateStageTemplate('root-ndt-mtpt', { thenRules: [{ when: [], to: 'repair' }] });
+    updateStageTemplate('pipe', 'root-ndt-mtpt', { thenRules: [{ when: [], to: 'repair' }] });
     sign('root-ndt-mtpt', { inspectionType: 'pt', signoffType: 'pt', result: 'sat' });
     expect(activeStageId(wf.stages)).toBe('repair');
-    updateStageTemplate('repair', { thenRules: [{ when: [], to: 'engineering-hold' }] });
+    updateStageTemplate('pipe', 'repair', { thenRules: [{ when: [], to: 'engineering-hold' }] });
     sign('repair');
     expect(activeStageId(wf.stages)).toBe('engineering-hold');
   });
   it('Excavation reads edits to the shared inspection form', () => {
     repair(); weldRepair(); selectExcavation('pt');
-    setStepFieldConfig([{ typeId: 'pt', fields: [{ key: 'procedureUsed', line: 1 }] }]);
+    setStepFieldConfig('pipe', [{ typeId: 'pt', fields: [{ key: 'procedureUsed', line: 1 }] }]);
     expect(getActivationForStep(stage(wf, 'excavation-ndt')).fields.map(f => f.key)).toEqual(['procedureUsed']);
   });
 });

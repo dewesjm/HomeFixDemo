@@ -1,11 +1,12 @@
 import { availableRuleTargets, resolveRuleTarget } from './rule-targets';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../inserted-routing/added-routings';
+import { testJob } from '../../../testing/test-job';
 
 describe('Round-relative routing targets', () => {
   it('resolves a later Excavation round through its own Repair', () => {
-    const first = stageFromTemplate(nextRepairStage([]), { originStageId: 'root-ndt-vt5x', originPhase: 'root' });
-    const second = stageFromTemplate(nextRepairStage([first]), { originStageId: 'nqc-final-ndt-mtpt', originPhase: 'final' });
-    const exc = stageFromTemplate(excavationNdtStage('pt', second.id));
+    const first = stageFromTemplate('pipe', nextRepairStage([], testJob()), { originStageId: 'root-ndt-vt5x', originPhase: 'root' });
+    const second = stageFromTemplate('pipe', nextRepairStage([first], testJob()), { originStageId: 'nqc-final-ndt-mtpt', originPhase: 'final' });
+    const exc = stageFromTemplate('pipe', excavationNdtStage('pt', second.id, testJob()));
     const stages = [first, second, exc];
     expect(resolveRuleTarget(stages, exc, 'own-repair')).toBe('repair-2');
     expect(resolveRuleTarget(stages, exc, 'rejecting-ndt')).toBe('nqc-final-ndt-mtpt');

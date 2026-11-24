@@ -6,12 +6,12 @@ import { JOBS } from '../../../data/jobs';
 import { excavationNdtStageFor } from '../../routing-logic/inserted-routing/added-routings';
 
 describe('Persona rules editor', () => {
-  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });
+  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });
   afterEach(() => localStorage.clear());
   function editor() {
-    updateStageTemplate('nqc-excavation-ndt', { personaRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], persona: 'NQC Inspector' }] });
+    updateStageTemplate('pipe', 'nqc-excavation-ndt', { personaRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], persona: 'NQC Inspector' }] });
     const fixture = TestBed.createComponent(PersonaRulesComponent);
-    fixture.componentRef.setInput('routing', getAddedTemplate('nqc-excavation-ndt'));
+    fixture.componentRef.setInput('routing', getAddedTemplate('pipe', 'nqc-excavation-ndt'));
     fixture.detectChanges();
     return fixture;
   }
@@ -25,8 +25,8 @@ describe('Persona rules editor', () => {
     const closed = spyOn(component.closed, 'emit');
     cancel.click();
     expect(closed).toHaveBeenCalled();
-    expect(getAddedTemplate('nqc-excavation-ndt').personaRules![0].when[0].values).toEqual(['1', '2']);
-    expect(getAddedTemplate('nqc-excavation-ndt').personaRules![0].persona).toBe('NQC Inspector');
+    expect(getAddedTemplate('pipe', 'nqc-excavation-ndt').personaRules![0].when[0].values).toEqual(['1', '2']);
+    expect(getAddedTemplate('pipe', 'nqc-excavation-ndt').personaRules![0].persona).toBe('NQC Inspector');
   });
   it('saves through the rendered control and affects newly created Excavation', () => {
     const fixture = editor();
@@ -40,7 +40,7 @@ describe('Persona rules editor', () => {
     expect(excavationNdtStageFor({ ...JOBS[0], nInd: '2' }, 'pt', 'repair-2').role).toBe('Foreman');
     component.rules = []; component.save();
     const reopened = TestBed.createComponent(PersonaRulesComponent);
-    reopened.componentRef.setInput('routing', getAddedTemplate('nqc-excavation-ndt'));
+    reopened.componentRef.setInput('routing', getAddedTemplate('pipe', 'nqc-excavation-ndt'));
     reopened.detectChanges();
     expect(reopened.componentInstance.rules).toEqual([]);
     expect(excavationNdtStageFor({ ...JOBS[0], nInd: '2' }, 'pt', 'repair').role).toBe('Welding');

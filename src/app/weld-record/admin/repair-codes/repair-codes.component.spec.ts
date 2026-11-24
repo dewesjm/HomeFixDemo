@@ -8,6 +8,7 @@ import { TestBed } from '@angular/core/testing';
 import { AdminRepairCodesComponent } from './repair-codes.component';
 import { getRepairCodes } from '../../../data/repair-codes';
 import { repairCodeError } from './rules/repair-code-validation';
+import { testJob } from '../../../testing/test-job';
 
 describe('Admin Repair Codes', () => {
   beforeEach(() => localStorage.clear());
@@ -47,7 +48,7 @@ describe('Admin Repair Codes', () => {
   });
   it('offers a saved custom code in the rendered Repair form and records the selected stable value', async () => {
     setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
-    const stage = stageFromTemplate(nextRepairStage([]));
+    const stage = stageFromTemplate('pipe', nextRepairStage([], testJob()));
     const field = stageFieldOptions(lookupCatalogField('repairType')!, stage, { job: undefined, stages: [stage], offListUnlocked: false });
     const ctx = { fieldError: () => undefined, fieldWarning: () => '', inputsEditable: () => true, engineeringEntryOnly: () => false,
       selectedRouting: () => stage.id, assignedLocked: () => false,

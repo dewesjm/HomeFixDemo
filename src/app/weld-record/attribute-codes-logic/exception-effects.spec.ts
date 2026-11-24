@@ -22,8 +22,8 @@ const signed = (stages: WorkflowStage[], id: string, inputs: Record<string, stri
   stages.map(s => s.id === id ? { ...s, signed: true, signedAt: '2026-01-01', inputs: { ...s.inputs, ...inputs } } : s);
 
 describe('Attribute Code Exceptions', () => {
-  beforeEach(() => { localStorage.clear(); resetStepFieldConfig(); });
-  afterEach(() => { localStorage.clear(); resetStepFieldConfig(); });
+  beforeEach(() => { localStorage.clear(); resetStepFieldConfig('pipe'); });
+  afterEach(() => { localStorage.clear(); resetStepFieldConfig('pipe'); });
 
   it('PU adds Final MT/PT offering only PT and Final UT/RT offering only UT', () => {
     const stages = buildStages(job('PU'));
@@ -55,7 +55,7 @@ describe('Attribute Code Exceptions', () => {
     const j = job('RI', { rtFinal: '100' });
     const s = { ...stage(buildStages(j), 'final-ndt-utrt')!, ...typeValues('rt') };
     expect(rtDegreeRequired(j, s)).toBe('100');
-    setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(d => d.typeId !== 'rt' ? d
+    setStepFieldConfig('pipe', DEFAULT_TYPE_DEFINITIONS.map(d => d.typeId !== 'rt' ? d
       : { ...d, fields: d.fields.map(f => f.key === 'degreeRt' ? { key: f.key, line: f.line } : f) }));
     expect(rtDegreeRequired(j, s)).toBe('60');
   });

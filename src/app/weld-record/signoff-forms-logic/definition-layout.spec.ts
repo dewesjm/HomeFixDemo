@@ -53,7 +53,7 @@ describe('layoutSections', () => {
   });
 
   it('draws the default Root Weld with Type first, then five boxes (its 5X question, then Comments, last), the requirements on one line', () => {
-    const sections = layoutSections(getActivationForStep('root').fields, all);
+    const sections = layoutSections(getActivationForStep({ jointType: 'pipe', typeId: 'root' }).fields, all);
     expect(sections.map(s => s.title)).toEqual(['', '', 'Preheat/Interpass', '', '', '']);
     expect(sections[0].parts).toEqual([{ kind: 'line', keys: ['type'] }]);
     expect(sections[4].parts).toEqual([{ kind: 'line', keys: ['performed5x'] }]);
@@ -66,7 +66,7 @@ describe('layoutSections', () => {
   });
 
   it('draws the default UT/RT NDT with Type first and Inspection Results just above Defect Code, References and Comments', () => {
-    const keys = layoutSections(getActivationForStep('rt').fields, all)
+    const keys = layoutSections(getActivationForStep({ jointType: 'pipe', typeId: 'rt' }).fields, all)
       .flatMap(s => s.parts.flatMap(p => p.kind === 'line' ? p.keys : []));
     expect(keys[0]).toBe('type');
     expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode', 'references', 'comments']);

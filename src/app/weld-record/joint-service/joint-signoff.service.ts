@@ -68,7 +68,7 @@ export class JointSignoffService {
   }
 
   releaseToWelding(key: JointKey): JointResult<{ routing: string }> {
-    if (!this.viewer.canSignType('fitup-release') || !this.viewer.roles().includes('Foreman')) {
+    if (!this.viewer.canSignType('pipe', 'fitup-release') || !this.viewer.roles().includes('Foreman')) {
       return jointFailure('Release to Welding requires Fit-Up Release permission and the Foreman persona.', 'Access denied');
     }
     const found = findJoint(key);

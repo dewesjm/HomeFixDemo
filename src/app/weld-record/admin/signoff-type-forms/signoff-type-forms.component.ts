@@ -24,7 +24,7 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import {
-  DEFAULT_TYPE_DEFINITIONS, TypeDefinition, FieldActivation, getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
+  defaultTypeDefinitions, TypeDefinition, FieldActivation, getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
   DECISION_KEY, type VerifyAgainst,
 } from '../../../data/signoff-type-forms';
 import { getActivationForStep, definitionFields } from '../../signoff-forms-logic/signoff-type-form-rules';
@@ -62,6 +62,8 @@ import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActiva
 import { FieldConditionEditorComponent } from './field-condition-editor.component';
 import { DefinitionLayoutListComponent } from './definition-layout-list.component';
 import { withNewField } from '../../signoff-forms-logic/definition-layout';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
+import { JointTypeSelectComponent } from '../joint-type-settings/joint-type-select.component';
 
 interface DefRow {
   uid: string;
@@ -88,6 +90,7 @@ let seq = 0;
   selector: 'app-admin-signoff-type-forms',
   standalone: true,
   imports: [
+    JointTypeSelectComponent,
     CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     FieldConditionEditorComponent, DefinitionLayoutListComponent,
     LucidePencil, LucideCheck, LucideTrash2, LucideChevronDown, LucideChevronRight,
@@ -95,6 +98,8 @@ let seq = 0;
   templateUrl: './signoff-type-forms.component.html',
 })
 export class AdminSignoffTypeFormsComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
@@ -108,9 +113,9 @@ export class AdminSignoffTypeFormsComponent {
   });
 
   /* Routing sources for Prepopulated from, and the Types whose forms can be edited. */
-  private readonly routingSteps = getTemplates().map(s => ({ stepId: s.id, stepLabel: s.label }));
+  private readonly routingSteps = getTemplates(this.jointType).map(s => ({ stepId: s.id, stepLabel: s.label }));
   private readonly types = [
-    ...getSignoffTypes().map(t => ({ typeId: t.value, typeLabel: t.label })),
+    ...getSignoffTypes(this.jointType).map(t => ({ typeId: t.value, typeLabel: t.label })),
   ];
 
   rows = signal<DefRow[]>([]);
@@ -134,13 +139,14 @@ export class AdminSignoffTypeFormsComponent {
 
   /* every Type with a seeded definition, merged with any stored overrides, then any other stored ones */
   private buildRows(): DefRow[] {
-    const stored = getStepFieldConfig();
-    const rows: DefRow[] = DEFAULT_TYPE_DEFINITIONS.map(def => {
+    const stored = getStepFieldConfig(this.jointType);
+    const defaults = defaultTypeDefinitions(this.jointType);
+    const rows: DefRow[] = defaults.map(def => {
       const act = stored.find(a => a.typeId === def.typeId) ?? def;
       return this.toRow(def.typeId, act.fields, act.verifyAgainst ?? def.verifyAgainst);
     });
     for (const act of stored) {
-      if (!DEFAULT_TYPE_DEFINITIONS.some(d => d.typeId === act.typeId)) rows.push(this.toRow(act.typeId, act.fields, act.verifyAgainst));
+      if (!defaults.some(d => d.typeId === act.typeId)) rows.push(this.toRow(act.typeId, act.fields, act.verifyAgainst));
     }
     return rows;
   }
@@ -245,7 +251,7 @@ export class AdminSignoffTypeFormsComponent {
   /* ── Delete / Reset ── */
 
   deleteRow(row: DefRow) {
-    if (DEFAULT_TYPE_DEFINITIONS.some(d => d.typeId === row.typeId)) {
+    if (defaultTypeDefinitions(this.jointType).some(d => d.typeId === row.typeId)) {
       this.confirm.confirmDelete(`${row.typeLabel} (resets to defaults)`, () => {
         this.rows.update(r => r.map(x => x.uid === row.uid ? this.toRowFromDefaults(row.typeId, x.uid) : x));
         this.persist();
@@ -261,14 +267,14 @@ export class AdminSignoffTypeFormsComponent {
   }
 
   private toRowFromDefaults(typeId: string, uid: string): DefRow {
-    const def = DEFAULT_TYPE_DEFINITIONS.find(d => d.typeId === typeId);
+    const def = defaultTypeDefinitions(this.jointType).find(d => d.typeId === typeId);
     const row = this.toRow(typeId, def?.fields ?? [], def?.verifyAgainst);
     return { ...row, uid };
   }
 
   resetAll() {
     this.confirm.confirmDelete('all custom definitions', () => {
-      resetStepFieldConfig();
+      resetStepFieldConfig(this.jointType);
       this.rows.set(this.buildRows());
       this.toast.add({ severity: 'info', summary: 'Reset to defaults', life: 3000 });
     });
@@ -367,7 +373,7 @@ export class AdminSignoffTypeFormsComponent {
 
   /* a Prepopulated from rule needs a field the person could otherwise type into, drawn as an ordinary field of the step */
   canFill(key: string): boolean {
-    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !drawnByOwnForm(this.editing()?.typeId ?? '', key);
+    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !drawnByOwnForm({ jointType: this.jointType, typeId: this.editing()?.typeId ?? '' }, key);
   }
 
   fillLabel(key: string): string {
@@ -378,7 +384,7 @@ export class AdminSignoffTypeFormsComponent {
   private fillSourceFields(sourceId: string, e: EditState): { key: string; label: string }[] {
     if (sourceId === WTN) return WTN_FILL_FIELDS.map(f => ({ key: f.key, label: f.label }));
     const acts = sourceId === THIS_STEP ? e.fieldActivations.filter(a => a.key !== e.condKey)
-      : (signoffTypeOptions(sourceId) ?? []).flatMap(o => this.rows().find(r => r.typeId === o.value)?.fieldActivations ?? getActivationForStep(o.value).fields);
+      : (signoffTypeOptions(this.jointType, sourceId) ?? []).flatMap(o => this.rows().find(r => r.typeId === o.value)?.fieldActivations ?? getActivationForStep({ jointType: this.jointType, typeId: o.value }).fields);
     const keys = [...new Set(definitionFields(acts).map(a => a.key))];
     return keys.map(key => ({ key, label: lookupCatalogField(key)?.label ?? key }));
   }
@@ -448,7 +454,7 @@ export class AdminSignoffTypeFormsComponent {
     const e = this.editing();
     if (!e) return [];
     const own = definitionFields(e.fieldActivations)
-      .filter(a => a.key !== e.condKey && !drawnByOwnForm(e.typeId, a.key))
+      .filter(a => a.key !== e.condKey && !drawnByOwnForm({ jointType: this.jointType, typeId: e.typeId }, a.key))
       .flatMap(a => {
         const cat = lookupCatalogField(a.key);
         if (!cat) return [];
@@ -491,7 +497,7 @@ export class AdminSignoffTypeFormsComponent {
   private persist() {
     const config: TypeDefinition[] = this.rows()
       .map(r => ({ typeId: r.typeId, fields: r.fieldActivations, ...(r.verifyAgainst && { verifyAgainst: r.verifyAgainst }) }));
-    setStepFieldConfig(config);
+    setStepFieldConfig(this.jointType, config);
   }
 
   exportCsv() {

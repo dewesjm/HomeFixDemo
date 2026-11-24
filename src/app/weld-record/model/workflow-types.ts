@@ -15,6 +15,9 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
 ];
 
 export interface WorkflowStage {
+  /* the joint's type: which joint type's settings tables (Routing Settings, Signoff Types, Signoff Type
+     to Routing, Signoff Type Forms) the stage reads */
+  jointType: JointType;
   attribution?: import('./history').SignoffAttribution;
   /* what Admin > Attribute Code Exceptions left on this routing for the joint (accessible rules, minimum RT) */
   attributeRules?: AttributeStageRules;

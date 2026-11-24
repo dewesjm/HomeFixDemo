@@ -8,8 +8,8 @@ import { buildStages } from './build-stages';
 
 describe('Sold', () => {
   /* clearing storage alone leaves the cached Routing Settings; re-setting the type rows drops that cache */
-  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
-  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
+  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); });
   const soldRole = () => buildStages(JOBS[0]).find(s => s.id === 'sold')!.role;
 
   it('closes the joint and starts on the View persona', () => {
@@ -17,15 +17,15 @@ describe('Sold', () => {
     expect(soldRole()).toBe('View');
   });
   it('takes its persona from Routing Settings', () => {
-    updateStageTemplate('sold', { persona: 'O04 Records' });
+    updateStageTemplate('pipe', 'sold', { persona: 'O04 Records' });
     expect(soldRole()).toBe('O04 Records');
   });
 });
 
 describe('Configured routing personas', () => {
   const job = (nInd: string): Job => ({ ...JOBS[0], nInd });
-  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
-  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); });
+  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe')); });
 
   for (const nInd of ['1', '2', '3']) {
     it(`defaults Excavation to the appropriate persona for indicator ${nInd}`, () => {
@@ -34,23 +34,23 @@ describe('Configured routing personas', () => {
     });
   }
   it('uses the first matching rule, falls back to the base persona, and supports removing all rules', () => {
-    updateStageTemplate('excavation-ndt', {
+    updateStageTemplate('pipe', 'excavation-ndt', {
       persona: 'Foreman', personaRules: [
         { when: [{ field: 'nInd', op: 'is', values: ['3'] }], persona: 'Engineering' },
         { when: [], persona: 'Welding' },
       ],
     });
     expect(excavationNdtStageFor(job('3'), 'pt', 'repair').role).toBe('Engineering');
-    expect(routingPersona(getAddedTemplate('excavation-ndt'), job('1'))).toBe('Welding');
-    updateStageTemplate('excavation-ndt', { personaRules: [] });
-    expect(getAddedTemplate('excavation-ndt').personaRules).toEqual([]);
+    expect(routingPersona(getAddedTemplate('pipe', 'excavation-ndt'), job('1'))).toBe('Welding');
+    updateStageTemplate('pipe', 'excavation-ndt', { personaRules: [] });
+    expect(getAddedTemplate('pipe', 'excavation-ndt').personaRules).toEqual([]);
     expect(excavationNdtStageFor(job('3'), 'pt', 'repair').role).toBe('Foreman');
     expect(routingPersona({ id: 'custom', label: 'Custom', required: true }, job('1'))).toBe('');
   });
   it('applies persona rules to numbered and inserted routings without changing existing instances', () => {
     const existing = excavationNdtStageFor(job('1'), 'pt', 'repair');
     for (const id of ['nqc-excavation-ndt', 'repair', 'engineering-hold', 'tack']) {
-      updateStageTemplate(id, { personaRules: [{ when: [], persona: 'Engineering' }] });
+      updateStageTemplate('pipe', id, { personaRules: [{ when: [], persona: 'Engineering' }] });
     }
     expect(excavationNdtStageFor(job('1'), 'pt', 'repair-2').role).toBe('Engineering');
     expect(nextRepairStage([], job('1')).persona).toBe('Engineering');

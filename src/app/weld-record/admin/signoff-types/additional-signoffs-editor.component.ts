@@ -1,6 +1,6 @@
 /* Admin > Signoff Types: a Type's "Additional routing to sign" rules (which other routing it signs, as
    which Type, and when). */
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdditionalSignoff, getSignoffTypes } from '../../../data/signoff-types';
 import { FORM_FIELDS } from '../../catalogs/field-catalog';
@@ -8,6 +8,7 @@ import { formFieldValues } from '../../catalogs/field-choices';
 import { ConditionGroupEditorComponent } from '../signoff-type-forms/condition-group-editor.component';
 import { conditionToWork, workToCondition, WorkGroup } from '../signoff-type-forms/rules/condition-work';
 import { FieldCondition } from '../../conditions-logic/form-conditions';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
 
 @Component({
   selector: 'app-additional-signoffs-editor', standalone: true,
@@ -36,10 +37,12 @@ import { FieldCondition } from '../../conditions-logic/form-conditions';
   `,
 })
 export class AdditionalSignoffsEditorComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   rules = input<AdditionalSignoff[]>([]);
   routings = input.required<{ id: string; label: string }[]>();
   changed = output<AdditionalSignoff[]>();
-  types = getSignoffTypes();
+  types = getSignoffTypes(this.jointType);
   fields = FORM_FIELDS.filter(f => !f.ownComponent).map(f => ({ key: f.key, label: f.label, values: formFieldValues(f), yesNo: f.type === 'checkbox' }));
   /* Keep unfinished clauses in the editor; only complete clauses belong in saved rules. */
   private readonly drafts = new WeakMap<FieldCondition, WorkGroup>();

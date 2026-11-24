@@ -23,16 +23,16 @@ const workflowAt = (j: Job, id: string) => {
 describe('Then go to routing', () => {
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypes(getSignoffTypes());
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
   });
   afterEach(() => {
     localStorage.clear();
-    setSignoffTypes(getSignoffTypes());
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
   });
 
   it('uses the first matching rule and passes intervening routings without signing them', () => {
     const j = job();
-    updateStageTemplate('tack', { thenRules: [rule('root-layer'), rule('fit')] });
+    updateStageTemplate('pipe', 'tack', { thenRules: [rule('root-layer'), rule('fit')] });
     const wf = workflowAt(j, 'tack');
     const result = routeSignoff(wf, j, 'tack');
     expect(activeStageId(result.stages)).toBe('root-layer');
@@ -45,7 +45,7 @@ describe('Then go to routing', () => {
 
   it('continues in order when no rule matches', () => {
     const j = job();
-    updateStageTemplate('tack', { thenRules: [rule('fit', 'other')] });
+    updateStageTemplate('pipe', 'tack', { thenRules: [rule('fit', 'other')] });
     expect(activeStageId(routeSignoff(workflowAt(j, 'tack'), j, 'tack').stages)).toBe('fitup-insp');
   });
 
@@ -69,7 +69,7 @@ describe('Then go to routing', () => {
 
   it('routes to an earlier routing and blanks its fabrication data', () => {
     const j = job();
-    updateStageTemplate('tack', { thenRules: [rule('fit')] });
+    updateStageTemplate('pipe', 'tack', { thenRules: [rule('fit')] });
     const wf = workflowAt(j, 'tack');
     wf.fabricationData = { specificLocation: 'Bay 3' };
     const result = routeSignoff(wf, j, 'tack');
@@ -82,7 +82,7 @@ describe('Then go to routing', () => {
 
   it('leaves UNSAT on the reject path even when a Then go to rule matches', () => {
     const j = job();
-    updateStageTemplate('root-ndt-vt5x', { thenRules: [rule('fit', 'vt')] });
+    updateStageTemplate('pipe', 'root-ndt-vt5x', { thenRules: [rule('fit', 'vt')] });
     const wf = workflowAt(j, 'root-ndt-vt5x');
     wf.stages = wf.stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, ...typeValues('vt'), result: 'unsat' } : s);
     const result = routeSignoff(wf, j, 'root-ndt-vt5x');
@@ -127,15 +127,15 @@ describe('Then go to routing', () => {
 
   it('saves, reloads, reorders and removes Then go to rules', () => {
     const rules = [rule('root-layer'), rule('fit')];
-    updateStageTemplate('tack', { thenRules: rules });
+    updateStageTemplate('pipe', 'tack', { thenRules: rules });
     const saved = JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!);
     expect(saved.find((s: { id: string }) => s.id === 'tack').thenRules).toEqual(rules);
-    setSignoffTypes(getSignoffTypes());
-    expect(getTemplates().find(s => s.id === 'tack')!.thenRules).toEqual(rules);
-    updateStageTemplate('tack', { thenRules: [...rules].reverse() });
-    expect(getTemplates().find(s => s.id === 'tack')!.thenRules![0].to).toBe('fit');
-    updateStageTemplate('tack', { thenRules: [] });
-    setSignoffTypes(getSignoffTypes());
-    expect(getTemplates().find(s => s.id === 'tack')!.thenRules).toEqual([]);
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
+    expect(getTemplates('pipe').find(s => s.id === 'tack')!.thenRules).toEqual(rules);
+    updateStageTemplate('pipe', 'tack', { thenRules: [...rules].reverse() });
+    expect(getTemplates('pipe').find(s => s.id === 'tack')!.thenRules![0].to).toBe('fit');
+    updateStageTemplate('pipe', 'tack', { thenRules: [] });
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
+    expect(getTemplates('pipe').find(s => s.id === 'tack')!.thenRules).toEqual([]);
   });
 });

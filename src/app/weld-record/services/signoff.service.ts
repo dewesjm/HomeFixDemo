@@ -30,7 +30,7 @@ import { typeLabel } from '../../data/signoff-types';
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
   if (st.insertion) return st.label;
-  const named = !isOwnType(st.id, st.signoffType) || namedAfterType(st.id);
+  const named = !isOwnType(st.jointType, st.id, st.signoffType) || namedAfterType(st.id);
   if (!named) return st.label;
   return st.typeOptions?.find(o => o.value === st.signoffType)?.label ?? st.label;
 }
@@ -137,7 +137,7 @@ export class SignoffService {
       for (const extra of additionalSignoffs(source, signed.stages, job, signed.fabricationData)) {
         /* an additional signoff needs the same permission and persona as signing that routing directly */
         if (!this.viewer.canSignRouting(extra.stage, extra.type)) throw new RoutingConfigurationError(
-          `Signing ${signedLabel} also signs ${extra.stage.label} as ${typeLabel(extra.type)}, which you do not have permission to sign.`);
+          `Signing ${signedLabel} also signs ${extra.stage.label} as ${typeLabel(extra.stage.jointType, extra.type)}, which you do not have permission to sign.`);
         const target = { ...extra.stage, ...typeValues(extra.type), result: 'sat' as const, signed: true, signedAt: st.signedAt, attribution };
         signed = this.store.withHistory(signed, { ...signed, stages: signed.stages.map(s => s.id === target.id ? target : s) }, {
           section: 'Sign-off', who, ...signer, stageId: target.id, action: `${target.label} - Signed off`, to: 'SAT',
@@ -204,7 +204,7 @@ export class SignoffService {
   /* Release a job past the Fit-Up Release stage */
   releaseFitUp(job: Job) {
     const attribution = this.viewer.signoffAttribution();
-    if (!attribution || !this.viewer.canSignType(FITUP_RELEASE) || !this.viewer.roles().includes('Foreman')) return false;
+    if (!attribution || !this.viewer.canSignType('pipe', FITUP_RELEASE) || !this.viewer.roles().includes('Foreman')) return false;
     this.store.update(job, wf => {
       const undo = signoffUndo(wf, job, FITUP_RELEASE);
       const stages = wf.stages.map(s =>

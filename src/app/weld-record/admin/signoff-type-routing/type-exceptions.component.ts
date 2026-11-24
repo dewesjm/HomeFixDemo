@@ -1,6 +1,6 @@
 /* Admin > Signoff Type to Routing: the Type Exceptions table (on a routing, one Type offered in place of
    another when a condition holds). */
-import { Component, output } from '@angular/core';
+import { Component, output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideArrowUp, LucideArrowDown, LucideGripVertical } from '@lucide/angular';
 import { typeSourceLabel } from '../../signoff-forms-logic/signoff-type-routing-rules';
@@ -9,6 +9,7 @@ import { getSignoffTypes } from '../../../data/signoff-types';
 import { getTemplates } from '../../routing-logic/routing-settings-rules';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { TypeException, typeExceptionCondition } from '../../signoff-forms-logic/type-exceptions';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
 
 interface ExceptionRow { id: number; routing: string; rule: TypeException; }
 
@@ -18,9 +19,11 @@ interface ExceptionRow { id: number; routing: string; rule: TypeException; }
   templateUrl: './type-exceptions.component.html',
 })
 export class TypeExceptionsComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   saved = output<void>();
-  types = getSignoffTypes();
-  get routings() { return getTemplates().filter(t => getSignoffTypeRoutingRows().some(r => r.stepId === t.id)); }
+  types = getSignoffTypes(this.jointType);
+  get routings() { return getTemplates(this.jointType).filter(t => getSignoffTypeRoutingRows(this.jointType).some(r => r.stepId === t.id)); }
   private seq = 0;
   rows: ExceptionRow[] = this.load();
   editing: number | null = null;
@@ -31,11 +34,11 @@ export class TypeExceptionsComponent {
   label(id: string) { return this.routings.find(r => r.id === id)?.label ?? id; }
   typeLabel(id: string) { return this.types.find(t => t.value === id)?.label ?? id; }
   routingSource(routing: string) {
-    const row = getSignoffTypeRoutingRows().find(r => r.stepId === routing);
+    const row = getSignoffTypeRoutingRows(this.jointType).find(r => r.stepId === routing);
     return row ? typeSourceLabel(row.typeSource) : '';
   }
   private load(): ExceptionRow[] {
-    return getSignoffTypeRoutingRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));
+    return getSignoffTypeRoutingRows(this.jointType).flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));
   }
   add() {
     const row = { id: ++this.seq, routing: '', rule: { from: 'pt', to: '5x' } };
@@ -80,7 +83,7 @@ export class TypeExceptionsComponent {
     this.dragId = null;
   }
   private persist() {
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => ({ ...r, typeExceptions: this.rows.filter(e => e.routing === r.stepId).map(e => structuredClone(e.rule)) })));
+    setSignoffTypeRoutingRows(this.jointType, getSignoffTypeRoutingRows(this.jointType).map(r => ({ ...r, typeExceptions: this.rows.filter(e => e.routing === r.stepId).map(e => structuredClone(e.rule)) })));
     this.message = 'Type exceptions saved'; this.saved.emit();
   }
 }

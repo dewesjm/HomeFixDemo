@@ -19,7 +19,7 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
   const fail = (why: string): never => { throw new RoutingConfigurationError(`Cannot insert ${definition?.label ?? id}: ${why}.`); };
   if (!definition || definition.classification !== 'added' || definition.lifecycle !== 'ordinary') return fail('definition is missing or unsupported');
   if (definition.status !== 'active') return fail('definition is not active');
-  const setup = addedRoutingSetup(definition);
+  const setup = addedRoutingSetup(job.jointType, definition);
   if (setup.errors.length) return fail(setup.errors.join(' '));
   if (!conditionsMatch(definition.includeWhen, job, stages, source, fab)) return fail('applicability conditions do not match');
   const persona = routingPersona(definition, job);
@@ -37,11 +37,11 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
     originInspectionType: origin['originInspectionType'] || source.inspectionType,
     parentRepairId: parent,
   };
-  const typeOptions = signoffTypeOptions(id, job, {}, insertion.originPhase ? insertion.originInspectionType : undefined);
+  const typeOptions = signoffTypeOptions(job.jointType, id, job, {}, insertion.originPhase ? insertion.originInspectionType : undefined);
   if (!typeOptions?.length) return fail('no Signoff Type is enabled or rejecting inspection context is missing');
-  const forms = getStepFieldConfig();
+  const forms = getStepFieldConfig(job.jointType);
   if (typeOptions.some(o => (o.signsStep && o.signsStep !== id) ||
     !forms.some(f => f.typeId === o.value && f.fields.some(field => field.heading === undefined)))) return fail('resolved Type must sign this routing and have a form');
   const label = `${definition.displayName || definition.label} ${sequence}`;
-  return { ...stageFromTemplate({ ...definition, id: `added:${id}:${sequence}`, label, typeOptions, persona }), insertion };
+  return { ...stageFromTemplate(job.jointType, { ...definition, id: `added:${id}:${sequence}`, label, typeOptions, persona }), insertion };
 }

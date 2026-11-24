@@ -19,15 +19,15 @@ describe('signoff section fields (Type, Inspection Results, Comments)', () => {
 
 describe('definition lookup by Type', () => {
   it('every step offering a Type reads its one definition; NQC rows and phases share it', () => {
-    for (const id of ['root-ndt-vt5x', 'nqc-layer-ndt-vt5x', 'final-ndt-vt5x']) expect(definitionId({ id, signoffType: 'vt' })).withContext(id).toBe('vt');
-    expect(definitionId({ id: 'deferred-tack', signoffType: 'deferred-tack' })).toBe('deferred-tack');
-    expect(definitionId({ id: 'repair-3', signoffType: 'repair' })).toBe('repair');
+    for (const id of ['root-ndt-vt5x', 'nqc-layer-ndt-vt5x', 'final-ndt-vt5x']) expect(definitionId({ jointType: 'pipe', id, signoffType: 'vt' })).withContext(id).toBe('vt');
+    expect(definitionId({ jointType: 'pipe', id: 'deferred-tack', signoffType: 'deferred-tack' })).toBe('deferred-tack');
+    expect(definitionId({ jointType: 'pipe', id: 'repair-3', signoffType: 'repair' })).toBe('repair');
   });
 
   it('a step whose Type is not picked yet shows only Type; Excavation NDT shares its inspection Type; a step with no Types has none', () => {
-    expect(getActivationForStep({ id: 'root-ndt-utrt', signoffType: 'standard' }).fields.map(f => f.key)).toEqual([TYPE_KEY]);
-    expect(definitionId({ id: 'excavation-ndt-2', signoffType: 'rt' })).toBe('rt');
-    expect(definitionId({ id: 'engineering-hold', signoffType: 'standard' })).toBeUndefined();
-    expect(hasStepActivation({ id: 'engineering-hold', signoffType: 'standard' })).toBeFalse();
+    expect(getActivationForStep({ jointType: 'pipe', id: 'root-ndt-utrt', signoffType: 'standard' }).fields.map(f => f.key)).toEqual([TYPE_KEY]);
+    expect(definitionId({ jointType: 'pipe', id: 'excavation-ndt-2', signoffType: 'rt' })).toBe('rt');
+    expect(definitionId({ jointType: 'pipe', id: 'engineering-hold', signoffType: 'standard' })).toBeUndefined();
+    expect(hasStepActivation({ jointType: 'pipe', id: 'engineering-hold', signoffType: 'standard' })).toBeFalse();
   });
 });

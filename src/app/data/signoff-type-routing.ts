@@ -1,8 +1,10 @@
 /* Admin > Signoff Type to Routing rows: which Types (Admin > Signoff Types) each routing offers, its
    default Type, when each Type is enabled, and the Type source and exceptions for Excavation NDT. The
    starting rows, load and save (localStorage). The rules that read them are in
-   weld-record/signoff-forms-logic/signoff-type-routing-rules.ts. */
-import { STORAGE } from './storage-keys';
+   weld-record/signoff-forms-logic/signoff-type-routing-rules.ts. One table per joint type: Pipe
+   starts from the seed rows, Structural starts empty. */
+import { settingsKey } from './storage-keys';
+import type { JointType } from './jobs';
 import { TypeException } from '../weld-record/signoff-forms-logic/type-exceptions';
 import { ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
 import { NDT_KINDS } from './welding-steps';
@@ -74,14 +76,18 @@ const SEED_ROWS: SignoffTypeRoutingRow[] = [
 let version = 0;
 export const signoffTypeRoutingVersion = () => version * 1000 + signoffTypesVersion();
 
-export function getSignoffTypeRoutingRows(): SignoffTypeRoutingRow[] {
-  try {
-    const raw = localStorage.getItem(STORAGE.signoffTypeRouting);
-    return raw ? JSON.parse(raw) as SignoffTypeRoutingRow[] : SEED_ROWS;
-  } catch { return SEED_ROWS; }
+function seedRows(jointType: JointType): SignoffTypeRoutingRow[] {
+  return jointType === 'pipe' ? SEED_ROWS : [];
 }
 
-export function setSignoffTypeRoutingRows(rows: SignoffTypeRoutingRow[]) {
-  localStorage.setItem(STORAGE.signoffTypeRouting, JSON.stringify(rows));
+export function getSignoffTypeRoutingRows(jointType: JointType): SignoffTypeRoutingRow[] {
+  try {
+    const raw = localStorage.getItem(settingsKey('signoffTypeRouting', jointType));
+    return raw ? JSON.parse(raw) as SignoffTypeRoutingRow[] : seedRows(jointType);
+  } catch { return seedRows(jointType); }
+}
+
+export function setSignoffTypeRoutingRows(jointType: JointType, rows: SignoffTypeRoutingRow[]) {
+  localStorage.setItem(settingsKey('signoffTypeRouting', jointType), JSON.stringify(rows));
   version++;
 }

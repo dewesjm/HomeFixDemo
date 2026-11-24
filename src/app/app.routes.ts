@@ -13,6 +13,7 @@ import { PipeWeldingPageComponent } from './weld-record/pipe-welding-page/pipe-w
 import { NonNumberedJointsPageComponent } from './weld-record/non-numbered-joints-page/non-numbered-joints-page.component';
 import { StructuralWeldingPageComponent } from './weld-record/structural-welding-page/structural-welding-page.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
+import { JointTypeSettingsPageComponent } from './weld-record/admin/joint-type-settings/joint-type-settings-page.component';
 import { AdminRoutingSettingsComponent } from './weld-record/admin/routing-settings/routing-settings.component';
 import { AdminAttributeCodesComponent } from './weld-record/admin/attribute-codes/attribute-codes.component';
 import { AdminAttributeCodeExceptionsComponent } from './weld-record/admin/attribute-code-exceptions/attribute-code-exceptions.component';
@@ -90,7 +91,7 @@ export const routes: Routes = [
         || inject(Router).parseUrl('/pipe-welding');
     }] },
   { path: 'makeup', component: MakeupPageComponent, title: 'EWR - Makeup', canActivate: [requireWeldRecordAccess(viewer => viewer.canViewMakeup())] },
-  { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings', canActivate: [requireAdminTablesAccess] },
+  { path: 'admin/routing-settings', component: JointTypeSettingsPageComponent, data: { page: AdminRoutingSettingsComponent }, title: 'EWR - Routing Settings', canActivate: [requireAdminTablesAccess] },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
   { path: 'admin/attribute-codes', component: AdminAttributeCodesComponent, title: 'EWR - Attribute Codes', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/attribute-code-exceptions', component: AdminAttributeCodeExceptionsComponent, title: 'EWR - Attribute Code Exceptions', canActivate: [requireAdminTablesAccess] },
@@ -101,9 +102,9 @@ export const routes: Routes = [
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations', canActivate: [requireAdminTablesAccess] },
-  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent, title: 'EWR - Signoff Types', canActivate: [requireAdminTablesAccess] },
-  { path: 'admin/signoff-type-routing', component: AdminSignoffTypeRoutingComponent,     title: 'EWR - Signoff Type to Routing', canActivate: [requireAdminTablesAccess] },
-  { path: 'admin/signoff-type-forms', component: AdminSignoffTypeFormsComponent, title: 'EWR - Signoff Type Forms', canActivate: [requireAdminTablesAccess] },
+  { path: 'admin/signoff-types', component: JointTypeSettingsPageComponent, data: { page: AdminSignoffTypesComponent }, title: 'EWR - Signoff Types', canActivate: [requireAdminTablesAccess] },
+  { path: 'admin/signoff-type-routing', component: JointTypeSettingsPageComponent, data: { page: AdminSignoffTypeRoutingComponent }, title: 'EWR - Signoff Type to Routing', canActivate: [requireAdminTablesAccess] },
+  { path: 'admin/signoff-type-forms', component: JointTypeSettingsPageComponent, data: { page: AdminSignoffTypeFormsComponent }, title: 'EWR - Signoff Type Forms', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors', canActivate: [requireAdminTablesAccess] },
   { path: 'admin/services', component: AdminServicesComponent, title: 'EWR - Services',

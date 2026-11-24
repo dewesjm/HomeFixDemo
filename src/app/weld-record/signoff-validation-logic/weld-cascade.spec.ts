@@ -78,11 +78,11 @@ describe('joint-form weld-cascade', () => {
   });
 
   describe('a prepopulated field that is never disabled', () => {
-    afterEach(() => resetStepFieldConfig());
+    afterEach(() => resetStepFieldConfig('pipe'));
 
     it('is copied in when its rule starts holding, then keeps a value typed over it', () => {
-      const tack = getActivationForStep('tack');
-      setStepFieldConfig([{ ...tack, fields: tack.fields.map(f => f.key === 'actualPhMin' ? { ...f, disabledIf: { all: [] } } : f) }]);
+      const tack = getActivationForStep({ jointType: 'pipe', typeId: 'tack' });
+      setStepFieldConfig('pipe', [{ ...tack, fields: tack.fields.map(f => f.key === 'actualPhMin' ? { ...f, disabledIf: { all: [] } } : f) }]);
       /* an engineering override, so PH Min is typed rather than prepopulated from the WTN */
       const before = stageOf('tack', { engineeringEntry: true, inputs: { phMin: '50', actualPhMin: '70' } });
       const nc = { ...before, inputs: { ...before.inputs, phMin: 'NC' } };

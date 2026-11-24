@@ -3,9 +3,10 @@
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { catalogField } from '../catalogs/field-choices';
 import { ConditionClause, ConditionRule } from './joint-conditions';
+import type { JointType } from '../../data/jobs';
 
-function describeClause(c: ConditionClause, extra: ConditionCatalogField[]): string {
-  const f = extra.find(x => x.key === c.field) ?? catalogField(c.field);
+function describeClause(c: ConditionClause, jointType: JointType, extra: ConditionCatalogField[]): string {
+  const f = extra.find(x => x.key === c.field) ?? catalogField(c.field, jointType);
   const label = f?.label.replace(/ \(once .*\)$/, '') ?? c.field;
   if (c.op === 'contains') return `${label} contains "${(c.values[0] ?? '').trim()}"`;
   const vals = c.values.length ? c.values.map(v => f?.valueLabel?.(v) ?? v).join(' or ') : '(nothing)';
@@ -13,13 +14,14 @@ function describeClause(c: ConditionClause, extra: ConditionCatalogField[]): str
 }
 
 /* each clause in plain words, e.g. "Type is PT" (the rejected routing's own fields lose their "This routing: ") */
-export function describeClauses(rule: ConditionRule, extra: ConditionCatalogField[] = []): string[] {
-  return rule.map(c => describeClause(c, extra).replace(/^This routing: /, ''));
+export function describeClauses(rule: ConditionRule, jointType: JointType, extra: ConditionCatalogField[] = []): string[] {
+  return rule.map(c => describeClause(c, jointType, extra).replace(/^This routing: /, ''));
 }
 
 /* plain words for the Routing table, e.g. "N Ind. is 1 or 2; or Joint Design needs Backing Ring is Yes";
-   `extra` is the routing's own fields (stageConditionFields) for reject rules */
-export function describeConditions(rules: ConditionRule[] | undefined, extra: ConditionCatalogField[] = []): string {
+   `extra` is the routing's own fields (stageConditionFields) for reject rules; routing answers are named
+   from the joint type's routings */
+export function describeConditions(rules: ConditionRule[] | undefined, jointType: JointType, extra: ConditionCatalogField[] = []): string {
   if (!rules?.length) return 'Always';
-  return rules.map(rule => rule.length ? rule.map(c => describeClause(c, extra)).join(' and ') : 'Always').join('; or ');
+  return rules.map(rule => rule.length ? rule.map(c => describeClause(c, jointType, extra)).join(' and ') : 'Always').join('; or ');
 }

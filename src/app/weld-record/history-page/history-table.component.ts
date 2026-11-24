@@ -48,7 +48,7 @@ export class HistoryTableComponent {
   private routingOrder = computed(() => {
     const order = new Map<string, number>();
     let i = 0;
-    for (const s of getTemplates()) {
+    for (const s of getTemplates('pipe')) {   /* the History page lists pipe joints only */
       const label = s.displayName || s.label;
       if (!order.has(label)) order.set(label, i++);
     }

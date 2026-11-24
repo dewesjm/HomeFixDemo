@@ -9,7 +9,7 @@ import { signoffTypeOptions } from './signoff-type-routing-rules';
 const hasCommentsBox = (s: StepRef) => definitionHas(s, 'comments');
 
 /* a step on its default Type, or the one given */
-const step = (id: string, signoffType = signoffTypeOptions(id)?.find(o => o.default)?.value ?? 'standard') => ({ id, signoffType });
+const step = (id: string, signoffType = signoffTypeOptions('pipe', id)?.find(o => o.default)?.value ?? 'standard') => ({ jointType: 'pipe' as const, id, signoffType });
 /* a built step on a Type: its own, else its first option (an NDT step starts with none picked) */
 const onType = <T extends { signoffType: string; typeOptions?: { value: string }[] }>(s: T): T =>
   s.typeOptions?.some(o => o.value === s.signoffType) ? s : { ...s, signoffType: s.typeOptions?.[0]?.value ?? s.signoffType };
@@ -38,7 +38,7 @@ describe('Qualification Check', () => {
 describe('Comments box', () => {
   it('every hand-signed step has one once its Type is picked; Engineering Hold and Sold don\'t', () => {
     for (const s of buildStages(JOBS[0]).filter(x => x.id !== 'sold').map(onType)) expect(hasCommentsBox(s)).withContext(s.id).toBeTrue();
-    expect(hasCommentsBox({ id: 'root-ndt-vt5x', signoffType: 'standard' })).toBeFalse();
+    expect(hasCommentsBox({ jointType: 'pipe', id: 'root-ndt-vt5x', signoffType: 'standard' })).toBeFalse();
     expect(hasCommentsBox(step('sold'))).toBeFalse();
     expect(hasCommentsBox(step('engineering-hold'))).toBeFalse();
   });
@@ -60,7 +60,7 @@ describe('Comments box', () => {
 describe('drawnByOwnForm', () => {
   it('insert, ring and Defer Tack only on their own steps; Affected Item, References and Signoff History everywhere', () => {
     expect(drawnByOwnForm(step('fit'), 'consumableInsertType')).toBeTrue();
-    expect(drawnByOwnForm('weld-buildup', 'consumableInsertType')).toBeTrue();
+    expect(drawnByOwnForm({ jointType: 'pipe', typeId: 'weld-buildup' }, 'consumableInsertType')).toBeTrue();
     expect(drawnByOwnForm(step('tack'), 'consumableInsertType')).toBeFalse();
     expect(drawnByOwnForm(step('pre-fit'), 'deferTack')).toBeFalse();
     expect(drawnByOwnForm(step('nqc-fitup-insp'), 'releaseToWelding')).toBeFalse();

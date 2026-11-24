@@ -1,5 +1,6 @@
 <h2 class="section-title">Signoff Type to Routing</h2>
-<p class="text-sm mb-sm">Which Signoff Types each routing offers, when, and which is the default. With no default, the signer must pick one.</p>
+<p class="text-sm mb-sm">Which Signoff Types each routing offers, when, and which is the default. With no default, the signer must pick one. Each joint type has its own.</p>
+<app-joint-type-select />
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search routings…" addLabel="Add routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />

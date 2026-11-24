@@ -2,7 +2,7 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { rtDegreeRequired } from './rt-degree-minimum';
 
-const rt = (id: string) => ({ id, signoffType: 'rt', inspectionType: 'rt', inputs: {} }) as unknown as WorkflowStage;
+const rt = (id: string) => ({ jointType: 'pipe', id, signoffType: 'rt', inspectionType: 'rt', inputs: {} }) as unknown as WorkflowStage;
 
 describe('RT degree minimum', () => {
   beforeEach(() => localStorage.clear());

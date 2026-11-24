@@ -24,12 +24,12 @@ describe('Configured Repair Code routing', () => {
     return id;
   }
   function rule(to: string) {
-    const repair = getTemplates().find(t => t.id === 'repair')!;
-    updateStageTemplate('repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['extra'] }], to }, ...(repair.thenRules ?? [])] });
+    const repair = getTemplates('pipe').find(t => t.id === 'repair')!;
+    updateStageTemplate('pipe', 'repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['extra'] }], to }, ...(repair.thenRules ?? [])] });
   }
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
     store = TestBed.inject(WorkflowStore); service = TestBed.inject(SignoffService);
     job = Object.assign({ ...JOBS[0], id: 'repair-code-test', xrefid: 'RCT01', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: '', ndtFinal: '', rtRoot: '', rtFinal: '',
       materialType1: '12-SS304', materialType2: '02-CS', jointDesign: 'C-18', refitNumber: '', repairNumber: '' });
@@ -43,7 +43,7 @@ describe('Configured Repair Code routing', () => {
   });
   afterEach(() => {
     window.dispatchEvent(new Event('pagehide'));
-    JOBS.splice(JOBS.indexOf(job), 1); localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
+    JOBS.splice(JOBS.indexOf(job), 1); localStorage.clear(); setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
   });
   it('blocks missing destination rules and inactive/unknown codes without History or undo mutation', () => {
     for (const code of ['extra', 'missing']) {

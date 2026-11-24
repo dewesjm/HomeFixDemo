@@ -2,7 +2,8 @@
    (its key is in allowed) or doesn't. */
 
 import { ROUTING_PERSONAS, type Role } from './roles';
-import { getSignoffTypes, WELD_BUILDUP_TYPE } from './signoff-types';
+import { getSignoffTypes, SignoffType, WELD_BUILDUP_TYPE } from './signoff-types';
+import { JOINT_TYPES } from './jobs';
 import { STORAGE } from './storage-keys';
 
 interface Permission {
@@ -65,11 +66,16 @@ function privilegedPermissions(id: string): string[] {
 
 export const PERMISSION_CATEGORIES = [...new Set(PERMISSIONS.map(p => p.category)), SIGNOFF_CATEGORY];
 
+/* every joint type's Signoff Types, once per value (the same value is the same Sign permission), Pipe's name first */
+function signableTypes(): SignoffType[] {
+  const all = JOINT_TYPES.flatMap(jointType => getSignoffTypes(jointType));
+  return all.filter((type, i) => type.value !== NON_SIGNABLE_TYPE && all.findIndex(t => t.value === type.value) === i);
+}
+
 export function permissionsIn(category: string): Permission[] {
   if (category === SIGNOFF_CATEGORY) {
     return [
-      ...getSignoffTypes().filter(type => type.value !== NON_SIGNABLE_TYPE)
-        .map(type => ({ key: signoffPermission(type.value), label: `Sign ${type.label}`, category })),
+      ...signableTypes().map(type => ({ key: signoffPermission(type.value), label: `Sign ${type.label}`, category })),
       { key: SIGN_EXCAVATION_NDT_PERMISSION, label: 'Sign Excavation NDT', category },
     ];
   }

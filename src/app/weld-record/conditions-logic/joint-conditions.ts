@@ -7,7 +7,7 @@
    Defer Tack or an NDT routing's Weld Color) are blank until that routing is signed, so a routing that
    uses one is always on the joint and turns required on or off as those routings are signed
    (routing-logic/route-changes.ts applySignedFlags). */
-import { Job } from '../../data/jobs';
+import { Job, JointType } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes-logic/attribute-context';
 import { Fabrication, StageAnswers } from '../catalogs/field-catalog';
 import { catalogField, readsFabrication } from '../catalogs/field-choices';
@@ -38,7 +38,7 @@ function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], sel
   let value: string;
   if (c.field.startsWith('self.')) value = selfValue(self, c.field.slice(5), stages);
   else {
-    const f = catalogField(c.field);
+    const f = catalogField(c.field, job.jointType);
     if (!f) return false;
     value = f.get(job, stages, fab);
   }
@@ -62,10 +62,10 @@ export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, st
   return rules.some(rule => ruleMatches(rule, job, stages, self, fab));
 }
 
-export function usesStepAnswers(rules: ConditionRule[] | undefined): boolean {
-  return !!rules?.some(rule => rule.some(c => catalogField(c.field)?.stepAnswer));
+export function usesStepAnswers(rules: ConditionRule[] | undefined, jointType: JointType): boolean {
+  return !!rules?.some(rule => rule.some(c => catalogField(c.field, jointType)?.stepAnswer));
 }
 
-export function usesFabrication(rules: ConditionRule[] | undefined): boolean {
-  return !!rules?.some(rule => rule.some(c => readsFabrication(catalogField(c.field))));
+export function usesFabrication(rules: ConditionRule[] | undefined, jointType: JointType): boolean {
+  return !!rules?.some(rule => rule.some(c => readsFabrication(catalogField(c.field, jointType))));
 }

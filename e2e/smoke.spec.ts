@@ -28,6 +28,21 @@ test('Structural Details opens the joint page, and Back returns to Structural', 
   await expect(page).toHaveURL(/\/structural-welding$/);
 });
 
+test('Routing Settings: the Joint type select opens Structural’s table, and Back returns to Pipe’s', async ({ page }) => {
+  await page.goto('/admin/routing-settings');
+  const select = page.getByLabel('Joint type');
+  await expect(select).toHaveValue('pipe');
+  await expect(select.locator('option', { hasText: 'Non-Numbered' })).toHaveAttribute('disabled');
+  const pipeRows = await page.locator('tbody tr').count();
+  expect(pipeRows).toBeGreaterThan(0);
+  await select.selectOption('structural');
+  await expect(page).toHaveURL(/\/admin\/routing-settings\?type=structural$/);
+  await expect(page.getByLabel('Joint type')).toHaveValue('structural');
+  await page.goBack();
+  await expect(page).toHaveURL(/\/admin\/routing-settings$/);
+  await expect(page.getByLabel('Joint type')).toHaveValue('pipe');
+});
+
 test.describe('storage isolation', () => {
   test('a test can write saved data', async ({ page }) => {
     await page.goto('/pipe-welding');

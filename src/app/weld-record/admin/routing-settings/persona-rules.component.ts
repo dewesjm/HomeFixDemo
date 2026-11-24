@@ -1,13 +1,15 @@
 /* Ordered Joint Details rules selecting a routing's persona, with its base persona as fallback. */
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ROLES } from '../../../data/roles';
 import { StageTemplate } from '../../model/stage-template';
 import { getTemplates, updateStageTemplate } from '../../routing-logic/routing-settings-rules';
 import { ConditionClause } from '../../conditions-logic/joint-conditions';
 import { describeConditions } from '../../conditions-logic/condition-text';
+import type { JointType } from '../../../data/jobs';
 import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './rules/condition-editing';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
 
 @Component({
   selector: 'app-persona-rules', standalone: true, imports: [FormsModule],
@@ -70,6 +72,8 @@ import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, pa
   `,
 })
 export class PersonaRulesComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   routing = input.required<StageTemplate>();
   closed = output<void>();
   saved = output<void>();
@@ -82,7 +86,7 @@ export class PersonaRulesComponent {
   ngOnInit() {
     this.fallbackPersona = this.routing().persona ?? '';
     this.rules = structuredClone(this.routing().personaRules ?? []);
-    this.personas = [...new Set([...this.personas, ...getTemplates().flatMap(row => [row.persona ?? '', ...(row.personaRules ?? []).map(rule => rule.persona)])])].filter(Boolean).sort();
+    this.personas = [...new Set([...this.personas, ...getTemplates(this.jointType).flatMap(row => [row.persona ?? '', ...(row.personaRules ?? []).map(rule => rule.persona)])])].filter(Boolean).sort();
   }
   typed(clause: ConditionClause) { return clauseTyped(this.fields, clause); }
   options(key: string) { return conditionValueOptions(this.fields, key); }
@@ -100,13 +104,13 @@ export class PersonaRulesComponent {
   }
   save() {
     if (!this.valid()) return;
-    updateStageTemplate(this.routing().id, { persona: this.fallbackPersona, personaRules: structuredClone(this.rules) });
+    updateStageTemplate(this.jointType, this.routing().id, { persona: this.fallbackPersona, personaRules: structuredClone(this.rules) });
     this.saved.emit();
     this.closed.emit();
   }
 }
 
-export function personaRuleSummary(template: StageTemplate): string {
+export function personaRuleSummary(jointType: JointType, template: StageTemplate): string {
   if (!template.personaRules?.length) return template.persona ?? '';
-  return [...(template.personaRules ?? []).map(rule => `${describeConditions([rule.when])} → ${rule.persona}`), `Otherwise: ${template.persona ?? ''}`].join('; ');
+  return [...(template.personaRules ?? []).map(rule => `${describeConditions([rule.when], jointType)} → ${rule.persona}`), `Otherwise: ${template.persona ?? ''}`].join('; ');
 }

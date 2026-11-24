@@ -70,7 +70,7 @@ describe('joint-form sign-validation', () => {
     const j = job();
     const tack = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'tack')!;
     const insp = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'fitup-insp')!;
-    setStepFieldConfig([
+    setStepFieldConfig('pipe', [
       { ...tack, fields: [...tack.fields, { key: 'repairType' }] },
       { ...insp, fields: [...insp.fields, { key: 'repairType' }] },
     ]);
@@ -79,7 +79,7 @@ describe('joint-form sign-validation', () => {
     const i = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
     expect(generalSignProblems(i, ctxFor(j, i, FULL_FAB))).toEqual([]);
     expect(stageFieldErrors(i, ctxFor(j, i))['fitup-insp:repairType']).toBe('Repair Code is required');
-    resetStepFieldConfig();
+    resetStepFieldConfig('pipe');
   });
 
   it('RT NDT must record at least the job\'s required degree', () => {
@@ -140,19 +140,19 @@ describe('joint-form sign-validation', () => {
     const j = job({ mcl1: 'MC-I', joiningItem: 'Pipe A' });
     const def = DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'weld-buildup'
       ? { ...a, fields: a.fields.filter(f => f.key !== 'affectedMicVerified1') } : a);
-    setStepFieldConfig(def);
+    setStepFieldConfig('pipe', def);
     const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', inputs: { affectedItems: 'joiningItem' } });
     expect(stageFieldErrors(fit, ctxFor(j, fit))['fit:affectedItem']).toBeUndefined();
-    resetStepFieldConfig();
+    resetStepFieldConfig('pipe');
   });
 
   it('a required Comments blocks signing on any routing', () => {
     const j = job();
-    setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'tack'
+    setStepFieldConfig('pipe', DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'tack'
       ? { ...a, fields: a.fields.map(f => f.key === 'comments' ? { ...f, required: true } : f) } : a));
     const tack = stageOf(j, 'tack');
     expect(stageFieldErrors(tack, ctxFor(j, tack))['tack:comments']).toBe('Comments is required');
-    resetStepFieldConfig();
+    resetStepFieldConfig('pipe');
   });
 
   it('on blur: a filled field loses its error and a fixed Min/Max order clears the Max error', () => {

@@ -3,18 +3,18 @@ import { AdminSignoffTypesComponent } from './signoff-types.component';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 
 describe('Signoff Types settings', () => {
-  afterEach(() => { localStorage.clear(); setSignoffTypes(getSignoffTypes()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypes('pipe', getSignoffTypes('pipe')); });
 
   it('keeps Signs routing editable and persists it with the Type', () => {
     localStorage.clear();
-    setSignoffTypes(getSignoffTypes());
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
     TestBed.configureTestingModule({});
     const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
     const row = component.rows().find(t => t.value === 'final-weld')!;
     component.startEdit(row);
     component.setSignsStep(row, 'root-layer');
     component.saveEdit(component.rows().find(t => t.value === 'final-weld')!);
-    expect(getSignoffTypes().find(t => t.value === 'final-weld')!.signsStep).toBe('root-layer');
+    expect(getSignoffTypes('pipe').find(t => t.value === 'final-weld')!.signsStep).toBe('root-layer');
   });
 
   it('saves and removes conditional additional signoffs without changing Signs routing', () => {
@@ -25,12 +25,12 @@ describe('Signoff Types settings', () => {
     component.startEdit(row);
     row.alsoSigns = [row.alsoSigns![0]];
     component.saveEdit(row);
-    expect(getSignoffTypes().find(t => t.value === 'root')!.alsoSigns!.length).toBe(1);
+    expect(getSignoffTypes('pipe').find(t => t.value === 'root')!.alsoSigns!.length).toBe(1);
     row = component.rows().find(t => t.value === 'root')!;
     component.startEdit(row);
     row.alsoSigns = [];
     component.saveEdit(row);
-    expect(getSignoffTypes().find(t => t.value === 'root')!.alsoSigns).toEqual([]);
-    expect(getSignoffTypes().find(t => t.value === 'root')!.signsStep).toBeUndefined();
+    expect(getSignoffTypes('pipe').find(t => t.value === 'root')!.alsoSigns).toEqual([]);
+    expect(getSignoffTypes('pipe').find(t => t.value === 'root')!.signsStep).toBeUndefined();
   });
 });

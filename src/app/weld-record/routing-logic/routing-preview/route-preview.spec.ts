@@ -3,6 +3,7 @@ import { buildStages } from '../build-stages';
 import { nextRepairStage, excavationNdtStage, stageFromTemplate } from '../inserted-routing/added-routings';
 import { WorkflowStage } from '../../model/workflow-types';
 import { routePreviewLabel, SignoffPreview } from './route-preview';
+import { testJob } from '../../../testing/test-job';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], nInd: '3', ...over });
 const noPreview: SignoffPreview = () => ({ target: undefined, reasons: [] });
@@ -10,11 +11,11 @@ const noPreview: SignoffPreview = () => ({ target: undefined, reasons: [] });
 describe('joint-form route-preview', () => {
   const j = job({ refitNumber: '02', materialType1: '02-CS', materialType2: '02-CS' });
   const stages = buildStages(j);
-  const repair = (inputs: Record<string, string>) => stageFromTemplate(nextRepairStage(stages), { originPhase: 'root', originStageId: 'root-ndt-vt5x', ...inputs });
+  const repair = (inputs: Record<string, string>) => stageFromTemplate('pipe', nextRepairStage(stages, testJob()), { originPhase: 'root', originStageId: 'root-ndt-vt5x', ...inputs });
 
   it('Repair and Excavation use the actual dry run and its rule explanation', () => {
     const rep = repair({ repairType: 'grind' });
-    const exc = stageFromTemplate(excavationNdtStage('vt', rep.id));
+    const exc = stageFromTemplate('pipe', excavationNdtStage('vt', rep.id, testJob()));
     for (const st of [rep, exc]) {
       const preview: SignoffPreview = () => ({ target: stages.find(s => s.id === 'fit'), reasons: ['edited table rule'] });
       const label = routePreviewLabel(j, [...stages, rep, exc], st, st.id, preview);

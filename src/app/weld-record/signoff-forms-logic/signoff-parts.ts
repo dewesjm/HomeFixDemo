@@ -13,7 +13,6 @@ import { lookupCatalogField } from '../catalogs/field-catalog';
 export function drawnByOwnForm(step: StepRef, key: string): boolean {
   const cat = lookupCatalogField(key);
   if (!cat) return false;
-  const id = typeof step === 'string' ? step : step.id;
-  const home = typeof step === 'string' && id === WELD_BUILDUP_TYPE ? 'fit' : baseStepId(id);
+  const home = 'typeId' in step ? (step.typeId === WELD_BUILDUP_TYPE ? 'fit' : baseStepId(step.typeId)) : baseStepId(step.id);
   return !!cat.ownComponent || !!cat.signoffValue || !!cat.ownFormSteps?.includes(home);
 }

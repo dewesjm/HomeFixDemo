@@ -22,6 +22,8 @@ import { typeSourceLabel } from '../../signoff-forms-logic/signoff-type-routing-
 import { AvailableType, SignoffTypeRoutingRow, EXCAVATION_TYPE_ROW, getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes, typeLabel } from '../../../data/signoff-types';
 import { getTemplates } from '../../routing-logic/routing-settings-rules';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
+import { JointTypeSelectComponent } from '../joint-type-settings/joint-type-select.component';
 
 interface TypeRow extends SignoffTypeRoutingRow {
   uid: string;
@@ -36,12 +38,15 @@ const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
   selector: 'app-admin-signoff-type-routing',
   standalone: true,
   imports: [
+    JointTypeSelectComponent,
     TypeEnableConditionsComponent, TypeExceptionsComponent, AttributeCodeNoteComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
   templateUrl: './signoff-type-routing.component.html'
 })
 export class AdminSignoffTypeRoutingComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
   private seq = 0;
@@ -50,12 +55,12 @@ export class AdminSignoffTypeRoutingComponent {
   readonly typeSourceLabel = typeSourceLabel;
   /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
-    ...getTemplates().map(s => ({ id: s.id, label: s.label })),
+    ...getTemplates(this.jointType).map(s => ({ id: s.id, label: s.label })),
   ];
   /* what an option can be: the Types in Admin > Signoff Types */
-  readonly typeChoices = getSignoffTypes();
+  readonly typeChoices = getSignoffTypes(this.jointType);
 
-  rows = signal<TypeRow[]>(getSignoffTypeRoutingRows().map(r => ({ ...this.toRow(r.stepId, r.types), typeSource: r.typeSource, typeExceptions: r.typeExceptions })));
+  rows = signal<TypeRow[]>(getSignoffTypeRoutingRows(this.jointType).map(r => ({ ...this.toRow(r.stepId, r.types), typeSource: r.typeSource, typeExceptions: r.typeExceptions })));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
   table = new TableState<TypeRow>(['stepLabel']);
@@ -85,7 +90,7 @@ export class AdminSignoffTypeRoutingComponent {
 
   /* e.g. "Interim Layer (default)" */
   optionText(t: AvailableType): string {
-    return typeLabel(t.type) + (t.default ? ' (default)' : '') + ' — Enable when: ' + this.enableText(t);
+    return typeLabel(this.jointType, t.type) + (t.default ? ' (default)' : '') + ' — Enable when: ' + this.enableText(t);
   }
 
   enableText(t: AvailableType): string {
@@ -98,7 +103,7 @@ export class AdminSignoffTypeRoutingComponent {
     downloadCsv('signoff-type-routing', [
       { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
       { header: 'Type source', value: (r: TypeRow) => typeSourceLabel(r.typeSource) },
-      { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${typeExceptionCondition(e)})`).join('; ') },
+      { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(this.jointType, e.from)} -> ${typeLabel(this.jointType, e.to)} (${typeExceptionCondition(e)})`).join('; ') },
       { header: 'Options', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? EXCAVATION_NOTE
           : r.types.map(t => this.optionText(t)).join('; ') },
     ], this.table.sorted());
@@ -179,7 +184,7 @@ export class AdminSignoffTypeRoutingComponent {
   }
 
   reloadTypeRules() {
-    const saved = getSignoffTypeRoutingRows();
+    const saved = getSignoffTypeRoutingRows(this.jointType);
     this.rows.update(rows => rows.map(r => {
       const row = saved.find(x => x.stepId === r.stepId);
       return { ...r, typeSource: row?.typeSource, typeExceptions: row?.typeExceptions };
@@ -188,7 +193,7 @@ export class AdminSignoffTypeRoutingComponent {
 
   private persist() {
     const editing = this.editingUid();
-    setSignoffTypeRoutingRows(this.rows().flatMap(r => {
+    setSignoffTypeRoutingRows(this.jointType, this.rows().flatMap(r => {
       /* a row still being edited keeps its saved version; an unsaved new row isn't stored */
       const saved = r.uid === editing ? this.cloned[r.uid] : r;
       return saved?.stepId ? [{ stepId: saved.stepId, types: saved.types, typeSource: saved.typeSource, typeExceptions: saved.typeExceptions }] : [];

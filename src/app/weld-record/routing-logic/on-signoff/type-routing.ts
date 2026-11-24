@@ -5,7 +5,7 @@ import { typeValues } from '../../signoff-forms-logic/stage-rules';
 
 /* the later step a stage's Type signs (the Type's Signs step), or '' */
 export function signedAsStep(stages: WorkflowStage[], stage: WorkflowStage): string {
-  const target = typeSignsStep(stage.id, stage.signoffType);
+  const target = typeSignsStep(stage.jointType, stage.id, stage.signoffType);
   if (!target) return '';
   const idx = stages.findIndex(s => s.id === stage.id);
   return stages.find((s, i) => i > idx && s.id === target)?.id ?? '';

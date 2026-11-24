@@ -4,7 +4,7 @@
 import { excavationDefinition } from './excavation-definition';
 import { getAddedTemplate } from '../routing-settings-rules';
 import { routingPersona } from '../routing-persona';
-import { Job } from '../../../data/jobs';
+import { Job, JointType } from '../../../data/jobs';
 import { describeClauses } from '../../conditions-logic/condition-text';
 import { RouteToRule } from '../route-to-rules';
 import { stageConditionFields } from '../../catalogs/field-choices';
@@ -18,10 +18,11 @@ import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-forms-l
 /* ── Repair ── */
 
 /* every NDT UNSAT adds a new Repair round, with no limit */
-export function nextRepairStage(stages: { id: string }[], job?: Job): StageTemplate {
+export function nextRepairStage(stages: { id: string }[], job: Job): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
-  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id, job), persona: job ? routingPersona(getAddedTemplate('repair'), job) : getAddedTemplate('repair').persona };
+  const template = getAddedTemplate(job.jointType, 'repair');
+  return { ...template, id, label: roundLabel(template.displayName || template.label, id), typeOptions: signoffTypeOptions(job.jointType, id, job), persona: routingPersona(template, job) };
 }
 
 /* ── Excavation NDT ── */
@@ -30,20 +31,20 @@ export function nextRepairStage(stages: { id: string }[], job?: Job): StageTempl
 
 /* Build the round's inspection shell. Its selected Type loads the shared inspection form;
    signoff-type-routing-rules.ts resolves the configured Type source and exceptions before insertion. */
-export function excavationNdtStage(inspectionType: string, repairId = 'repair', job?: Job): StageTemplate {
-  const definition = job ? excavationDefinition(job) : getAddedTemplate('excavation-ndt');
+export function excavationNdtStage(inspectionType: string, repairId: string, job: Job): StageTemplate {
+  const definition = excavationDefinition(job);
   return {
     ...definition,
     id: excavationIdForRepair(repairId, definition.id), label: roundLabel(definition.label, repairId), required: true,
     rejectToStage: definition.rejectToStage, decisionLabel: 'Inspection Results',
-    typeOptions: excavationTypeOptions(job, inspectionType, definition.id),
+    typeOptions: excavationTypeOptions(job.jointType, job, inspectionType, definition.id),
   };
 }
 
 /* Runtime Excavation uses its saved persona conditions and resolved inspection choices. */
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
   const template = excavationNdtStage(inspectionType, repairId, job);
-  return { ...stageFromTemplate(template), displayName: template.displayName, role: routingPersona(template, job) };
+  return { ...stageFromTemplate(job.jointType, template), displayName: template.displayName, role: routingPersona(template, job) };
 }
 
 /* ── Engineering Hold ── */
@@ -60,17 +61,18 @@ export function nextEngineeringHoldId(stages: { id: string }[]): string {
 /* why a reject rule sent `stage`'s UNSAT to Engineering Hold (the hold's holdReason), e.g.
    "Final NDT MT/PT was UNSAT (Type is PT, and Final Weld: Weld Process is GTAW)" */
 export function rejectHoldReason(stage: WorkflowStage, rule: RouteToRule): string {
-  return `${stage.label} was UNSAT (${describeClauses(rule.when, stageConditionFields(stage)).join(', and ')})`;
+  return `${stage.label} was UNSAT (${describeClauses(rule.when, stage.jointType, stageConditionFields(stage.jointType, stage)).join(', and ')})`;
 }
 
 /* a new Engineering Hold right after `afterId`, and the current routing starts there. `reason` is
    kept on it (inputs.holdReason) when no deviation explains the hold, e.g. a reject rule's */
-export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, reason = '', job?: Job): WorkflowStage[] {
+export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, reason: string, job: Job): WorkflowStage[] {
   const idx = stages.findIndex(s => s.id === afterId);
   if (idx < 0) return stages;
   const id = nextEngineeringHoldId(stages);
-  const hold = stageFromTemplate({ ...getAddedTemplate('engineering-hold'), id, label: roundLabel(getAddedTemplate('engineering-hold').displayName || getAddedTemplate('engineering-hold').label, id) }, reason ? { holdReason: reason } : {});
-  if (job) hold.role = routingPersona(getAddedTemplate('engineering-hold'), job);
+  const template = getAddedTemplate(job.jointType, 'engineering-hold');
+  const hold = stageFromTemplate(job.jointType, { ...template, id, label: roundLabel(template.displayName || template.label, id) }, reason ? { holdReason: reason } : {});
+  hold.role = routingPersona(template, job);
   return setRoutingFrom([...stages.slice(0, idx + 1), hold, ...stages.slice(idx + 1)], id);
 }
 
@@ -80,8 +82,9 @@ export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, 
    NDT, Engineering Hold) -- same shape buildStages() makes, minus the parts only a job's real
    routing needs (persona rules, override fields, etc.), since these are always the same regardless
    of job. Type starts as initialInspectionType() gives it. */
-export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
+export function stageFromTemplate(jointType: JointType, t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
   return {
+    jointType,
     id: t.id,
     label: t.label,
     displayName: t.displayName,

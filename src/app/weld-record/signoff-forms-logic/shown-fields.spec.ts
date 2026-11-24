@@ -14,7 +14,7 @@ const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): Workf
 const buildupOf = (j: Job) => stageOf(j, 'fit', { signoffType: 'weld-buildup' });
 
 describe('shown-fields', () => {
-  afterEach(() => resetStepFieldConfig());
+  afterEach(() => resetStepFieldConfig('pipe'));
 
   it('Fit as Weld Build-Up reads its own definition, and lists Affected Item', () => {
     const j = job();
@@ -41,7 +41,7 @@ describe('shown-fields', () => {
     it('History and Correct leave out a field taken off the definition', () => {
     const j = job();
     const def = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === WELD_BUILDUP_TYPE)!;
-    setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition' && f.key !== 'affectedItem') }]);
+    setStepFieldConfig('pipe', [{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition' && f.key !== 'affectedItem') }]);
     const fit = buildupOf(j);
     expect(fieldsShown(fit, j).map(f => f.key)).not.toContain('weldPosition');
     expect(definitionHas(fit, 'affectedItem')).toBeFalse();
@@ -50,7 +50,7 @@ describe('shown-fields', () => {
   it('a field drawn by another step form is an ordinary field elsewhere (Consumable Insert and Defer Tack on Tack)', () => {
     const j = job();
     const def = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'tack')!;
-    setStepFieldConfig([{ ...def, fields: [...def.fields, { key: 'consumableInsertType', showIf: { all: [] } }, { key: 'deferTack' }, { key: 'affectedItem' }] }]);
+    setStepFieldConfig('pipe', [{ ...def, fields: [...def.fields, { key: 'consumableInsertType', showIf: { all: [] } }, { key: 'deferTack' }, { key: 'affectedItem' }] }]);
     const keys = fieldsShown(stageOf(j, 'tack'), j).map(f => f.key);
     expect(keys).toContain('consumableInsertType');
     expect(keys).toContain('deferTack');
@@ -63,7 +63,7 @@ describe('shown-fields visibleSignoffFields', () => {
   const fitOf = (j: Job): WorkflowStage => buildStages(j).find(s => s.id === 'fit')!;
   const keys = (fields: { key: string }[]) => fields.map(f => f.key);
   const required = (j: Job) => keys(visibleSignoffFields(fitOf(j), j, {}).filter(f => f.required));
-  afterEach(() => resetStepFieldConfig());
+  afterEach(() => resetStepFieldConfig('pipe'));
 
   it('reads the joint design, with Revised Joint Design taking priority', () => {
     expect(jointDesignRequiresInsert(fitJob({ jointDesign: 'C-18' }), {})).toBeTrue();
@@ -88,7 +88,7 @@ describe('shown-fields visibleSignoffFields', () => {
 
   it('follows the Fit definition: an unticked field is gone, Required and greyed-out apply', () => {
     const both = fitJob({ jointDesign: 'C-65' });
-    setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'fit' ? { ...a, fields: [
+    setStepFieldConfig('pipe', DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'fit' ? { ...a, fields: [
       { key: 'consumableInsertType', required: false },
       { key: 'consumableInsertSize', disabledIf: { all: [{ source: 'jointDetail', key: 'material.titanium', equals: 'No' }] } },
       { key: 'deferTack' },

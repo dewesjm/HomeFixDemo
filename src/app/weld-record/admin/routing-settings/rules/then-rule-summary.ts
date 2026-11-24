@@ -2,12 +2,13 @@
 import { describeClauses } from '../../../conditions-logic/condition-text';
 import { RouteToRule } from '../../../routing-logic/route-to-rules';
 import { ConditionCatalogField } from '../../../catalogs/field-catalog';
+import type { JointType } from '../../../../data/jobs';
 
-export function thenRuleSummary(rule: RouteToRule, fields: ConditionCatalogField[], destination: string): string {
+export function thenRuleSummary(rule: RouteToRule, jointType: JointType, fields: ConditionCatalogField[], destination: string): string {
   const summaryFields = fields.map(field => ({
     ...field,
     label: field.label.replace(/ - Volumetric inspection \(UT\/RT\) is required$/, ''),
   }));
   if (!rule.when.length) return `Always → Then go to ${destination}`;
-  return `If ${describeClauses(rule.when, summaryFields).join(' and ')} → Then go to ${destination}`;
+  return `If ${describeClauses(rule.when, jointType, summaryFields).join(' and ')} → Then go to ${destination}`;
 }

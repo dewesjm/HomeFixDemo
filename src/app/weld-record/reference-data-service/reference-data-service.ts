@@ -6,6 +6,7 @@ import { getLocations as loadLocations } from '../../data/locations';
 import { loadRoutingSettings } from '../../data/routing-settings';
 import { getSignoffTypes as loadSignoffTypes } from '../../data/signoff-types';
 import { getStepFieldConfig } from '../../data/signoff-type-forms';
+import type { JointType } from '../../data/jobs';
 
 export function getWeldPositions() {
   return { ok: true as const, data: { positions: loadWeldPositions() } };
@@ -27,14 +28,15 @@ export function getLocations() {
   return { ok: true as const, data: { locations: loadLocations() } };
 }
 
-export function getRoutingSettings() {
-  return { ok: true as const, data: { routings: loadRoutingSettings() } };
+/* the per-joint-type settings tables: one joint type's rows */
+export function getRoutingSettings(jointType: JointType) {
+  return { ok: true as const, data: { routings: loadRoutingSettings(jointType) } };
 }
 
-export function getSignoffTypes() {
-  return { ok: true as const, data: { types: loadSignoffTypes() } };
+export function getSignoffTypes(jointType: JointType) {
+  return { ok: true as const, data: { types: loadSignoffTypes(jointType) } };
 }
 
-export function getSignoffForms() {
-  return { ok: true as const, data: { forms: getStepFieldConfig() } };
+export function getSignoffForms(jointType: JointType) {
+  return { ok: true as const, data: { forms: getStepFieldConfig(jointType) } };
 }

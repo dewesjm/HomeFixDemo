@@ -7,7 +7,7 @@ import { SyncService } from '../../shared/sync-status/sync.service';
 import { JOBS, Job } from '../../data/jobs';
 import { findJointById } from '../joint-link-logic/joint-route';
 import { stampWho } from '../../data/people';
-import { JobWorkflow } from '../model/workflow-types';
+import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { HistoryEntry } from '../model/history';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { newWorkflow, buildStages } from '../routing-logic/build-stages';
@@ -137,12 +137,16 @@ export class WorkflowStore {
         const job = findJointById(wf.jointType, wf.jobId);
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
         if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
+        /* migration (2026-11-24): stages saved before stages carried their joint type get the workflow's */
+        const typed = (stages: WorkflowStage[]) => stages.map(s => s.jointType ? s : { ...s, jointType: wf.jointType });
+        wf.stages = typed(wf.stages);
+        wf.undo = wf.undo?.map(u => ({ ...u, stages: typed(u.stages) }));
 
         /* rebuild the stages if the joint has one its templates no longer do */
         if (job) {
           /* a stage id the Routing Settings rows no longer have; Repair, Excavation NDT, Engineering Hold
              and inserted routings are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
-          const templateIds = new Set(getTemplates().map(t => t.id));
+          const templateIds = new Set(getTemplates(job.jointType).map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
             && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion);
           if (missingStages) {

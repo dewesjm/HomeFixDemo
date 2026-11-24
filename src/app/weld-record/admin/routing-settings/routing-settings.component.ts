@@ -44,6 +44,8 @@ import { RouteToRule } from '../../routing-logic/route-to-rules';
 import { DEFAULT_STEP_CONDITIONS } from '../../../data/welding-steps';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore, fieldChoiceLabel } from '../../catalogs/field-choices';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
+import { JointTypeSelectComponent } from '../joint-type-settings/joint-type-select.component';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
 } from './rules/condition-editing';
@@ -66,7 +68,7 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing-settings',
   standalone: true,
-  imports: [RoutingDescriptionComponent, PersonaRulesComponent, AttributeCodeNoteComponent, TableToolbarComponent,
+  imports: [JointTypeSelectComponent, RoutingDescriptionComponent, PersonaRulesComponent, AttributeCodeNoteComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
@@ -78,9 +80,11 @@ interface RoutingRow {
   `]
 })
 export class AdminRoutingSettingsComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   personaOptions = computed(() => {
     const used = new Set<string>();
-    for (const t of getTemplates()) {
+    for (const t of getTemplates(this.jointType)) {
       if (t.persona) used.add(t.persona);
     }
     // always include all base roles plus any pipe-delimited combos
@@ -100,7 +104,7 @@ export class AdminRoutingSettingsComponent {
 
   personaRow = signal<RoutingRow | null>(null);
   descriptionRow = signal<RoutingRow | null>(null);
-  insertionTriggers(row: RoutingRow) { return insertionTriggers(getTemplates(), row.id); }
+  insertionTriggers(row: RoutingRow) { return insertionTriggers(this.jointType, getTemplates(this.jointType), row.id); }
   editInsertionTrigger(row: RoutingRow, trigger: InsertionTrigger) {
     const source = this.rows().find(r => r.id === trigger.sourceId);
     if (!source) return;
@@ -108,7 +112,7 @@ export class AdminRoutingSettingsComponent {
     else this.openRejectRules(source);
   }
   routingTemplate(row: RoutingRow): StageTemplate | undefined { return this.templateFor(row); }
-  personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(template) : row.persona; }
+  personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(this.jointType, template) : row.persona; }
   personaSaved() {
     this.rows.update(rows => rows.map(row => {
       const persona = this.templateFor(row)?.persona as Role | undefined;
@@ -132,24 +136,24 @@ export class AdminRoutingSettingsComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  isAdded(row: RoutingRow): boolean { return row.added ?? isAddedTemplateId(row.id); }
+  isAdded(row: RoutingRow): boolean { return row.added ?? isAddedTemplateId(this.jointType, row.id); }
   sectionRows(added: boolean) { return pinDraftRoutings(this.visibleRows().filter(r => this.isAdded(r) === added)); }
   private targetOptions() {
-    return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS,
-      ...getTemplates().filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
+    return [...allStageIds(this.jointType).filter(s => !isAddedTemplateId(this.jointType, s.id)), ...RULE_TARGETS,
+      ...getTemplates(this.jointType).filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
   }
 
   private buildInitialRows(): RoutingRow[] {
     let sequence = 0;
-    const rows: RoutingRow[] = getTemplates().map(t => ({
+    const rows: RoutingRow[] = getTemplates(this.jointType).map(t => ({
       id: t.id,
       added: t.classification === 'added', status: t.status ?? 'active',
       routing: t.label,
       displayName: t.displayName ?? '',
-      sequence: isAddedTemplateId(t.id) ? 0 : ++sequence,
+      sequence: isAddedTemplateId(this.jointType, t.id) ? 0 : ++sequence,
       rejectToStage: t.rejectToStage ?? '',
       persona: (t.persona as Role) || 'View',
-      includedWhen: describeConditions(t.includeWhen),
+      includedWhen: describeConditions(t.includeWhen, this.jointType),
       rejectRules: [], thenRules: [],
       fabricationEditable: !!t.fabricationEditable,
     }));
@@ -160,7 +164,7 @@ export class AdminRoutingSettingsComponent {
 
   setupSummary(row: RoutingRow): string {
     const t = this.templateFor(row);
-    return t ? addedRoutingSetup(t).summary : 'Save this draft, then configure its Types and forms.';
+    return t ? addedRoutingSetup(this.jointType, t).summary : 'Save this draft, then configure its Types and forms.';
   }
 
   canConfigureApplicability(row: RoutingRow): boolean {
@@ -175,12 +179,12 @@ export class AdminRoutingSettingsComponent {
     const t = this.templateFor(row);
     if (!t || !this.canChangeStatus(row)) return;
     const next = t.status === 'active' ? 'inactive' : 'active';
-    const setup = addedRoutingSetup(t);
+    const setup = addedRoutingSetup(this.jointType, t);
     if (next === 'active' && setup.errors.length) {
       this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
       return;
     }
-    updateStageTemplate(t.id, { status: next });
+    updateStageTemplate(this.jointType, t.id, { status: next });
     this.rows.set(this.buildInitialRows());
     this.refreshStageOptions();
   }
@@ -189,7 +193,7 @@ export class AdminRoutingSettingsComponent {
     if (this.editingId()) return;
     const newId = `new-${++this.seq}`;
     const sequence = nextRoutingNumber(this.rows().filter(row => !this.isAdded(row)));
-    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: newId, routing: '', displayName: '', sequence, rejectToStage: '', persona: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
+    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: newId, routing: '', displayName: '', sequence, rejectToStage: '', persona: 'View', includedWhen: describeConditions([], this.jointType), rejectRules: [], thenRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(newId);
@@ -204,7 +208,7 @@ export class AdminRoutingSettingsComponent {
       message: `Delete ${row.routing}?`,
       acceptLabel: 'Delete',
       accept: () => {
-        deleteStageTemplate(row.id);
+        deleteStageTemplate(this.jointType, row.id);
         this.rows.update(r => r.filter(x => x.id !== row.id));
         this.resequence();
         this.refreshStageOptions();
@@ -219,21 +223,21 @@ export class AdminRoutingSettingsComponent {
   }
 
   saveEdit(row: RoutingRow) {
-    const error = routingNameError(row.routing, row.id, getTemplates());
+    const error = routingNameError(row.routing, row.id, getTemplates(this.jointType));
     if (error) { this.messages.add({ severity: 'warn', summary: error, life: 4000 }); return; }
     row = { ...row, routing: row.routing.trim() };
     const stageId = row.id;
     const isNew = stageId.startsWith('new-');
     const current = this.templateFor(row);
     if (current?.classification === 'added' && current.lifecycle === 'ordinary' && current.status === 'active') {
-      const setup = addedRoutingSetup({ ...current, label: row.routing, persona: row.persona });
+      const setup = addedRoutingSetup(this.jointType, { ...current, label: row.routing, persona: row.persona });
       if (setup.errors.length) {
         this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
         return;
       }
     }
 
-    const insertionErrors = insertionConfigurationErrors(getTemplates().map(t => t.id === stageId ? { ...t, rejectToStage: row.rejectToStage } : t));
+    const insertionErrors = insertionConfigurationErrors(getTemplates(this.jointType).map(t => t.id === stageId ? { ...t, rejectToStage: row.rejectToStage } : t));
     if (insertionErrors.length) {
       this.messages.add({ severity: 'warn', summary: 'Invalid routing destination', detail: insertionErrors.join(' '), life: 6000 });
       return;
@@ -241,7 +245,7 @@ export class AdminRoutingSettingsComponent {
 
     if (isNew) {
       const newId = `custom-${crypto.randomUUID()}`;
-      addStageTemplate({
+      addStageTemplate(this.jointType, {
         classification: this.isAdded(row) ? 'added' : 'numbered', lifecycle: 'ordinary', status: row.status,
         id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, persona: row.persona,
         rejectToStage: row.rejectToStage,
@@ -252,7 +256,7 @@ export class AdminRoutingSettingsComponent {
       this.resequence();
       this.saveOrder();
     } else {
-      updateStageTemplate(stageId, {
+      updateStageTemplate(this.jointType, stageId, {
         label: row.routing,
         displayName: row.displayName.trim() || undefined,
         rejectToStage: row.rejectToStage,
@@ -325,7 +329,7 @@ export class AdminRoutingSettingsComponent {
   private saveOrder() {
     const ids = this.rows().filter(r => !isDraftRouting(r))
       .sort((a, b) => a.sequence - b.sequence).map(r => r.id);
-    reorderStageTemplates(ids);
+    reorderStageTemplates(this.jointType, ids);
     this.refreshStageOptions();
   }
 
@@ -387,7 +391,7 @@ export class AdminRoutingSettingsComponent {
     if (rejectToStage === 'continue') return 'Continue after inserted work';
     const definition = insertionDefinitionId(rejectToStage);
     if (definition) {
-      const t = getTemplates().find(t => t.id === definition);
+      const t = getTemplates(this.jointType).find(t => t.id === definition);
       return `Insert ${t?.label ?? definition}${t && t.status !== 'active' ? ` (${t.status})` : ''}`;
     }
     const special = RULE_TARGETS.find(t => t.id === rejectToStage);
@@ -414,8 +418,8 @@ export class AdminRoutingSettingsComponent {
   /* ── Included when (step conditions) dialog ── */
 
   openConditions(row: RoutingRow) {
-    const stage = getTemplates().find(t => t.id === row.id);
-    this.condFields.set([...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.id)]);
+    const stage = getTemplates(this.jointType).find(t => t.id === row.id);
+    this.condFields.set([...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(this.jointType, row.id)]);
     this.condRules.set((stage?.includeWhen ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
     this.condRow.set(row);
   }
@@ -468,8 +472,8 @@ export class AdminRoutingSettingsComponent {
     const row = this.condRow();
     if (!row) return;
     const rules = this.condRules();
-    updateStageTemplate(row.id, { includeWhen: rules });
-    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, includedWhen: describeConditions(rules) } : x));
+    updateStageTemplate(this.jointType, row.id, { includeWhen: rules });
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, includedWhen: describeConditions(rules, this.jointType) } : x));
     this.condRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Conditions saved', detail: row.routing, life: 3000 });
   }
@@ -482,27 +486,27 @@ export class AdminRoutingSettingsComponent {
   rejFields = signal<ConditionCatalogField[]>([]);
 
   private templateFor(row: RoutingRow) {
-    return getTemplates().find(t => t.id === row.id);
+    return getTemplates(this.jointType).find(t => t.id === row.id);
   }
 
   /* this step's own answers, Joint Details, then earlier steps' answers */
   private rejectFieldsFor(row: RoutingRow): ConditionCatalogField[] {
     const t = this.templateFor(row);
-    return [...(t ? stageConditionFields(t) : []), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.id)];
+    return [...(t ? stageConditionFields(this.jointType, t) : []), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(this.jointType, row.id)];
   }
 
   private rejectRuleLines(row: RoutingRow): string[] {
     const fields = this.rejectFieldsFor(row);
     return (this.templateFor(row)?.rejectRules ?? [])
-      .map(r => `${describeConditions([r.when], fields)} → ${this.getRejectLabel(r.to)}`);
+      .map(r => `${describeConditions([r.when], this.jointType, fields)} → ${this.getRejectLabel(r.to)}`);
   }
 
   /* Ordinary definitions can continue their captured path or request another insertion. */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
-    return [...getTemplates().filter(t => !isAddedTemplateId(t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id),
+    return [...getTemplates(this.jointType).filter(t => !isAddedTemplateId(this.jointType, t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id),
       ...(this.templateFor(row)?.lifecycle === 'ordinary' && this.isAdded(row)
-        ? insertionRelativeTargets(row.id, getTemplates()) : []),
-      ...getTemplates().filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
+        ? insertionRelativeTargets(row.id, getTemplates(this.jointType)) : []),
+      ...getTemplates(this.jointType).filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
   }
 
   openRejectRules(row: RoutingRow) {
@@ -515,7 +519,7 @@ export class AdminRoutingSettingsComponent {
 
   private thenRuleLines(row: RoutingRow): string[] {
     return (this.templateFor(row)?.thenRules ?? [])
-      .map(r => thenRuleSummary(r, this.rejectFieldsFor(row), this.getRejectLabel(r.to)));
+      .map(r => thenRuleSummary(r, this.jointType, this.rejectFieldsFor(row), this.getRejectLabel(r.to)));
   }
 
   openThenRules(row: RoutingRow) {
@@ -566,7 +570,7 @@ export class AdminRoutingSettingsComponent {
     const row = this.rejRow();
     if (!row) return '';
     const patch = this.ruleMode() === 'then' ? { thenRules: this.rejRules() } : { rejectRules: this.rejRules(), rejectToStage: this.rejDefaultTarget() };
-    return insertionConfigurationErrors(getTemplates().map(t => t.id === row.id ? { ...t, ...patch } : t)).join(' ');
+    return insertionConfigurationErrors(getTemplates(this.jointType).map(t => t.id === row.id ? { ...t, ...patch } : t)).join(' ');
   }
 
   rejectRulesValid = computed(() => !this.ruleConfigurationError() && this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(this.rejFields(), c))));
@@ -575,13 +579,13 @@ export class AdminRoutingSettingsComponent {
     const row = this.rejRow();
     if (!row || !this.rejectRulesValid()) return;
     if (this.ruleMode() === 'then') {
-      updateStageTemplate(row.id, { thenRules: this.rejRules() });
+      updateStageTemplate(this.jointType, row.id, { thenRules: this.rejRules() });
       this.rows.update(r => r.map(x => x.id === row.id ? { ...x, thenRules: this.thenRuleLines(row) } : x));
       this.rejRow.set(null);
       this.messages.add({ severity: 'success', summary: 'Then go to rules saved', detail: row.routing, life: 3000 });
       return;
     }
-    updateStageTemplate(row.id, { rejectRules: this.rejRules(), rejectRulesEdited: true, rejectToStage: this.rejDefaultTarget() });
+    updateStageTemplate(this.jointType, row.id, { rejectRules: this.rejRules(), rejectRulesEdited: true, rejectToStage: this.rejDefaultTarget() });
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectToStage: this.rejDefaultTarget(), rejectRules: this.rejectRuleLines(row) } : x));
     this.rejRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Reject rules saved', detail: row.routing, life: 3000 });

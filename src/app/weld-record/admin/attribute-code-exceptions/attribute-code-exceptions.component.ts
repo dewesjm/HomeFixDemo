@@ -43,11 +43,12 @@ export class AdminAttributeCodeExceptionsComponent {
   private seq = 0;
 
   readonly codes = PROGRESSION_ATTRIBUTE_CODES;
-  /* the routings a row can name: Routing Settings' numbered routings, NQC rows included */
-  readonly routings = getTemplates()
+  /* the routings a row can name: Routing Settings' numbered routings, NQC rows included. This page is shared
+     by every joint type; its routings and Types are Pipe's for now. */
+  readonly routings = getTemplates('pipe')
     .filter(t => t.classification !== 'added')
     .map(t => ({ id: t.id, label: t.label }));
-  readonly typeChoices = getSignoffTypes();
+  readonly typeChoices = getSignoffTypes('pipe');
   readonly conditionFields = exceptionConditionFields();
   readonly text = { appliesWhenText, routingChangeText, typesText, accessibleText, minRtText };
 
@@ -74,7 +75,7 @@ export class AdminAttributeCodeExceptionsComponent {
 
   /* the Types an accessible rule can name: the row's own and the routing's (Signoff Type to Routing) */
   accessibleChoices(row: ExceptionRow): string[] {
-    const configured = getSignoffTypeRoutingRows().find(r => r.stepId === row.routing)?.types.map(t => t.type) ?? [];
+    const configured = getSignoffTypeRoutingRows('pipe').find(r => r.stepId === row.routing)?.types.map(t => t.type) ?? [];
     return [...new Set([...(row.types ?? []), ...configured, ...(row.accessible ?? []).map(a => a.type)])];
   }
 

@@ -1,8 +1,10 @@
 /* Admin > Signoff Types: every Type a step can be signed as. A Type is added here first, then
    offered on steps (Admin > Signoff Type to Routing) and given its fields (Admin > Signoff Type
-   Forms, one definition per Type, matched by its value). Stored in localStorage. */
+   Forms, one definition per Type, matched by its value). Stored in localStorage, one table per joint
+   type: Pipe starts from the seed Types, Structural starts empty. */
 import { signal } from '@angular/core';
-import { STORAGE } from './storage-keys';
+import { settingsKey } from './storage-keys';
+import type { JointType } from './jobs';
 import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
 import { nqcStepId } from './welding-step-ids';
 
@@ -65,18 +67,22 @@ export const seededSignoffTypeIds = SEED_TYPES.map(t => t.value);
 const version = signal(0);
 export const signoffTypesVersion = version.asReadonly();
 
-export function getSignoffTypes(): SignoffType[] {
+function seedTypes(jointType: JointType): SignoffType[] {
+  return jointType === 'pipe' ? SEED_TYPES : [];
+}
+
+export function getSignoffTypes(jointType: JointType): SignoffType[] {
   version();
   try {
-    const raw = localStorage.getItem(STORAGE.signoffTypes);
-    return raw ? JSON.parse(raw) as SignoffType[] : SEED_TYPES;
-  } catch { return SEED_TYPES; }
+    const raw = localStorage.getItem(settingsKey('signoffTypes', jointType));
+    return raw ? JSON.parse(raw) as SignoffType[] : seedTypes(jointType);
+  } catch { return seedTypes(jointType); }
 }
 
 /* an added Type's stored value is made from its name (e.g. "Weld Build-Up" -> "weld-build-up") */
-export function setSignoffTypes(types: SignoffType[]) {
+export function setSignoffTypes(jointType: JointType, types: SignoffType[]) {
   const filled = types.map(t => ({ ...t, value: t.value || valueFromName(t.label) }));
-  localStorage.setItem(STORAGE.signoffTypes, JSON.stringify(filled));
+  localStorage.setItem(settingsKey('signoffTypes', jointType), JSON.stringify(filled));
   version.update(value => value + 1);
 }
 
@@ -84,11 +90,11 @@ function valueFromName(name: string): string {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-export function findSignoffType(value: string): SignoffType | undefined {
-  return getSignoffTypes().find(t => t.value === value);
+export function findSignoffType(jointType: JointType, value: string): SignoffType | undefined {
+  return getSignoffTypes(jointType).find(t => t.value === value);
 }
 
 /* a Type's name, or its value when the Type has been removed */
-export function typeLabel(value: string): string {
-  return findSignoffType(value)?.label ?? value;
+export function typeLabel(jointType: JointType, value: string): string {
+  return findSignoffType(jointType, value)?.label ?? value;
 }

@@ -16,6 +16,8 @@ import { GroupsStore } from '../../access-logic/groups.store';
 import { getTemplates } from '../../routing-logic/routing-settings-rules';
 import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
 import { conditionText } from '../../signoff-forms-logic/field-rules';
+import { SETTINGS_JOINT_TYPE } from '../joint-type-settings/joint-type-settings';
+import { JointTypeSelectComponent } from '../joint-type-settings/joint-type-select.component';
 
 interface TypeRow extends SignoffType {
   uid: string;
@@ -24,19 +26,21 @@ interface TypeRow extends SignoffType {
 @Component({
   selector: 'app-admin-signoff-types',
   standalone: true,
-  imports: [AdditionalSignoffsEditorComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePencil, LucideCheck, LucideX, LucideTrash2],
+  imports: [JointTypeSelectComponent, AdditionalSignoffsEditorComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePencil, LucideCheck, LucideX, LucideTrash2],
   templateUrl: './signoff-types.component.html'
 })
 export class AdminSignoffTypesComponent {
+  /* the joint type whose settings table this page edits (Joint type select, the URL) */
+  readonly jointType = inject(SETTINGS_JOINT_TYPE);
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
   private groups = inject(GroupsStore);
   private seq = 0;
 
   /* what Signs routing can name: the Routing Settings routings */
-  readonly routings = getTemplates().map(s => ({ id: s.id, label: s.label }));
+  readonly routings = getTemplates(this.jointType).map(s => ({ id: s.id, label: s.label }));
 
-  rows = signal<TypeRow[]>(getSignoffTypes().map(t => this.toRow(t)));
+  rows = signal<TypeRow[]>(getSignoffTypes(this.jointType).map(t => this.toRow(t)));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
   table = new TableState<TypeRow>(['label']);
@@ -129,14 +133,14 @@ export class AdminSignoffTypesComponent {
 
   private persist() {
     const editing = this.editingUid();
-    setSignoffTypes(this.rows().flatMap(r => {
+    setSignoffTypes(this.jointType, this.rows().flatMap(r => {
       /* a row still being edited keeps its saved version; an unsaved new row isn't stored */
       const saved = r.uid === editing ? this.cloned[r.uid] : r;
       if (!saved) return [];
       const { uid: _, ...type } = saved;
       return [type];
     }));
-    this.rows.set(getSignoffTypes().map(t => this.toRow(t)));
+    this.rows.set(getSignoffTypes(this.jointType).map(t => this.toRow(t)));
   }
 }
 

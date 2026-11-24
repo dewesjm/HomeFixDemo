@@ -22,7 +22,7 @@ describe('General inspection routing facts', () => {
     expect(originalInspectionType(record('fit'), [])).toBe('');
   });
   it('offers labeled general facts and matches another Type combination with ordinary conditions', () => {
-    const fields = stageConditionFields({ id: 'nqc-excavation-ndt-2' });
+    const fields = stageConditionFields('pipe', { id: 'nqc-excavation-ndt-2' });
     const original = fields.find(f => f.key === 'self.originalInspectionType')!;
     expect(original.label).toContain('Original rejecting inspection Type');
     expect(original.valueLabel!('pt')).toBe('PT');

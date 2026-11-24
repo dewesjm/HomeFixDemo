@@ -2,6 +2,7 @@ import { isRoutingLockedField, isDefinitionLockedField, definitionFieldNote, has
 import { resetStepFieldConfig, setStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 import { formInputFields } from './form-fields';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routing-logic/inserted-routing/added-routings';
+import { testJob } from '../../testing/test-job';
 
 describe('stage rules', () => {
   it('Release to welding and Defer Tack stay locked for Correct but can come off a definition', () => {
@@ -24,14 +25,14 @@ describe('stage rules', () => {
 
 describe('signoff section rules', () => {
   const ndtTypes = [{ label: 'UT', value: 'ut' }, { label: 'RT', value: 'rt' }];
-  afterEach(() => resetStepFieldConfig());
+  afterEach(() => resetStepFieldConfig('pipe'));
 
   it('Inspection Results comes only from the Type form', () => {
-    expect(hasDecision({ id: 'root-ndt-utrt', signoffType: 'rt', rejectToStage: 'repair' })).toBe(true);
-    expect(hasDecision({ id: 'root-ndt-utrt', signoffType: 'standard', rejectToStage: 'repair' })).toBe(false);
-    expect(hasDecision({ id: 'root-weld', signoffType: 'root', rejectToStage: 'fit' })).toBe(false);
-    expect(hasDecision({ id: 'added-step', signoffType: '', rejectToStage: 'fit' })).toBe(false);
-    expect(hasDecision({ id: 'added-step', signoffType: '', rejectToStage: '' })).toBe(false);
+    expect(hasDecision({ jointType: 'pipe', id: 'root-ndt-utrt', signoffType: 'rt', rejectToStage: 'repair' })).toBe(true);
+    expect(hasDecision({ jointType: 'pipe', id: 'root-ndt-utrt', signoffType: 'standard', rejectToStage: 'repair' })).toBe(false);
+    expect(hasDecision({ jointType: 'pipe', id: 'root-weld', signoffType: 'root', rejectToStage: 'fit' })).toBe(false);
+    expect(hasDecision({ jointType: 'pipe', id: 'added-step', signoffType: '', rejectToStage: 'fit' })).toBe(false);
+    expect(hasDecision({ jointType: 'pipe', id: 'added-step', signoffType: '', rejectToStage: '' })).toBe(false);
   });
 
   it('UNSAT with no reject target cannot be signed', () => {
@@ -41,11 +42,11 @@ describe('signoff section rules', () => {
   });
 
   it("Type shows while the picked Type's definition lists it, and always before one is picked", () => {
-    const rt = { id: 'root-ndt-utrt', typeOptions: ndtTypes, signoffType: 'rt' };
+    const rt = { jointType: 'pipe' as const, id: 'root-ndt-utrt', typeOptions: ndtTypes, signoffType: 'rt' };
     const unpicked = { ...rt, signoffType: 'standard' };
     expect(showsType(rt)).toBe(true);
     expect(inspectionTypeRequired(rt)).toBe(true);
-    setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'rt' ? { ...a, fields: a.fields.filter(f => f.key !== 'type') } : a));
+    setStepFieldConfig('pipe', DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'rt' ? { ...a, fields: a.fields.filter(f => f.key !== 'type') } : a));
     expect(showsType(rt)).toBe(false);
     expect(showsType({ ...rt, signoffType: 'ut' })).toBe(true);
     expect(showsType(unpicked)).toBe(true);
@@ -54,14 +55,14 @@ describe('signoff section rules', () => {
 
 describe('Repair round Type changes', () => {
   it('clears entered Repair values but retains the round’s rejecting inspection', () => {
-    const repair = stageFromTemplate(nextRepairStage([{ id: 'repair' }]), {
+    const repair = stageFromTemplate('pipe', nextRepairStage([{ id: 'repair' }], testJob()), {
       originPhase: 'final', originStageId: 'nqc-final-ndt-mtpt', originInspectionType: 'pt', repairType: 'cut',
     });
     const change = typeChange(repair, 'repair');
     expect(change.inputs).toEqual({ originPhase: 'final', originStageId: 'nqc-final-ndt-mtpt', originInspectionType: 'pt' });
   });
   it('keeps original inspection context while loading the selected shared form', () => {
-    const excavation = stageFromTemplate(excavationNdtStage('5x', 'repair-2'), { originInspectionType: 'pt', procedureUsed: 'old' });
+    const excavation = stageFromTemplate('pipe', excavationNdtStage('5x', 'repair-2', testJob()), { originInspectionType: 'pt', procedureUsed: 'old' });
     const change = typeChange(excavation, '5x');
     expect(change.inputs).toEqual({ originInspectionType: 'pt' });
     expect(change.signoffType).toBe('5x');

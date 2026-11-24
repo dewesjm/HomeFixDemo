@@ -1,5 +1,6 @@
 <h2 class="section-title">Signoff Type Forms</h2>
-<p class="text-sm mb-sm">The fields, rules and layout of each Signoff Type's form, as shown when someone signs that Type.</p>
+<p class="text-sm mb-sm">The fields, rules and layout of each Signoff Type's form, as shown when someone signs that Type. Each joint type has its own.</p>
+<app-joint-type-select />
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search types or fields…" addLabel="Add form"
                    (exportCsv)="exportCsv()" (add)="addRow()">

@@ -7,73 +7,74 @@ import { getTemplates } from '../routing-logic/routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
+import { testJob } from '../../testing/test-job';
 
 describe('Signoff Type to Routing', () => {
   it('offers the Excavation template every Type the Repair-adding routings offer, from the table', () => {
     localStorage.removeItem(STORAGE.signoffTypeRouting);
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());   /* the starting rows, and a fresh template cache */
-    const excavation = getTemplates().find(t => t.id === 'excavation-ndt')!;
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));   /* the starting rows, and a fresh template cache */
+    const excavation = getTemplates('pipe').find(t => t.id === 'excavation-ndt')!;
     expect(excavation.typeOptions?.map(o => o.value).sort()).toEqual(['5x', 'mt', 'pt', 'rt', 'ut', 'vt']);
     localStorage.removeItem(STORAGE.signoffTypeRouting);
   });
   it('adds an Excavation exception target to the possible Types', () => {
-    setSignoffTypeRoutingRows([{ stepId: 'root-ndt-vt5x', types: [{ type: 'vt' }] },
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'root-ndt-vt5x', types: [{ type: 'vt' }] },
       { stepId: 'excavation-ndt', types: [], typeSource: 'rejecting-inspection', typeExceptions: [{ from: 'vt', to: '5x' }] }]);
-    expect(excavationPossibleTypes('excavation-ndt', ['root-ndt-vt5x']).map(o => o.value)).toEqual(['vt', '5x']);
+    expect(excavationPossibleTypes('pipe', 'excavation-ndt', ['root-ndt-vt5x']).map(o => o.value)).toEqual(['vt', '5x']);
     localStorage.removeItem(STORAGE.signoffTypeRouting);
   });
   it('retains return context when an exception condition needs the performed inspection Type', () => {
-    setSignoffTypeRoutingRows([{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
       { from: 'vt', to: '5x', when: [[{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]] }] }]);
-    expect(usesReturningInspectionType('final-ndt-vt5x')).toBeTrue();
-    expect(signoffTypeOptions('final-ndt-vt5x', JOBS[0], { returningInspectionType: '5x' })?.[0].value).toBe('5x');
-    expect(signoffTypeOptions('final-ndt-vt5x', JOBS[0])?.[0].value).toBe('vt');
+    expect(usesReturningInspectionType('pipe', 'final-ndt-vt5x')).toBeTrue();
+    expect(signoffTypeOptions('pipe', 'final-ndt-vt5x', JOBS[0], { returningInspectionType: '5x' })?.[0].value).toBe('5x');
+    expect(signoffTypeOptions('pipe', 'final-ndt-vt5x', JOBS[0])?.[0].value).toBe('vt');
   });
   it('replaces enabled configured Types once, merges duplicates and retains the default', () => {
-    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'vt', default: true }, { type: '5x' }],
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'fit', types: [{ type: 'vt', default: true }, { type: '5x' }],
       typeExceptions: [{ from: 'vt', to: '5x', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] },
         { from: '5x', to: 'pt', when: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] }]);
-    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([{ value: '5x', label: '5X', default: true }]);
-    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '2' })?.map(o => o.value)).toEqual(['vt', '5x']);
+    expect(signoffTypeOptions('pipe', 'fit', { ...JOBS[0], nInd: '3' })).toEqual([{ value: '5x', label: '5X', default: true }]);
+    expect(signoffTypeOptions('pipe', 'fit', { ...JOBS[0], nInd: '2' })?.map(o => o.value)).toEqual(['vt', '5x']);
   });
 
   it('does not bypass replacement enable conditions or resurrect a deleted replacement', () => {
-    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'vt', default: true },
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'fit', types: [{ type: 'vt', default: true },
       { type: '5x', enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }],
       typeExceptions: [{ from: 'vt', to: '5x' }] }]);
-    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([]);
-    setSignoffTypes(getSignoffTypes().filter(t => t.value !== '5x'));
-    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '1' })).toEqual([]);
+    expect(signoffTypeOptions('pipe', 'fit', { ...JOBS[0], nInd: '3' })).toEqual([]);
+    setSignoffTypes('pipe', getSignoffTypes('pipe').filter(t => t.value !== '5x'));
+    expect(signoffTypeOptions('pipe', 'fit', { ...JOBS[0], nInd: '1' })).toEqual([]);
   });
 
   it('uses first matching AND/OR conditions for numbered Repair rows', () => {
-    setSignoffTypeRoutingRows([{ stepId: 'repair', types: [{ type: 'repair' }], typeExceptions: [
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'repair', types: [{ type: 'repair' }], typeExceptions: [
       { from: 'repair', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }, { field: 'hull', op: 'contains', values: ['test'] }],
         [{ field: 'nInd', op: 'is', values: ['1'] }]] }, { from: 'repair', to: '5x' }] }]);
-    expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '3', hull: 'TEST' })?.[0].value).toBe('vt');
-    expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '2' })?.[0].value).toBe('5x');
+    expect(signoffTypeOptions('pipe', 'repair-2', { ...JOBS[0], nInd: '3', hull: 'TEST' })?.[0].value).toBe('vt');
+    expect(signoffTypeOptions('pipe', 'repair-2', { ...JOBS[0], nInd: '2' })?.[0].value).toBe('5x');
   });
-  /* back to the starting rows through the setters, so getTemplates()' cached Types refresh too */
+  /* back to the starting rows through the setters, so getTemplates('pipe')' cached Types refresh too */
   afterEach(() => {
     localStorage.removeItem(STORAGE.signoffTypeRouting);
     localStorage.removeItem(STORAGE.signoffTypes);
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
-    setSignoffTypes(getSignoffTypes());
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
   });
 
   it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {
     const job = { ...JOBS[0], ndtFinal: 'VT', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' };
     for (const id of ['final-ndt-vt5x', 'nqc-final-ndt-vt5x']) {
-      expect(signoffTypeOptions(id, job)?.map(o => o.value)).toEqual(['vt']);
-      expect(signoffTypeOptions(id, { ...job, ndtFinal: '5X' })?.map(o => o.value)).toEqual(['5x']);
+      expect(signoffTypeOptions('pipe', id, job)?.map(o => o.value)).toEqual(['vt']);
+      expect(signoffTypeOptions('pipe', id, { ...job, ndtFinal: '5X' })?.map(o => o.value)).toEqual(['5x']);
     }
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'final-ndt-vt5x'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'final-ndt-vt5x'
       ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [] })) } : r));
     expect(buildStages({ ...job, nInd: '3' }).find(s => s.id === 'final-ndt-vt5x')?.typeOptions?.map(o => o.value)).toEqual(['vt', '5x']);
   });
 
   it('does not select a disabled default, and no enabled Types still requires a pick', () => {
-    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'fit', default: true,
+    setSignoffTypeRoutingRows('pipe', [{ stepId: 'fit', types: [{ type: 'fit', default: true,
       enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] }]);
     const stage = buildStages({ ...JOBS[0], nInd: '3' }).find(s => s.id === 'fit')!;
     expect(stage.typeOptions).toEqual([]);
@@ -82,7 +83,7 @@ describe('Signoff Type to Routing', () => {
   });
 
   it('seeds the built-in steps plus Repair and Excavation NDT', () => {
-    const ids = getSignoffTypeRoutingRows().map(r => r.stepId);
+    const ids = getSignoffTypeRoutingRows('pipe').map(r => r.stepId);
     expect(ids).toContain('fit');
     expect(ids).toContain('final-ndt-utrt');
     expect(ids).toContain('repair');
@@ -90,19 +91,19 @@ describe('Signoff Type to Routing', () => {
   });
 
   it('a step with no row has no Type', () => {
-    expect(signoffTypeOptions('engineering-hold')).toBeUndefined();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'tack'));
-    expect(signoffTypeOptions('tack')).toBeUndefined();
+    expect(signoffTypeOptions('pipe', 'engineering-hold')).toBeUndefined();
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').filter(r => r.stepId !== 'tack'));
+    expect(signoffTypeOptions('pipe', 'tack')).toBeUndefined();
   });
 
   it('every Repair round uses the Repair row', () => {
-    expect(nextRepairStage([{ id: 'repair' }]).typeOptions?.map(o => o.value)).toEqual(['repair']);
+    expect(nextRepairStage([{ id: 'repair' }], testJob()).typeOptions?.map(o => o.value)).toEqual(['repair']);
   });
 
   it('Excavation NDT offers the rejecting method only while it has a row', () => {
-    expect(excavationNdtStage('rt').typeOptions?.map(o => o.value)).toEqual(['rt']);
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'excavation-ndt'));
-    expect(excavationNdtStage('rt').typeOptions).toBeUndefined();
+    expect(excavationNdtStage('rt', 'repair', testJob()).typeOptions?.map(o => o.value)).toEqual(['rt']);
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').filter(r => r.stepId !== 'excavation-ndt'));
+    expect(excavationNdtStage('rt', 'repair', testJob()).typeOptions).toBeUndefined();
   });
 
   it('no default starts blank and is required; a default pre-fills', () => {
@@ -115,21 +116,21 @@ describe('Signoff Type to Routing', () => {
   });
 
   it('a step without a Type of its own before gets one named after it', () => {
-    expect(signoffTypeOptions('fitup-insp')).toEqual([{ label: 'Fit-Up Insp', value: 'fitup-insp', default: true }]);
-    expect(signoffTypeOptions('nqc-fitup-insp')?.map(o => o.value)).toEqual(['fitup-insp']);
+    expect(signoffTypeOptions('pipe', 'fitup-insp')).toEqual([{ label: 'Fit-Up Insp', value: 'fitup-insp', default: true }]);
+    expect(signoffTypeOptions('pipe', 'nqc-fitup-insp')?.map(o => o.value)).toEqual(['fitup-insp']);
   });
 
   it('options carry their Signoff Types name and settings; a deleted Type drops out', () => {
-    expect(signoffTypeOptions('root-layer')).toEqual([
+    expect(signoffTypeOptions('pipe', 'root-layer')).toEqual([
       { label: 'Interim Layer', value: 'interim', default: true },
       { label: 'Final Weld', value: 'final-weld', signsStep: 'final-weld' },
     ]);
-    setSignoffTypes(getSignoffTypes().map(t => t.value === 'interim' ? { ...t, label: 'Layer Pass' } : t).filter(t => t.value !== 'final-weld'));
-    expect(signoffTypeOptions('root-layer')?.map(o => o.label)).toEqual(['Layer Pass']);
+    setSignoffTypes('pipe', getSignoffTypes('pipe').map(t => t.value === 'interim' ? { ...t, label: 'Layer Pass' } : t).filter(t => t.value !== 'final-weld'));
+    expect(signoffTypeOptions('pipe', 'root-layer')?.map(o => o.label)).toEqual(['Layer Pass']);
   });
 
   it('an added Type gets a value from its name', () => {
-    setSignoffTypes([{ label: 'Weld Build-Up', value: '' }]);
-    expect(getSignoffTypes()[0].value).toBe('weld-build-up');
+    setSignoffTypes('pipe', [{ label: 'Weld Build-Up', value: '' }]);
+    expect(getSignoffTypes('pipe')[0].value).toBe('weld-build-up');
   });
 });

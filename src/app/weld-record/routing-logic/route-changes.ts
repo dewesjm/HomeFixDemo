@@ -31,19 +31,19 @@ function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
    Admin > Attribute Code Exceptions row waiting on a later answer (Weld Process, Fabrication Location) is
    re-checked too: the row can add or drop it and change its Types. `fab` is the joint's Fabrication values. */
 export function applySignedFlags(stages: WorkflowStage[], job: Job, fab?: Record<string, string>): WorkflowStage[] {
-  const templates = getTemplates();
+  const templates = getTemplates(job.jointType);
   return stages.map(s => {
     if (s.signed) return s;
     const t = templates.find(x => x.id === s.id);
     if (!t) return s;
     const laterRows = hasLaterAnswerRows(s.id, job);
-    if (!usesStepAnswers(t.includeWhen) && !laterRows) return s;
+    if (!usesStepAnswers(t.includeWhen, job.jointType) && !laterRows) return s;
     if (!laterRows) {
       const required = conditionsMatch(t.includeWhen, job, stages, undefined, fab);
       return required === s.required ? s : { ...s, required };
     }
     const effect = routingEffect(s.id, job, stages, fab);
-    const included = usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
+    const included = usesStepAnswers(t.includeWhen, job.jointType) || conditionsMatch(t.includeWhen, job);
     const required = !effect?.drop && ((!!effect?.add && isJointsTwin(t, job)) || (included && baseRequired(t, job, stages, fab)));
     const { typeOptions, attributeRules } = attributeTypeSettings(s.id, job, stages, fab, s.inputs);
     const sameTypes = JSON.stringify(typeOptions) === JSON.stringify(s.typeOptions);
@@ -58,8 +58,8 @@ export function applySignedFlags(stages: WorkflowStage[], job: Job, fab?: Record
 
 /* a Fabrication value changed: rules that read one are re-checked right away; joints with no such rule are untouched */
 export function recheckFabricationRules(stages: WorkflowStage[], job: Job, fab: Record<string, string>): WorkflowStage[] {
-  const templates = getTemplates();
-  const reads = templates.some(t => usesFabrication(t.includeWhen)) || hasFabricationRows(job);
+  const templates = getTemplates(job.jointType);
+  const reads = templates.some(t => usesFabrication(t.includeWhen, job.jointType)) || hasFabricationRows(job);
   return reads ? applySignedFlags(stages, job, fab) : stages;
 }
 

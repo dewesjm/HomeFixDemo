@@ -1,7 +1,9 @@
 /* Admin > Routing Settings rows: the starting rows (welding-steps.ts) with the saved changes (localStorage)
    applied, and saving them. Checks before a save and the Type options each row offers are in
-   weld-record/routing-logic/routing-settings-rules.ts. */
-import { STORAGE } from './storage-keys';
+   weld-record/routing-logic/routing-settings-rules.ts. One table per joint type: Pipe starts from the
+   built-in rows, Structural starts empty. */
+import { settingsKey } from './storage-keys';
+import type { JointType } from './jobs';
 import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ADDED_STAGE_TEMPLATES } from './welding-steps';
 import { StageTemplate } from '../weld-record/model/stage-template';
 import { ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
@@ -76,23 +78,23 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
   };
 }
 
-function loadSavedOverrides(): SerializedStage[] | null {
+function loadSavedOverrides(jointType: JointType): SerializedStage[] | null {
   try {
-    const raw = localStorage.getItem(STORAGE.stageTemplates);
+    const raw = localStorage.getItem(settingsKey('stageTemplates', jointType));
     const saved = raw ? JSON.parse(raw) : null;
     return Array.isArray(saved) ? saved : null;
   } catch { return null; }
 }
 
-function saveOverrides(overrides: SerializedStage[]) {
-  try { localStorage.setItem(STORAGE.stageTemplates, JSON.stringify(overrides)); } catch { /* */ }
+function saveOverrides(jointType: JointType, overrides: SerializedStage[]) {
+  try { localStorage.setItem(settingsKey('stageTemplates', jointType), JSON.stringify(overrides)); } catch { /* */ }
 }
 
 /* starting rows with the saved changes: saved order wins (Admin > Routing Settings reorders); a built-in
    row the save doesn't have goes in after the built-in row before it */
-export function loadRoutingSettings(): StageTemplate[] {
-  const statics = STATIC_TEMPLATES;
-  const saved = loadSavedOverrides();
+export function loadRoutingSettings(jointType: JointType): StageTemplate[] {
+  const statics = jointType === 'pipe' ? STATIC_TEMPLATES : [];
+  const saved = loadSavedOverrides(jointType);
   let list = statics;
   if (saved) {
     const staticMap = new Map(statics.map(s => [s.id, s]));
@@ -106,6 +108,6 @@ export function loadRoutingSettings(): StageTemplate[] {
   return list.map(s => ({ ...s, classification: s.classification ?? 'numbered', lifecycle: s.lifecycle ?? 'ordinary', status: s.status ?? 'active' }));
 }
 
-export function saveRoutingSettings(rows: StageTemplate[]) {
-  saveOverrides(rows.map(serializeStage));
+export function saveRoutingSettings(jointType: JointType, rows: StageTemplate[]) {
+  saveOverrides(jointType, rows.map(serializeStage));
 }

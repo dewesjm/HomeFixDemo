@@ -5,7 +5,8 @@
    save (localStorage). The rules that read them are in
    weld-record/signoff-forms-logic/signoff-type-form-rules.ts. */
 import { repairCodesVersion } from './repair-codes';
-import { STORAGE } from './storage-keys';
+import { settingsKey } from './storage-keys';
+import type { JointType } from './jobs';
 import { WELD_BUILDUP_TYPE } from './signoff-types';
 import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
 import { type FieldFill } from '../weld-record/catalogs/field-catalog';
@@ -186,30 +187,38 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
 
 /* ── Storage ── */
 
+/* the starting definitions of a joint type's table: Pipe's seeds, Structural none */
+export function defaultTypeDefinitions(jointType: JointType): TypeDefinition[] {
+  return jointType === 'pipe' ? DEFAULT_TYPE_DEFINITIONS : [];
+}
+
 let version = 0;
 export const stepFieldConfigVersion = () => version + repairCodesVersion() * 1_000_000;
 
-let _cache: TypeDefinition[] | null = null;
+const _cache = new Map<JointType, TypeDefinition[]>();
 
-export function getStepFieldConfig(): TypeDefinition[] {
-  if (_cache) return _cache;
+export function getStepFieldConfig(jointType: JointType): TypeDefinition[] {
+  const cached = _cache.get(jointType);
+  if (cached) return cached;
+  let config: TypeDefinition[];
   try {
-    const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? JSON.parse(saved) as TypeDefinition[] : DEFAULT_TYPE_DEFINITIONS;
+    const saved = localStorage.getItem(settingsKey('stepFieldConfig', jointType));
+    config = saved ? JSON.parse(saved) as TypeDefinition[] : defaultTypeDefinitions(jointType);
   } catch {
-    _cache = DEFAULT_TYPE_DEFINITIONS;
+    config = defaultTypeDefinitions(jointType);
   }
-  return _cache!;
+  _cache.set(jointType, config);
+  return config;
 }
 
-export function setStepFieldConfig(config: TypeDefinition[]): void {
+export function setStepFieldConfig(jointType: JointType, config: TypeDefinition[]): void {
   version++;
-  _cache = config;
-  localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify(config));
+  _cache.set(jointType, config);
+  localStorage.setItem(settingsKey('stepFieldConfig', jointType), JSON.stringify(config));
 }
 
-export function resetStepFieldConfig(): void {
+export function resetStepFieldConfig(jointType: JointType): void {
   version++;
-  _cache = null;
-  localStorage.removeItem(STORAGE.stepFieldConfig);
+  _cache.delete(jointType);
+  localStorage.removeItem(settingsKey('stepFieldConfig', jointType));
 }

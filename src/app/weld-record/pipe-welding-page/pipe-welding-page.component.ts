@@ -70,7 +70,7 @@ export class PipeWeldingPageComponent {
 
   fields = searchFields();
   private fieldMap = new Map(this.fields.map(f => [f.key, f]));
-  private stepFields = new Map(allStepAnswerFields().map(f => [f.key, f]));
+  private stepFields = new Map(allStepAnswerFields('pipe').map(f => [f.key, f]));
   field = (key: string) => this.fieldMap.get(key);
 
   /* column header filters: list columns get a multiselect, so they need the in-list predicate */
@@ -388,7 +388,7 @@ export class PipeWeldingPageComponent {
   }
 
   canReleaseSelected = computed(() => {
-    if (!this.viewer.canSignType('fitup-release') || this.selectedRole() !== 'Foreman') return false;
+    if (!this.viewer.canSignType('pipe', 'fitup-release') || this.selectedRole() !== 'Foreman') return false;
     const ids = this.selectedIds();
     if (ids.size === 0) return false;
     return this.table.paged().filter(r => ids.has(r.id))

@@ -14,9 +14,9 @@ describe('reference data service', () => {
       defectCodes: getDefectCodes().data.defectCodes,
       repairCodes: getRepairCodes().data.repairCodes,
       locations: getLocations().data.locations,
-      routings: getRoutingSettings().data.routings,
-      types: getSignoffTypes().data.types,
-      forms: getSignoffForms().data.forms,
+      routings: getRoutingSettings('pipe').data.routings,
+      types: getSignoffTypes('pipe').data.types,
+      forms: getSignoffForms('pipe').data.forms,
     };
     for (const [name, rows] of Object.entries(answers)) {
       expect(Array.isArray(rows)).withContext(name).toBeTrue();

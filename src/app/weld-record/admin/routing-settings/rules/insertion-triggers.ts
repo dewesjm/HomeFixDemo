@@ -3,6 +3,7 @@ import { StageTemplate } from '../../../model/stage-template';
 import { describeConditions } from '../../../conditions-logic/condition-text';
 import { stageConditionFields } from '../../../catalogs/field-choices';
 import { insertionDefinitionId } from '../../../routing-logic/inserted-routing/instance-identity';
+import type { JointType } from '../../../../data/jobs';
 
 export interface InsertionTrigger {
   sourceId?: string;
@@ -10,7 +11,8 @@ export interface InsertionTrigger {
   label: string;
 }
 
-export function insertionTriggers(templates: StageTemplate[], definitionId: string): InsertionTrigger[] {
+/* `templates` is one joint type's Routing Settings rows */
+export function insertionTriggers(jointType: JointType, templates: StageTemplate[], definitionId: string): InsertionTrigger[] {
   const matches = (to: string) => insertionDefinitionId(to) === definitionId
     || to === ({ repair: 'repair', 'excavation-ndt': 'add-excavation-ndt', 'nqc-excavation-ndt': 'add-excavation-ndt', 'engineering-hold': 'engineering-hold' } as Record<string, string>)[definitionId];
   const triggers: InsertionTrigger[] = [];
@@ -19,7 +21,7 @@ export function insertionTriggers(templates: StageTemplate[], definitionId: stri
       const rules = mode === 'then' ? source.thenRules : source.rejectRules;
       for (const rule of rules ?? []) {
         if (matches(rule.to)) triggers.push({ sourceId: source.id, mode,
-          label: `${source.label}: ${mode === 'then' ? 'Accepted signoff' : 'UNSAT'} — ${describeConditions([rule.when], stageConditionFields(source))}` });
+          label: `${source.label}: ${mode === 'then' ? 'Accepted signoff' : 'UNSAT'} — ${describeConditions([rule.when], jointType, stageConditionFields(jointType, source))}` });
         if (!rule.when.length) break;
       }
     }

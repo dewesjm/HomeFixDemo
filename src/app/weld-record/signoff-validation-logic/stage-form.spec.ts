@@ -18,6 +18,7 @@ import {
   StageFormContext,
 } from './stage-form';
 import { typeChange, typeValues } from '../signoff-forms-logic/stage-rules';
+import { testJob } from '../../testing/test-job';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
 const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });
@@ -98,11 +99,11 @@ describe('joint-form stage-form', () => {
     const fit = { ...stageOf(j, 'fit'), ...typeChange(stageOf(j, 'fit'), 'weld-buildup') };
     expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('weldPosition');
     const def = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'weld-buildup')!;
-    setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition') }]);
+    setStepFieldConfig('pipe', [{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition') }]);
     try {
       expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).not.toContain('weldPosition');
     } finally {
-      resetStepFieldConfig();
+      resetStepFieldConfig('pipe');
     }
   });
 
@@ -110,7 +111,7 @@ describe('joint-form stage-form', () => {
     it(`shows and records the distinct repair limit for indicator ${nInd}, with editable form conditions`, () => {
       const j = job({ nInd, rtRoot: '360' });
       const ctx = ctxFor(j);
-      const repair = stageFromTemplate(nextRepairStage([], j), { originPhase: 'root' });
+      const repair = stageFromTemplate('pipe', nextRepairStage([], j), { originPhase: 'root' });
       const key = nInd === '1' ? 'allowableThicknessExceededN1' : 'allowableThicknessExceededN23';
       const fields = visibleStageFields(repair, ctx);
       expect(fields.map(f => f.key)).toEqual(['repairType', key]);
@@ -120,10 +121,10 @@ describe('joint-form stage-form', () => {
       expect(snapshot.find(input => input.label.includes(nInd === '1' ? '3/8 inch' : '3/16 inch'))?.value).toBe('Yes');
       try {
         const def = DEFAULT_TYPE_DEFINITIONS.find(d => d.typeId === 'repair')!;
-        setStepFieldConfig([{ ...def, fields: def.fields.map(f => f.key === key
+        setStepFieldConfig('pipe', [{ ...def, fields: def.fields.map(f => f.key === key
           ? { ...f, showIf: { all: [{ source: 'jointDetail' as const, key: 'nInd', equals: 'unknown' }] } } : f) }]);
         expect(visibleStageFields(repair, ctx).map(f => f.key)).not.toContain(key);
-      } finally { resetStepFieldConfig(); }
+      } finally { resetStepFieldConfig('pipe'); }
     });
   }
 
@@ -131,13 +132,13 @@ describe('joint-form stage-form', () => {
     const j = job({ rtRoot: '360', ndtEach: 'VT' });
     const stages = buildStages(j);
     const ctx: StageFormContext = { job: j, stages, offListUnlocked: false };
-    const repair2 = stageFromTemplate(nextRepairStage([{ id: 'repair' }]), { originPhase: 'root' });
+    const repair2 = stageFromTemplate('pipe', nextRepairStage([{ id: 'repair' }], testJob()), { originPhase: 'root' });
     expect(repair2.id).toBe('repair-2');
     expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType', 'allowableThicknessExceededN23']);
     /* "exceeded" only when the rejected phase has an RT/UT step */
     expect(visibleStageFields({ ...repair2, inputs: { originPhase: 'layer' } }, ctx).map(f => f.key)).toEqual(['repairType']);
 
-    const exc = (type: string) => visibleStageFields({ ...stageFromTemplate(excavationNdtStage(type)), inspectionType: type, signoffType: type }, ctx).map(f => f.key);
+    const exc = (type: string) => visibleStageFields({ ...stageFromTemplate('pipe', excavationNdtStage(type, 'repair', testJob())), inspectionType: type, signoffType: type }, ctx).map(f => f.key);
     expect(exc('rt')).toContain('degreeRt');
     expect(exc('rt')).not.toContain('idAccessible');
     expect(exc('mt')).toContain('idAccessible');
@@ -146,9 +147,9 @@ describe('joint-form stage-form', () => {
 
     /* a saved definition applies to every round */
     try {
-      setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'repair' ? { ...a, fields: [{ key: 'repairType' }] } : a));
+      setStepFieldConfig('pipe', DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'repair' ? { ...a, fields: [{ key: 'repairType' }] } : a));
       expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType']);
-    } finally { resetStepFieldConfig(); }
+    } finally { resetStepFieldConfig('pipe'); }
   });
 
   it('Weld Position shows only for N Ind. 1; override fields stay hidden while switched off', () => {
@@ -217,11 +218,11 @@ describe('joint-form stage-form', () => {
   it('finds dependent fields left holding a value after their trigger changed', () => {
     const stage = stageOf(job(), 'tack', { inputs: { phMin: 'NC', actualPhMin: 'NC' } });
     const def = DEFAULT_TYPE_DEFINITIONS.find(d => d.typeId === 'tack')!;
-    setStepFieldConfig([{ ...def, fields: [...def.fields, { key: 'portionInspected' }] }]);
+    setStepFieldConfig('pipe', [{ ...def, fields: [...def.fields, { key: 'portionInspected' }] }]);
     try {
       const current = { ...stage, inputs: { partial: '', portionInspected: 'left over' } };
       expect(hiddenFieldsWithValues(current).map(f => f.key)).toContain('portionInspected');
       expect(hiddenFieldsWithValues({ ...current, inputs: { partial: 'yes', portionInspected: 'shown' } })).toEqual([]);
-    } finally { resetStepFieldConfig(); }
+    } finally { resetStepFieldConfig('pipe'); }
   });
 });

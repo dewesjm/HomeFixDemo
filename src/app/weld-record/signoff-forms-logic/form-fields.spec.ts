@@ -13,9 +13,9 @@ import { stageFieldErrors } from '../signoff-validation-logic/sign-validation';
 
 describe('Catalog and Type forms as the only field definitions', () => {
   const job = () => ({ ...JOBS[0], nInd: '3' });
-  afterEach(() => resetStepFieldConfig());
+  afterEach(() => resetStepFieldConfig('pipe'));
   it('never copies definitions onto new routings or templates', () => {
-    for (const s of [...buildStages(job()), ...getTemplates()]) {
+    for (const s of [...buildStages(job()), ...getTemplates('pipe')]) {
       expect('fields' in s).withContext(s.id).toBeFalse();
       expect('signoffFields' in s).withContext(s.id).toBeFalse();
     }
@@ -33,7 +33,7 @@ describe('Catalog and Type forms as the only field definitions', () => {
   it('a required checkbox must be checked, including when stored with the signoff', () => {
     const j = job();
     const fit = buildStages(j).find(s => s.id === 'fit')!;
-    setStepFieldConfig([{ typeId: 'fit', fields: [{ key: 'deferTack', required: true }] }]);
+    setStepFieldConfig('pipe', [{ typeId: 'fit', fields: [{ key: 'deferTack', required: true }] }]);
     const ctx = { job: j, fab: {}, fabErrors: {}, visibleFields: [] };
     expect(stageFieldErrors(fit, ctx)['fit:deferTack']).toBeTruthy();
     fit.signoffInputs['deferTack'] = 'no';
@@ -42,37 +42,37 @@ describe('Catalog and Type forms as the only field definitions', () => {
     expect(stageFieldErrors(fit, ctx)['fit:deferTack']).toBeUndefined();
   });
   it('has no legacy fallback for a routing without a Type form', () => {
-    const s = stageFromTemplate({ id: 'custom', label: 'Custom', required: true });
+    const s = stageFromTemplate('pipe', { id: 'custom', label: 'Custom', required: true });
     Object.assign(s, { fields: [{ key: 'wtn', type: 'text' }] });
     expect(formInputFields(s)).toEqual([]);
     expect(formSignoffFields(s)).toEqual([]);
   });
   it('routing conditions include every offered Type’s form, including Fit’s Weld Build-Up', () => {
-    const fields = stepAnswerFieldsBefore('root-layer');
+    const fields = stepAnswerFieldsBefore('pipe', 'root-layer');
     expect(fields.some(f => f.key === 'step.fit.wtn')).toBeTrue();
-    const own = stageConditionFields(getTemplates().find(t => t.id === 'fit')!);
+    const own = stageConditionFields('pipe', getTemplates('pipe').find(t => t.id === 'fit')!);
     expect(own.find(f => f.key === 'self.deferTack')?.values).toEqual(['yes', '']);
     expect(own.find(f => f.key === 'self.wtn')).toBeDefined();
   });
   it('routing and qualification condition pickers refresh after forms change', () => {
-    const template = getTemplates().find(t => t.id === 'tack')!;
-    expect(stageConditionFields(template).some(f => f.key === 'self.wtn')).toBeTrue();
+    const template = getTemplates('pipe').find(t => t.id === 'tack')!;
+    expect(stageConditionFields('pipe', template).some(f => f.key === 'self.wtn')).toBeTrue();
     conditionFields();
-    setStepFieldConfig([{ typeId: 'tack', fields: [{ key: 'deferTack' }] }]);
-    expect(stageConditionFields(template).some(f => f.key === 'self.wtn')).toBeFalse();
-    expect(stepAnswerFieldsBefore('root-layer').some(f => f.key === 'step.tack.wtn')).toBeFalse();
+    setStepFieldConfig('pipe', [{ typeId: 'tack', fields: [{ key: 'deferTack' }] }]);
+    expect(stageConditionFields('pipe', template).some(f => f.key === 'self.wtn')).toBeFalse();
+    expect(stepAnswerFieldsBefore('pipe', 'root-layer').some(f => f.key === 'step.tack.wtn')).toBeFalse();
     const checkbox = conditionFields().find(f => f.key === 'step:deferTack')!;
     expect(checkbox.options().map(o => o.value)).toEqual(['Yes', 'No']);
     expect(checkbox.get({ job: job(), step: { signoffInputs: { deferTack: 'yes' } } })).toBe('Yes');
     const j = job();
     const tack = { ...buildStages(j).find(s => s.id === 'tack')!, signed: true, inputs: { wtn: '123' } };
     expect(conditionsMatch([[{ field: 'step.tack.wtn', op: 'is', values: ['123'] }]], j, [tack])).toBeFalse();
-    resetStepFieldConfig();
+    resetStepFieldConfig('pipe');
     expect(conditionsMatch([[{ field: 'step.tack.wtn', op: 'is', values: ['123'] }]], j, [tack])).toBeTrue();
   });
   it('an empty form stays empty even when values have already been recorded', () => {
     const tack = { ...buildStages(job()).find(s => s.id === 'tack')!, inputs: { wtn: 'saved' } };
-    setStepFieldConfig([{ typeId: 'tack', fields: [] }, ...DEFAULT_TYPE_DEFINITIONS.filter(d => d.typeId !== 'tack')]);
+    setStepFieldConfig('pipe', [{ typeId: 'tack', fields: [] }, ...DEFAULT_TYPE_DEFINITIONS.filter(d => d.typeId !== 'tack')]);
     expect(formInputFields(tack)).toEqual([]);
     expect(tack.inputs['wtn']).toBe('saved');
   });

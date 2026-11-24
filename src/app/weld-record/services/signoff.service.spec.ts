@@ -21,8 +21,8 @@ import { typeValues } from '../signoff-forms-logic/stage-rules';
 
 /* a routing with its starting persona (Admin > Routing Settings), as canSignRouting reads it on a joint */
 function routing(id: string) {
-  const template = getTemplates().find(t => t.id === id) ?? getAddedTemplate(id);
-  return { id, role: template.persona ?? '' };
+  const template = getTemplates('pipe').find(t => t.id === id) ?? getAddedTemplate('pipe', id);
+  return { jointType: 'pipe' as const, id, role: template.persona ?? '' };
 }
 
 /* a fresh copy of a seeded joint with these overrides yields a minimal, deterministic Welding pipeline:
@@ -46,13 +46,13 @@ describe('SignoffService', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypes(getSignoffTypes());
+    setSignoffTypes('pipe', getSignoffTypes('pipe'));
     TestBed.configureTestingModule({});
     service = TestBed.inject(SignoffService);
     store = TestBed.inject(WorkflowStore);
   });
 
-  afterEach(() => { localStorage.clear(); setSignoffTypes(getSignoffTypes()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypes('pipe', getSignoffTypes('pipe')); });
 
   for (const method of ['VT', '5X']) for (const nInd of ['1', '3']) {
     it(`also signs ${method} on Root for N Ind ${nInd}, with one undo action`, () => {
@@ -92,7 +92,7 @@ describe('SignoffService', () => {
 
   it('a rule names one routing exactly: the regular row\'s rule does not sign the NQC row', () => {
     const job = weldingJob({ ndtRoot: 'VT', nInd: '1' });
-    setSignoffTypes(getSignoffTypes().map(t => t.value === 'root' ? {
+    setSignoffTypes('pipe', getSignoffTypes('pipe').map(t => t.value === 'root' ? {
       ...t, alsoSigns: [{ stepId: 'root-ndt-vt5x', type: 'vt', when: { all: [] } }],
     } : t));
     service.signStage(job, 'root-weld');
@@ -103,7 +103,7 @@ describe('SignoffService', () => {
     const job = weldingJob({ ndtRoot: '5X' });
     service.signStage(job, 'root-weld');
     expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
-    setSignoffTypes(getSignoffTypes().map(t => t.value === 'root' ? { ...t, alsoSigns: [] } : t));
+    setSignoffTypes('pipe', getSignoffTypes('pipe').map(t => t.value === 'root' ? { ...t, alsoSigns: [] } : t));
     store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-weld' ? { ...s, inputs: { performed5x: 'yes' } } : s) }));
     service.signStage(job, 'root-weld');
     expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
@@ -111,12 +111,12 @@ describe('SignoffService', () => {
 
   it('does not sign an unavailable Type or apply additional signoffs on Engineering Hold', () => {
     const job = weldingJob({ ndtRoot: 'VT' });
-    setSignoffTypes(getSignoffTypes().map(t => t.value === 'root' ? {
+    setSignoffTypes('pipe', getSignoffTypes('pipe').map(t => t.value === 'root' ? {
       ...t, alsoSigns: [{ stepId: 'root-ndt-vt5x', type: '5x', when: { all: [] } }],
     } : t));
     service.signStage(job, 'root-weld');
     expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
-    setSignoffTypes(getSignoffTypes().map(t => t.value === 'root' ? {
+    setSignoffTypes('pipe', getSignoffTypes('pipe').map(t => t.value === 'root' ? {
       ...t, alsoSigns: [{ stepId: 'root-ndt-vt5x', type: 'vt', when: { all: [] } }],
     } : t));
     service.signStage(job, 'root-weld', undefined, true);
@@ -249,7 +249,7 @@ describe('SignoffService', () => {
 
   describe('reject rules (Admin > Routing Settings)', () => {
     const straw = [{ when: [{ field: 'self.weldColor', op: 'is' as const, values: ['straw'] }], to: 'root-weld' }];
-    afterEach(() => updateStageTemplate('root-ndt-vt5x', { rejectRules: [] }));
+    afterEach(() => updateStageTemplate('pipe', 'root-ndt-vt5x', { rejectRules: [] }));
     const failVt = (job: Job, weldColor: string) => {
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-ndt-vt5x'
         ? { ...s, result: 'unsat', inspectionType: 'vt', inputs: { ...s.inputs, weldColor } } : s) }));
@@ -258,14 +258,14 @@ describe('SignoffService', () => {
     };
 
     it('a matching rule sends the UNSAT to its step instead of adding a Repair', () => {
-      updateStageTemplate('root-ndt-vt5x', { rejectRules: straw });
+      updateStageTemplate('pipe', 'root-ndt-vt5x', { rejectRules: straw });
       const stages = failVt(weldingJob(), 'straw');
       expect(stages.some(s => s.id === 'repair')).toBeFalse();
       expect(activeStageId(stages)).toBe('root-weld');
     });
 
     it('no matching rule keeps the normal reject (Repair)', () => {
-      updateStageTemplate('root-ndt-vt5x', { rejectRules: straw });
+      updateStageTemplate('pipe', 'root-ndt-vt5x', { rejectRules: straw });
       const stages = failVt(weldingJob(), 'shiny-silver');
       expect(activeStageId(stages)).toBe('repair');
     });
@@ -638,7 +638,7 @@ describe('SignoffService', () => {
     });
 
     it('removing the self-return rule completes the routing', () => {
-      updateStageTemplate('fit', { thenRules: [] });
+      updateStageTemplate('pipe', 'fit', { thenRules: [] });
       const job = weldingJob();
       setStage(job, 'fit', { ...typeValues('weld-buildup') });
       service.signStage(job, 'fit');
@@ -656,7 +656,7 @@ describe('SignoffService', () => {
     expect(viewer.canSignRouting(routing('fit'), 'weld-buildup')).toBeFalse();
     /* the persona comes from the routing on the joint: without Welding there, welders can't sign it */
     viewer.select('welder');
-    expect(viewer.canSignRouting({ id: 'fit', role: 'Fitting' }, 'weld-buildup')).toBeFalse();
+    expect(viewer.canSignRouting({ jointType: 'pipe', id: 'fit', role: 'Fitting' }, 'weld-buildup')).toBeFalse();
   });
 
   it('lists Excavation NDT separately and leaves Sold unsigned', () => {

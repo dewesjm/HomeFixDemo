@@ -22,7 +22,7 @@ describe('ViewerService', () => {
     expect(viewer.canViewHistoryPage()).toBeTrue();
     expect(viewer.canReleaseEngineeringHold()).toBeTrue();
     expect(viewer.canEnterEngineeringValues()).toBeTrue();
-    expect(getSignoffTypes().some(type => viewer.canSignType(type.value))).toBeFalse();
+    expect(getSignoffTypes('pipe').some(type => viewer.canSignType('pipe', type.value))).toBeFalse();
     expect(viewer.canEditFabrication()).toBeFalse();
     expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
     expect(viewer.showRestrictedWorkflowActions()).toBeTrue();

@@ -27,39 +27,39 @@ describe('Ordinary insertion execution and preview', () => {
   const current = () => activeStage(store.workflowFor(job)().stages)!;
   const wf = () => store.workflowFor(job)();
   function definition(id = 'extra', patch: Partial<StageTemplate> = {}) {
-    addStageTemplate({ id, label: id, classification: 'added', persona: 'Inspector', ...patch, required: true });
-    setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: id, types: [{ type: 'extra-type', default: true }] }]);
-    updateStageTemplate(id, { status: 'active' });
+    addStageTemplate('pipe', { id, label: id, classification: 'added', persona: 'Inspector', ...patch, required: true });
+    setSignoffTypeRoutingRows('pipe', [...getSignoffTypeRoutingRows('pipe'), { stepId: id, types: [{ type: 'extra-type', default: true }] }]);
+    updateStageTemplate('pipe', id, { status: 'active' });
   }
   function rule(source: string, to: string) {
-    updateStageTemplate(source, { thenRules: [{ when: [], to }] });
+    updateStageTemplate('pipe', source, { thenRules: [{ when: [], to }] });
   }
   function sign(id = current().id) { expect(signoff.signStage(job, id)).toBeTrue(); }
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
-    resetStepFieldConfig();
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
+    resetStepFieldConfig('pipe');
     TestBed.configureTestingModule({ imports: [JointPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useFactory: () => ({ snapshot: { paramMap: convertToParamMap({ hull: job.hull, drawing: job.drawing, joint: job.joint }), queryParamMap: convertToParamMap({}) } }) }] });
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
     job = Object.assign({ ...JOBS[0], id: 'insertion-test', joint: 'IN-00001', _fresh: true }, { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', sfff: '', dssAaa: '', ss: 'SS', refitNumber: '', repairNumber: '' });
     JOBS.push(job);
-    setSignoffTypes([...getSignoffTypes(), { value: 'extra-type', label: 'Extra check' }]);
-    setStepFieldConfig([...getStepFieldConfig(), { typeId: 'extra-type', fields: [{ key: 'comments' }] }]);
+    setSignoffTypes('pipe', [...getSignoffTypes('pipe'), { value: 'extra-type', label: 'Extra check' }]);
+    setStepFieldConfig('pipe', [...getStepFieldConfig('pipe'), { typeId: 'extra-type', fields: [{ key: 'comments' }] }]);
     store.update(job, () => newWorkflow(job));
   });
   afterEach(() => {
     window.dispatchEvent(new Event('pagehide'));
     JOBS.splice(JOBS.indexOf(job), 1);
     localStorage.clear();
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
-    resetStepFieldConfig();
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe'));
+    resetStepFieldConfig('pipe');
   });
 
   it('inserts only the first matching target with blank values, conditional persona and shared form', () => {
     definition('extra', { personaRules: [{ when: [{ field: 'nInd', op: 'is', values: ['3'] }], persona: 'Foreman' }] });
     definition('other');
-    updateStageTemplate('pre-fit', { thenRules: [{ when: [], to: insertionTarget('extra') }, { when: [], to: insertionTarget('other') }] });
+    updateStageTemplate('pipe', 'pre-fit', { thenRules: [{ when: [], to: insertionTarget('extra') }, { when: [], to: insertionTarget('other') }] });
     expect(wf().stages.some(s => s.insertion)).toBeFalse();
     const preview = signoff.previewSignoff(wf(), job, 'pre-fit');
     expect(preview.target?.role).toBe('Foreman');
@@ -99,13 +99,13 @@ describe('Ordinary insertion execution and preview', () => {
 
   it('shares conditional replacements between preview and execution and freezes existing inserted choices', () => {
     definition(); rule('pre-fit', insertionTarget('extra'));
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r,
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'extra' ? { ...r,
       typeExceptions: [{ from: 'extra-type', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] } : r));
     const preview = signoff.previewSignoff(wf(), job, 'pre-fit');
     expect(preview.target?.typeOptions?.map(o => o.value)).toEqual(['vt']);
     sign('pre-fit');
     expect(current().typeOptions).toEqual(preview.target?.typeOptions);
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, typeExceptions: [] } : r));
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'extra' ? { ...r, typeExceptions: [] } : r));
     expect(current().typeOptions?.map(o => o.value)).toEqual(['vt']);
     sign();
     expect(wf().stages.find(s => s.insertion)?.inspectionType).toBe('vt');
@@ -115,8 +115,8 @@ describe('Ordinary insertion execution and preview', () => {
     job.ndtRoot = 'PT';
     store.update(job, () => newWorkflow(job));
     definition();
-    updateStageTemplate('root-ndt-mtpt', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, types: [],
+    updateStageTemplate('pipe', 'root-ndt-mtpt', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'extra' ? { ...r, types: [],
       typeSource: 'rejecting-inspection', typeExceptions: [{ from: 'pt', to: '5x' }] } : r));
     store.update(job, w => ({ ...w, stages: w.stages.map(s => s.id === 'root-ndt-mtpt'
       ? { ...s, result: 'unsat', inspectionType: 'pt', signoffType: 'pt' } : s) }));
@@ -129,7 +129,7 @@ describe('Ordinary insertion execution and preview', () => {
 
   it('blocks contextual Type source on a source without an original inspection', () => {
     definition(); rule('pre-fit', insertionTarget('extra'));
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra'
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'extra'
       ? { ...r, typeSource: 'rejecting-inspection', types: [] } : r));
     const before = structuredClone(wf());
     expect(signoff.previewSignoff(wf(), job, 'pre-fit').blocked).toContain('context is missing');
@@ -140,11 +140,11 @@ describe('Ordinary insertion execution and preview', () => {
   for (const failure of ['inactive', 'applicability', 'types', 'missing']) {
     it(`blocks ${failure} targets before signing or writing History, consistently with preview`, () => {
       definition(); rule('pre-fit', insertionTarget('extra'));
-      if (failure === 'inactive') updateStageTemplate('extra', { status: 'inactive' });
-      if (failure === 'applicability') updateStageTemplate('extra', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
-      if (failure === 'types') setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
+      if (failure === 'inactive') updateStageTemplate('pipe', 'extra', { status: 'inactive' });
+      if (failure === 'applicability') updateStageTemplate('pipe', 'extra', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
+      if (failure === 'types') setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').map(r => r.stepId === 'extra' ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
       if (failure === 'missing') {
-        const templates = getTemplates();
+        const templates = getTemplates('pipe');
         templates.splice(templates.findIndex(t => t.id === 'extra'), 1);
       }
       const before = wf();
@@ -159,17 +159,17 @@ describe('Ordinary insertion execution and preview', () => {
     expect(() => rule('extra', insertionTarget('extra'))).toThrowError(/cycle/);
     rule('extra', insertionTarget('nested'));
     expect(() => rule('nested', insertionTarget('extra'))).toThrowError(/cycle/);
-    updateStageTemplate('nested', { thenRules: [{ when: [{ field: 'self.comments', op: 'is', values: ['repeat'] }], to: insertionTarget('extra') }] });
-    expect(getTemplates().find(t => t.id === 'nested')!.thenRules!.length).toBe(1);
+    updateStageTemplate('pipe', 'nested', { thenRules: [{ when: [{ field: 'self.comments', op: 'is', values: ['repeat'] }], to: insertionTarget('extra') }] });
+    expect(getTemplates('pipe').find(t => t.id === 'nested')!.thenRules!.length).toBe(1);
   });
 
   it('freezes open instance labels/personas/rules/Types, retaining stable references through rename/deactivation', () => {
     definition(); rule('pre-fit', insertionTarget('extra')); sign('pre-fit');
     const inserted = current();
-    updateStageTemplate('extra', { label: 'Renamed', persona: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
-    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'extra'));
+    updateStageTemplate('pipe', 'extra', { label: 'Renamed', persona: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
+    setSignoffTypeRoutingRows('pipe', getSignoffTypeRoutingRows('pipe').filter(r => r.stepId !== 'extra'));
     expect(current()).toBe(inserted);
-    expect(getTemplates().find(t => t.id === 'pre-fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
+    expect(getTemplates('pipe').find(t => t.id === 'pre-fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
     sign(); expect(current().id).toBe('fit');
   });
 
@@ -219,7 +219,7 @@ describe('Ordinary insertion execution and preview', () => {
 
   it('inserts on a reject rule and applies an ordinary rejected destination', () => {
     definition('extra', { rejectRules: [{ when: [], to: 'fit' }] });
-    updateStageTemplate('root-ndt-vt5x', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
+    updateStageTemplate('pipe', 'root-ndt-vt5x', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
     store.update(job, w => ({ ...w, stages: w.stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, result: 'unsat', inspectionType: 'vt', signoffType: 'vt' } : s) }));
     const preview = signoff.previewSignoff(wf(), job, 'root-ndt-vt5x');
     sign('root-ndt-vt5x'); expect(current()).toEqual(preview.target!);
@@ -250,7 +250,7 @@ describe('Ordinary insertion execution and preview', () => {
   it('uses the same resolver for seed construction and execution', () => {
     definition();
     const source = wf().stages[0];
-    const seeded = resolveInsertion(getTemplates(), wf().stages, job, source, insertionTarget('extra'));
+    const seeded = resolveInsertion(getTemplates('pipe'), wf().stages, job, source, insertionTarget('extra'));
     rule(source.id, insertionTarget('extra')); sign(source.id);
     expect(current()).toEqual({ ...seeded, routingFrom: true });
   });

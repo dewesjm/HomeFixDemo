@@ -6,7 +6,7 @@ import { definitionHas, hasStepActivation } from './signoff-type-form-rules';
 import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';
 
 /* SAT/UNSAT is offered only when the selected Type form lists Inspection Results. */
-export function hasDecision(stage: Pick<WorkflowStage, 'id' | 'signoffType' | 'rejectToStage'>): boolean {
+export function hasDecision(stage: Pick<WorkflowStage, 'jointType' | 'id' | 'signoffType' | 'rejectToStage'>): boolean {
   return definitionHas(stage, DECISION_KEY);
 }
 
@@ -18,7 +18,7 @@ export function unsatWithoutRejectTarget(stage: Pick<WorkflowStage, 'result' | '
 /* whether the Type droplist shows: the step has Type options (Admin > Signoff Type to Routing) and
    the definition of the Type it's on lists Type (a step with no definition, or whose Type isn't picked
    yet, always shows it) */
-export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'signoffType'>): boolean {
+export function showsType(stage: Pick<WorkflowStage, 'jointType' | 'id' | 'typeOptions' | 'signoffType'>): boolean {
   if (!stage.typeOptions?.length) return false;
   return !hasStepActivation(stage) || definitionHas(stage, TYPE_KEY);
 }

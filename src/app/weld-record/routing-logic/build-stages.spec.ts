@@ -24,16 +24,16 @@ describe('NQC rows (Admin > Routing Settings)', () => {
   });
 
   it('the Routing Settings names differ, so rules can tell them apart', () => {
-    const t = (id: string) => getTemplates().find(s => s.id === id)!;
+    const t = (id: string) => getTemplates('pipe').find(s => s.id === id)!;
     expect(t('root-ndt-vt5x').label).toBe('Root NDT 5X/VT');
     expect(t('nqc-root-ndt-vt5x').label).toBe('NQC Root NDT 5X/VT');
     expect(t('nqc-root-ndt-vt5x').displayName).toBe('Root NDT 5X/VT');
   });
 
   it('a Display Name set in Routing Settings is what the joint shows', () => {
-    updateStageTemplate('nqc-fitup-insp', { displayName: 'Fit-Up Inspection' });
+    updateStageTemplate('pipe', 'nqc-fitup-insp', { displayName: 'Fit-Up Inspection' });
     expect(stage(job('1'), 'nqc-fitup-insp')?.label).toBe('Fit-Up Inspection');
-    updateStageTemplate('nqc-fitup-insp', { displayName: 'Fit-Up Insp' });
+    updateStageTemplate('pipe', 'nqc-fitup-insp', { displayName: 'Fit-Up Insp' });
   });
 
   it('a joint gets exactly one row of an NQC pair', () => {

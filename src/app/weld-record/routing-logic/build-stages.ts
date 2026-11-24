@@ -12,10 +12,10 @@ import { isFitupInspId } from '../../data/welding-step-ids';
 
 export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
-  const tradeStages = getTemplates().filter(t => !isAddedTemplateId(t.id));
+  const tradeStages = getTemplates(job.jointType).filter(t => !isAddedTemplateId(job.jointType, t.id));
   /* Admin > Routing Settings step conditions: Joint Details rules decide here whether the joint gets the step;
      a step with step-answer rules is always there and its rules set required (see applySignedFlags) */
-  const routingIncluded = (t: StageTemplate) => usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
+  const routingIncluded = (t: StageTemplate) => usesStepAnswers(t.includeWhen, job.jointType) || conditionsMatch(t.includeWhen, job);
   /* then Admin > Attribute Code Exceptions: a row can drop the routing or add it (as the joint's NQC or
      regular row); a row waiting on a later answer puts it on the joint, not required, until it matches */
   const effectOf = (t: StageTemplate) => routingEffect(t.id, job);
@@ -30,6 +30,7 @@ export function buildStages(job: Job, fab?: Record<string, string>): WorkflowSta
     const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};   /* Fit-Up Insp starts released to welding */
     const role = routingPersona(t, job);
     return {
+      jointType: job.jointType,
       id: t.id,
       /* the joint shows the Display Name; the Routing name is for Admin > Routing Settings rules */
       label: t.displayName || t.label,
@@ -54,7 +55,7 @@ export function buildStages(job: Job, fab?: Record<string, string>): WorkflowSta
 /* required before any attribute code exception: a step with step-answer rules is required while they
    match (blank until signed), any other by its template */
 export function baseRequired(t: StageTemplate, job: Job, stages: WorkflowStage[] = [], fab?: Record<string, string>): boolean {
-  if (usesStepAnswers(t.includeWhen)) return conditionsMatch(t.includeWhen, job, stages, undefined, fab);
+  if (usesStepAnswers(t.includeWhen, job.jointType)) return conditionsMatch(t.includeWhen, job, stages, undefined, fab);
   return typeof t.required === 'function' ? t.required(job) : t.required;
 }
 

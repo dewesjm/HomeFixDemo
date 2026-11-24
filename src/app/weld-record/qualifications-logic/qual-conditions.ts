@@ -66,17 +66,19 @@ function fromCatalog(f: ConditionCatalogField): ConditionField {
 /* the condition catalog: Joint Details, Fabrication and every routing's answers (Fit-Up Insp's Release
    to welding is listed under both its regular and NQC routing, and offered once) */
 function catalogFields(): ConditionField[] {
-  const answers = new Map(allStepAnswerFields().map(f => [f.key, f]));
+  const answers = new Map(allStepAnswerFields(QUAL_JOINT_TYPE).map(f => [f.key, f]));
   return [...JOINT_AND_FABRICATION_FIELDS, ...answers.values()].map(fromCatalog);
 }
 
 const QUAL_CHECK_KEY = 'qualificationCheck';
+/* Admin > Qualifications is shared by every joint type; its routing fields are Pipe's for now */
+const QUAL_JOINT_TYPE = 'pipe' as const;
 /* the step itself, then every field any step has (Type, fields, sign-off fields), once per key with
    the first label. What's offered comes from the steps with a Qualification Check, the only place
    these rows are checked; labels come from every step so old clauses still read properly. */
 function signoffFields(): ConditionField[] {
-  const steps = routingsInOrder();
-  const hasCheck = (t: typeof steps[number]) => routingAnswerFields(t).some(f => f.key === QUAL_CHECK_KEY);
+  const steps = routingsInOrder(QUAL_JOINT_TYPE);
+  const hasCheck = (t: typeof steps[number]) => routingAnswerFields(QUAL_JOINT_TYPE, t).some(f => f.key === QUAL_CHECK_KEY);
   const toOptions = (m: Map<string, string>) => [...m].map(([value, label]) => ({ value, label }));
   const out: ConditionField[] = [{
     key: `${STEP_PREFIX}id`, label: 'Routing', group: 'Sign-off',
@@ -97,7 +99,7 @@ function signoffFields(): ConditionField[] {
   for (const t of steps) {
     const onForm = hasCheck(t);
     if (t.typeOptions?.length) add('inspectionType', 'Type', 'select', onForm, t.typeOptions);
-    for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, onForm, f.options);
+    for (const f of routingAnswerFields(QUAL_JOINT_TYPE, t)) add(f.key, f.label, f.type, onForm, f.options);
   }
   for (const [key, e] of byKey) {
     out.push({
@@ -125,7 +127,7 @@ const userField: ConditionField = {
 /* rebuilt whenever the (admin-editable) step templates change, since sign-off fields come from them */
 let cache: { steps: unknown; version: number; fields: ConditionField[] } | null = null;
 export function conditionFields(): ConditionField[] {
-  const steps = routingsInOrder();
+  const steps = routingsInOrder(QUAL_JOINT_TYPE);
   if (cache?.steps !== steps || cache?.version !== stepFieldConfigVersion()) cache = { steps, version: stepFieldConfigVersion(), fields: [...catalogFields(), ...signoffFields(), userField] };
   return cache.fields;
 }
