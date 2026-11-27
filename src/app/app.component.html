@@ -79,7 +79,9 @@
               <li><a title="Pipe Welding (Classic)" routerLink="/pipe-welding-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding (Classic)</span></a></li>
             }
             <li><a title="Structural Welding" routerLink="/structural-welding" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Structural</span></a></li>
-            <li><a title="Non-Numbered Joints" routerLink="/non-numbered-joints" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Non-Numbered</span></a></li>
+            @if (toggles().nonNumberedJoints) {
+              <li><a title="Non-Numbered Joints" routerLink="/non-numbered-joints" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Non-Numbered</span></a></li>
+            }
             @if (viewer.canViewHistoryPage()) {
               <li><a title="History" routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
             }
@@ -209,7 +211,9 @@
                 <li><a routerLink="/pipe-welding-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding (Classic)</a></li>
               }
               <li><a title="Structural Welding" routerLink="/structural-welding" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Structural</a></li>
-              <li><a title="Non-Numbered Joints" routerLink="/non-numbered-joints" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Non-Numbered</a></li>
+              @if (toggles().nonNumberedJoints) {
+                <li><a title="Non-Numbered Joints" routerLink="/non-numbered-joints" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Non-Numbered</a></li>
+              }
               @if (viewer.canViewHistoryPage()) {
                 <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> History</a></li>
               }

@@ -27,4 +27,12 @@
       <span class="block">Shows My Assignments in the Weld Record menu.</span>
     </span>
   </label>
+  <label class="flex items-start gap-3 cursor-pointer">
+    <input type="checkbox" class="toggle toggle-primary mt-0.5"
+           [checked]="toggles().nonNumberedJoints" (change)="set('nonNumberedJoints', $any($event.target).checked)" />
+    <span>
+      <span class="font-semibold">Non-Numbered Joints page</span>
+      <span class="block">Shows Non-Numbered in the Weld Record menu.</span>
+    </span>
+  </label>
 </div>

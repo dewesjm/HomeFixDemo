@@ -73,7 +73,9 @@ export const routes: Routes = [
   /* Pipe Welding is the Advanced Search page */
   { path: 'pipe-welding', component: PipeWeldingPageComponent, title: 'EWR - Pipe Welding' },
   { path: 'structural-welding', component: StructuralWeldingPageComponent, title: 'EWR - Structural Welding' },
-  { path: 'non-numbered-joints', component: NonNumberedJointsPageComponent, title: 'EWR - Non-Numbered Joints' },
+  /* switched off unless Admin > Feature Toggles > Non-Numbered Joints page is on */
+  { path: 'non-numbered-joints', component: NonNumberedJointsPageComponent, title: 'EWR - Non-Numbered Joints',
+    canActivate: [() => featureToggles().nonNumberedJoints || inject(Router).parseUrl('/pipe-welding')] },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
      is on; kept so it can be turned back on without a rewrite */
   { path: 'pipe-welding-classic', component: PipeWeldingClassicPageComponent, title: 'EWR - Pipe Welding (Classic)',

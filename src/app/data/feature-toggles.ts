@@ -6,9 +6,10 @@ export interface FeatureToggles {
   routingPreview: boolean;       /* "Demo only - On signoff, this routes to ..." under each step's Signoff button */
   classicPipeWelding: boolean;   /* the old Pipe Welding table at /pipe-welding-classic, with its own menu entry */
   myAssignments: boolean;        /* the My Assignments page at /assignments and its Weld Record menu entry */
+  nonNumberedJoints: boolean;    /* the Non-Numbered Joints page at /non-numbered-joints and its Weld Record menu entry */
 }
 
-const DEFAULT_TOGGLES: FeatureToggles = { routingPreview: true, classicPipeWelding: false, myAssignments: false };
+const DEFAULT_TOGGLES: FeatureToggles = { routingPreview: true, classicPipeWelding: false, myAssignments: false, nonNumberedJoints: false };
 
 function load(): FeatureToggles {
   try {
