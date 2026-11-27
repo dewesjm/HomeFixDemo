@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { StructuralWeldingPageComponent } from './structural-welding-page.component';
 import { STRUCTURAL_JOINTS } from '../../data/structural-joints';
 import { JOBS } from '../../data/jobs';
+import { WorkflowStore } from '../services/workflow-store.service';
+import { currentRoutingLabel } from '../routing-logic/current-routing';
 
 describe('Structural Welding page', () => {
   beforeEach(() => {
@@ -17,13 +19,15 @@ describe('Structural Welding page', () => {
     expect(STRUCTURAL_JOINTS.some(j => pipeIds.has(j.id))).toBeFalse();
   });
 
-  it('opens on Standard (Routing blank) with every structural joint and searches like Pipe Welding', () => {
+  it('opens on Standard (with each joint\'s routing) with every structural joint and searches like Pipe Welding', () => {
     const fixture = TestBed.createComponent(StructuralWeldingPageComponent);
     const page = fixture.componentInstance;
     fixture.detectChanges();
     expect(page.selectedVariant()).toBe('Standard');
     expect(page.visibleColumns().map(c => c.key)).toEqual(['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber', 'currentRouting']);
-    expect(page.table.paged().every(r => r.currentRouting === '')).toBeTrue();
+    const store = TestBed.inject(WorkflowStore);
+    expect(page.table.paged().every(r => r.currentRouting === currentRoutingLabel(store.workflowFor(r)().stages))).toBeTrue();
+    expect(page.table.paged().some(r => r.currentRouting !== '')).toBeTrue();
     expect(page.table.total()).toBe(STRUCTURAL_JOINTS.length);
     page.table.setGlobalFilter(STRUCTURAL_JOINTS[3].order);
     fixture.detectChanges();

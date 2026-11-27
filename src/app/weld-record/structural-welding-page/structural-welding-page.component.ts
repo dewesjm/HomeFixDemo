@@ -1,7 +1,7 @@
 /* Structural Welding: Pipe Welding's search over the structural joints. Stacked-condition filter bar
    (shared condition bar), keyword search, column header filters, a column picker with draggable headings,
-   saved views (with a default per browser) and Export, and Details opens a joint's Joint Details. No role,
-   routing column, Release or History yet. */
+   saved views (with a default per browser) and Export, and Details opens a joint's Joint Details. The
+   Routing column is each joint's routing now. No role, Release or History yet. */
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +25,7 @@ import { FilterValues, activeConditions, applyFilters, chipLabel } from '../../s
 import { ViewerService } from '../access-logic/viewer.service';
 import { Router } from '@angular/router';
 import { jointRoute } from '../joint-link-logic/joint-route';
+import { WorkflowStore } from '../services/workflow-store.service';
 
 import { STRUCTURAL_JOINTS } from '../../data/structural-joints';
 import {
@@ -53,6 +54,7 @@ export class StructuralWeldingPageComponent {
   /* History and Details show for the same roles as on Pipe Welding; History opens nothing yet */
   readonly viewer = inject(ViewerService);
   private router = inject(Router);
+  private store = inject(WorkflowStore);
   readonly STANDARD = STANDARD_VARIANT;
   fields = SEARCH_FIELDS;
   private fieldMap = new Map(this.fields.map(f => [f.key, f]));
@@ -104,14 +106,15 @@ export class StructuralWeldingPageComponent {
 
   // --- Rows ---
 
-  private allRows = STRUCTURAL_JOINTS.map(buildRow);
-  filtered = computed<SearchRow[]>(() => applyFilters(this.allRows, this.fields, this.values()));
+  /* every joint as a row with its routing now (follows signoffs) */
+  private allRows = computed<SearchRow[]>(() => STRUCTURAL_JOINTS.map(j => buildRow(j, this.store.workflowFor(j)())));
+  filtered = computed<SearchRow[]>(() => applyFilters(this.allRows(), this.fields, this.values()));
   totalJoints = STRUCTURAL_JOINTS.length;
 
   /* choices for a list field: the values joints actually have */
-  private optionCache = new Map(this.fields.filter(f => f.kind === 'list').map(f => [f.key,
-    [...new Set(this.allRows.map(r => String(r[f.key] ?? '')).filter(Boolean))].sort().map(v => ({ label: v, value: v }))]));
-  optionsFor(key: string) { return this.optionCache.get(key) ?? []; }
+  private optionCache = computed(() => new Map(this.fields.filter(f => f.kind === 'list').map(f => [f.key,
+    [...new Set(this.allRows().map(r => String(r[f.key] ?? '')).filter(Boolean))].sort().map(v => ({ label: v, value: v }))])));
+  optionsFor(key: string) { return this.optionCache().get(key) ?? []; }
   optionsFn = (key: string) => this.optionsFor(key);
 
   filterFields = computed<SearchField[]>(() =>

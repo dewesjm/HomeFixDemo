@@ -1,13 +1,16 @@
 /* Structural Welding's search: its fields, the rows it searches, and saved views (localStorage).
    Same model as Pipe Welding (pipe-welding-page/filter-schema.ts), matched by shared/filter-engine.ts.
    The joint's own fields as Structural's Joint Details has them (no Pipe Size or Wall Thickness; a third
-   material, a thickness per material and ET) plus Routing; no Fabrication or step answers yet. */
+   material, a thickness per material and ET) plus the joint's current Routing; no Fabrication or step
+   answers yet. */
 import { STORAGE } from '../../../data/storage-keys';
 import type { Job } from '../../../data/jobs';
 import { FilterValues, MatchField } from '../../../shared/filter-engine';
 import { JOINT_FIELD_CATALOG, type JointFieldEntry } from '../../catalogs/joint-fields';
 import { NDT_LABELS } from '../../../data/ndt-labels';
 import { jointDetailsUt, jointDetailsVt } from '../../joint-details-logic/joint-details-values';
+import { currentRoutingLabel } from '../../routing-logic/current-routing';
+import type { JobWorkflow } from '../../model/workflow-types';
 
 export interface SearchField extends MatchField {
   key: string;
@@ -43,8 +46,9 @@ export const SEARCH_FIELDS: SearchField[] = JOINT_FIELD_CATALOG
 
 export type SearchRow = Job & { currentRouting: string } & Record<string, any>;
 
-/* UT and VT as Joint Details shows them; Routing blank for now */
-export const buildRow = (j: Job): SearchRow => ({ ...j, currentRouting: '', ut: jointDetailsUt(j), vt: jointDetailsVt(j) });
+/* UT and VT as Joint Details shows them; Routing is the joint's routing now */
+export const buildRow = (j: Job, wf: JobWorkflow): SearchRow =>
+  ({ ...j, currentRouting: currentRoutingLabel(wf.stages), ut: jointDetailsUt(j), vt: jointDetailsVt(j) });
 
 /* ── Layouts (the page's own state and saved views) ── */
 
