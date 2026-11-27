@@ -67,7 +67,7 @@ describe('History filter clearing', () => {
     });
     const store = TestBed.inject(WorkflowStore);
     const joint = STRUCTURAL_JOINTS.find(j => store.workflowFor(j)().history.length)!;
-    params = { job: joint.id, jointHistory: joint.id, jointType: 'structural' };
+    params = { job: joint.id, jointHistory: joint.id };
     const fixture = TestBed.createComponent(HistoryPageComponent);
     fixture.detectChanges();
     const page = fixture.componentInstance;
@@ -77,5 +77,21 @@ describe('History filter clearing', () => {
     expect(page.scopeLabel()).toContain(joint.xrefid || joint.joint);
     page.back();
     expect(navigate).toHaveBeenCalledWith(['/structural-welding']);
+  });
+
+  it('the History screen lists pipe and structural joints, each named by its Joint Type', () => {
+    localStorage.clear();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({})) } },
+        { provide: Router, useValue: { navigate: jasmine.createSpy('navigate') } },
+      ],
+    });
+    const fixture = TestBed.createComponent(HistoryPageComponent);
+    fixture.detectChanges();
+    const rows = fixture.componentInstance.table.rows();
+    expect(rows.some(r => r.jointType === 'pipe' && r.jointTypeLabel === 'Pipe')).toBeTrue();
+    expect(rows.some(r => r.jointType === 'structural' && r.jointTypeLabel === 'Structural')).toBeTrue();
   });
 });

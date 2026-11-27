@@ -24,9 +24,14 @@ export function findJointByRoute(hull: string | null, drawing: string | null, jo
   return JOINTS[type]().find(j => j.hull === hull && j.drawing === drawing && j.joint === joint);
 }
 
-/* a joint by its type and internal id; ids are only unique within one type */
+/* a joint by its type and internal id */
 export function findJointById(type: JointType, id: string): Job | undefined {
   return JOINTS[type]().find(j => j.id === id);
+}
+
+/* a joint of any type by its internal id (ids are unique across pipe and structural) */
+export function findJointByAnyId(id: string): Job | undefined {
+  return JOBS.find(j => j.id === id) ?? STRUCTURAL_JOINTS.find(j => j.id === id);
 }
 
 /* where the app is served; a real install would take this from its settings. The demo uses the site

@@ -14,6 +14,7 @@ export class HistoryTableState extends TableState<HistoryRow> {
         when: (rowValue, val) =>
           formatDateTime(rowValue as string).toLowerCase().includes(String(val).toLowerCase()),
         routing: inArray,
+        jointTypeLabel: inArray,
       }
     );
   }

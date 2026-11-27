@@ -5,6 +5,7 @@ import { STORAGE, clearStaleCaches } from '../../data/storage-keys';
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { SyncService } from '../../shared/sync-status/sync.service';
 import { JOBS, Job } from '../../data/jobs';
+import { STRUCTURAL_JOINTS } from '../../data/structural-joints';
 import { findJointById } from '../joint-link-logic/joint-route';
 import { stampWho } from '../../data/people';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
@@ -23,7 +24,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // caches when this version changes.
 const CURRENT_VERSION = '2.10.82';
 
-/* a joint's workflow key: type + id, since ids are only unique within one joint type */
+/* a joint's workflow key: type + id (the type says which joint set the saved workflow belongs to) */
 const workflowKey = (job: Pick<Job, 'jointType' | 'id'>) => `${job.jointType}|${job.id}`;
 
 @Injectable({ providedIn: 'root' })
@@ -76,9 +77,9 @@ export class WorkflowStore {
     return [...merged.values()];
   }
 
-  /* every joint's workflow, seeded ones included, not just the ones opened or saved so far */
+  /* every joint's workflow (pipe and structural), seeded ones included, not just the ones opened or saved so far */
   everyWorkflow(): JobWorkflow[] {
-    for (const job of JOBS) this.workflowFor(job);
+    for (const job of [...JOBS, ...STRUCTURAL_JOINTS]) this.workflowFor(job);
     return this.allWorkflows();
   }
 

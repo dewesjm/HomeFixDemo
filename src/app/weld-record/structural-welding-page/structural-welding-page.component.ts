@@ -301,7 +301,7 @@ export class StructuralWeldingPageComponent {
 
   openDetails(row: SearchRow) { this.router.navigate(jointRoute(row, 'structural')); }
   openHistory(row: SearchRow) {
-    this.router.navigate(['/history'], { queryParams: { job: row.id, jointHistory: row.id, jointType: 'structural' } });
+    this.router.navigate(['/history'], { queryParams: { job: row.id, jointHistory: row.id } });
   }
 
   cellText(row: SearchRow, f: SearchField): string {

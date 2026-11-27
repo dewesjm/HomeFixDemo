@@ -67,7 +67,7 @@ export interface Reference {
 }
 
 export interface JobWorkflow {
-  jointType: JointType;   /* with jobId, names the joint: ids are only unique within one type */
+  jointType: JointType;   /* which joint set jobId belongs to */
   jobId: string;
   technician: string;
   stages: WorkflowStage[];

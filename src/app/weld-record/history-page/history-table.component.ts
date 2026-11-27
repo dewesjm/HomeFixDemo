@@ -10,7 +10,7 @@ import { LucideRotateCcw, LucideArrowUpRight, LucideChevronRight, LucideChevronD
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { ConfirmService } from '../../shared/confirm.service';
 import { AppDateTimePipe } from '../../shared/date-format';
-import { JOINT_TYPES } from '../../data/jobs';
+import { JOINT_TYPES, JOINT_TYPE_LABELS } from '../../data/jobs';
 import { HistoryRow, correctableKeys, deprogressableKey, historyRowHasDetail, historyRows } from './rules/history-rows';
 import { getTemplates } from '../routing-logic/routing-settings-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -36,7 +36,9 @@ export class HistoryTableComponent {
   readonly viewer = inject(ViewerService);
   table = input.required<HistoryTableState>();
   hasDetail = historyRowHasDetail;
-  /* one joint's history: leaves out the XREFID, Hull, Drawing, Joint and Order columns and the open-joint button */
+  /* the Joint Type column's choices */
+  readonly jointTypeOptions = JOINT_TYPES.map(t => ({ label: JOINT_TYPE_LABELS[t], value: JOINT_TYPE_LABELS[t] }));
+  /* one joint's history: leaves out the Joint Type, XREFID, Hull, Drawing, Joint and Order columns and the open-joint button */
   oneJoint = input(false);
   emptyText = input('No activity matches your filters. Each sign-off records every editable field and its value at that moment.');
   /* Deprogress confirmed with a reason; the parent carries it out */

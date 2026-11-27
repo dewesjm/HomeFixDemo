@@ -4,6 +4,7 @@
 
 <!-- the joint's identifier cells; detail rows show them dimmed -->
 <ng-template #ids let-r let-dim="dim">
+  <td [class.hist-old]="dim">{{ r.jointTypeLabel }}</td>
   <td [class.hist-old]="dim">{{ r.xrefid }}</td>
   <td [class.hist-old]="dim">{{ r.hull }}</td>
   <td class="whitespace-nowrap" [class.hist-old]="dim">{{ r.drawing }}</td>
@@ -21,6 +22,7 @@
       <th appSortHeader class="min-w-11" [table]="t" field="who" label="Who" filter="text"></th>
       <th appSortHeader class="min-w-12" [table]="t" field="to" label="Value" filter="text"></th>
       @if (all) {
+        <th appSortHeader class="min-w-14" [table]="t" field="jointTypeLabel" label="Joint Type" filter="select" [options]="jointTypeOptions"></th>
         <th appSortHeader style="min-width: 6ch" [table]="t" field="xrefid" label="XREFID" filter="text"></th>
         <th appSortHeader style="min-width: 6ch" [table]="t" field="hull" label="Hull" filter="text"></th>
         <th appSortHeader class="min-w-24" [table]="t" field="drawing" label="Drawing" filter="text"></th>
@@ -128,7 +130,7 @@
           <tr>
             <td></td>
             <td></td>
-            <td class="pl-8" [attr.colspan]="all ? 9 : 4">
+            <td class="pl-8" [attr.colspan]="all ? 10 : 4">
               <button type="button" class="btn btn-ghost btn-xs" (click)="t.toggleFab(r.key)">
                 @if (t.fabExpanded().has(r.key)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
                 Fabrication {{ r.section === 'Refit' ? 'before the Cut' : 'at this sign-off' }} ({{ r.fabInputs!.length }} fields)
@@ -154,7 +156,7 @@
       }
     } @empty {
       <tr>
-        <td [attr.colspan]="all ? 14 : 8" class="empty">{{ emptyText() }}</td>
+        <td [attr.colspan]="all ? 15 : 8" class="empty">{{ emptyText() }}</td>
       </tr>
     }
   </tbody>

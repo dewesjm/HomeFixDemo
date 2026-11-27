@@ -8,6 +8,7 @@ import { JOINT_DESIGN_LABELS } from './joint-design-seed';
 /* which joint set a record comes from; in real life pipe and structural are separate sources */
 export type JointType = 'pipe' | 'structural';
 export const JOINT_TYPES: JointType[] = ['pipe', 'structural'];
+export const JOINT_TYPE_LABELS: Record<JointType, string> = { pipe: 'Pipe', structural: 'Structural' };
 
 export interface Job {
   jointType: JointType;  /* internal, never shown; with id, it names the joint's saved workflow */
