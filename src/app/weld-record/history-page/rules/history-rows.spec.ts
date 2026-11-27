@@ -46,7 +46,7 @@ describe('Deprogress and Correct', () => {
   const preFit = entry('2026-01-01T08:00:00Z', 'Sign-off', 'pre-fit - Signed off', 'pre-fit');
   const fit = entry('2026-01-01T10:00:00Z', 'Sign-off', 'fit - Signed off', 'fit');
   const fitBack = entry('2026-01-01T11:00:00Z', 'Sign-off', 'fit - Deprogressed: wrong', 'fit');
-  const key = (e: HistoryEntry) => `${job.id}|${e.when}|${e.action}`;
+  const key = (e: HistoryEntry) => `pipe|${job.id}|${e.when}|${e.action}`;
 
   it('without undo entries, Deprogress is on the last sign-off still in effect', () => {
     const wf = workflow([preFit, fit], ['pre-fit', 'fit']);

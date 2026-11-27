@@ -10,7 +10,8 @@ import { LucideX, LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideLi
 import { TablePagerComponent } from '../../shared/table-pager.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
-import { JOBS, Job } from '../../data/jobs';
+import { JOBS, JOINT_TYPES, JointType } from '../../data/jobs';
+import { SEARCH_PAGE, findJointById } from '../joint-link-logic/joint-route';
 import { JointRoutingWritesService } from '../joint-service/joint-routing-writes.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { HistoryRow, historyRows } from './rules/history-rows';
@@ -34,14 +35,16 @@ import { HistoryTableState } from './history-table-state';
 export class HistoryPageComponent {
   readonly viewer = inject(ViewerService);
   readonly jointHistory = signal<string | null>(null);
+  /* the one joint's type (?jointType=, pipe when left out); ids are only unique within a type */
+  readonly jointType = signal<JointType>('pipe');
   readonly canView = computed(() => this.jointHistory() !== null ? this.viewer.canViewJointHistory() : this.viewer.canViewHistoryPage());
   private store = inject(WorkflowStore);
   private routingWrites = inject(JointRoutingWritesService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
-  back() { this.router.navigate(['/pipe-welding']); }
+  /* one joint's History goes back to its type's search page */
+  back() { this.router.navigate([this.jointHistory() !== null ? SEARCH_PAGE[this.jointType()] : '/pipe-welding']); }
 
   /* person filter: the chosen person (search assist itself is app-person-search-input) */
   person = signal<Person | null>(null);
@@ -54,6 +57,8 @@ export class HistoryPageComponent {
     /* seed filters from url for deep links (person by name or identifier) */
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(pm => {
       this.jointHistory.set(pm.get('jointHistory'));
+      const type = pm.get('jointType') as JointType | null;
+      this.jointType.set(type && JOINT_TYPES.includes(type) ? type : 'pipe');
       this.jobQuery.set(this.jointHistory() ?? pm.get('job') ?? '');
       const p = pm.get('person');
       this.person.set(p ? PEOPLE.find(x => x.id === p || fullName(x) === p) ?? null : null);
@@ -85,6 +90,7 @@ export class HistoryPageComponent {
   private saveFiltersToUrl() {
     this.router.navigate([], { relativeTo: this.route, replaceUrl: true, queryParams: {
       ...(this.jointHistory() !== null ? { jointHistory: this.jointHistory() } : {}),
+      ...(this.jointHistory() !== null && this.jointType() !== 'pipe' ? { jointType: this.jointType() } : {}),
       job: this.jobQuery() || null,
       person: this.person()?.id ?? null,
       q: this.table.globalFilter() || null,
@@ -98,18 +104,21 @@ export class HistoryPageComponent {
     if (p) parts.push(`by ${fullName(p)}`);
     const jq = this.jobQuery().trim();
     if (jq) {
-      const exact = JOBS.find(j => j.id.toLowerCase() === jq.toLowerCase());
+      const exact = this.jointHistory() !== null
+        ? findJointById(this.jointType(), this.jointHistory()!)
+        : JOBS.find(j => j.id.toLowerCase() === jq.toLowerCase());
       /* a joint with no XREFID is named by hull, drawing and joint */
       parts.push(!exact ? `matching "${jq}"` : exact.xrefid ? `XREFID ${exact.xrefid}` : `${exact.hull} · ${exact.drawing} · ${exact.joint}`);
     }
     return parts.length ? parts.join(' · ') : '(all people)';
   });
 
-  /* every pipe joint's history flattened newest-first (structural joints' History isn't built yet) */
+  /* history flattened newest-first: one joint's type for one joint's History, else every pipe joint
+     (the all-joints History screen lists pipe joints only) */
   private allActivity = computed<HistoryRow[]>(() =>
     this.store.everyWorkflow()
-      .filter(wf => wf.jointType === 'pipe')
-      .flatMap(wf => historyRows(wf, this.jobById.get(wf.jobId)))
+      .filter(wf => wf.jointType === (this.jointHistory() !== null ? this.jointType() : 'pipe'))
+      .flatMap(wf => historyRows(wf, findJointById(wf.jointType, wf.jobId)))
       .sort((a, b) => b.when.localeCompare(a.when)));
 
   /* person + job pre-filters, applied before TableState's own sort/search/column filters */
@@ -126,8 +135,8 @@ export class HistoryPageComponent {
   });
 
   /* undo a job's most recent sign-off */
-  deprogress(jobId: string, reason: string) {
-    const job = this.jobById.get(jobId);
+  deprogress(row: HistoryRow, reason: string) {
+    const job = findJointById(row.jointType, row.jobId);
     if (job && this.viewer.canUseLegacyWorkflowActions()) this.routingWrites.deprogress(job, reason);
   }
 

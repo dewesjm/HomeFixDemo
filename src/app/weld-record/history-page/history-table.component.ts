@@ -10,13 +10,13 @@ import { LucideRotateCcw, LucideArrowUpRight, LucideChevronRight, LucideChevronD
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { ConfirmService } from '../../shared/confirm.service';
 import { AppDateTimePipe } from '../../shared/date-format';
-import { JOBS, Job } from '../../data/jobs';
+import { JOINT_TYPES } from '../../data/jobs';
 import { HistoryRow, correctableKeys, deprogressableKey, historyRowHasDetail, historyRows } from './rules/history-rows';
 import { getTemplates } from '../routing-logic/routing-settings-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { HistoryTableState } from './history-table-state';
-import { jointRoute } from '../joint-link-logic/joint-route';
+import { findJointById, jointRoute } from '../joint-link-logic/joint-route';
 
 @Component({
   selector: 'app-history-table',
@@ -31,7 +31,7 @@ export class HistoryTableComponent {
   private store = inject(WorkflowStore);
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);
-  private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
+  private jobFor = (r: Pick<HistoryRow, 'jointType' | 'jobId'>) => findJointById(r.jointType, r.jobId);
 
   readonly viewer = inject(ViewerService);
   table = input.required<HistoryTableState>();
@@ -40,15 +40,16 @@ export class HistoryTableComponent {
   oneJoint = input(false);
   emptyText = input('No activity matches your filters. Each sign-off records every editable field and its value at that moment.');
   /* Deprogress confirmed with a reason; the parent carries it out */
-  deprogress = output<{ jobId: string; reason: string }>();
+  deprogress = output<{ row: HistoryRow; reason: string }>();
 
-  /* canonical stage order (Routing Settings order), so the routing
+  /* canonical stage order (Routing Settings order of the rows' joint types), so the routing
      filter reads like the actual workflow sequence instead of alphabetically; anything not a
      real stage (e.g. 'All stages complete') sorts to the end */
   private routingOrder = computed(() => {
     const order = new Map<string, number>();
+    const types = new Set(this.table().rows().map(r => r.jointType));
     let i = 0;
-    for (const s of getTemplates('pipe')) {   /* the History page lists pipe joints only */
+    for (const s of JOINT_TYPES.filter(t => types.has(t)).flatMap(t => getTemplates(t))) {
       const label = s.displayName || s.label;
       if (!order.has(label)) order.set(label, i++);
     }
@@ -67,8 +68,9 @@ export class HistoryTableComponent {
   private actionKeys = computed(() => {
     const deprogress = new Set<string>();
     const correct = new Set<string>();
-    for (const jobId of new Set(this.table().rows().map(r => r.jobId))) {
-      const job = this.jobById.get(jobId);
+    const joints = new Map(this.table().rows().map(r => [`${r.jointType}|${r.jobId}`, r]));
+    for (const r of joints.values()) {
+      const job = this.jobFor(r);
       if (!job) continue;
       const wf = this.store.workflowFor(job)();
       const rows = historyRows(wf, job);
@@ -87,21 +89,21 @@ export class HistoryTableComponent {
     return (this.viewer.canUseLegacyWorkflowActions() || this.viewer.showRestrictedWorkflowActions()) && this.actionKeys().correct.has(r.key);
   }
 
-  confirmDeprogress(jobId: string) {
+  confirmDeprogress(row: HistoryRow) {
     if (!this.viewer.canUseLegacyWorkflowActions()) return;
     this.confirmSvc.confirm({
       header: 'Deprogress',
       message: 'This reverses the job\'s most recent sign-off. Enter a reason for the record.',
       acceptLabel: 'Deprogress',
       textInput: { label: 'Reason for deprogress', placeholder: 'Reason for deprogress…' },
-      accept: (reason) => { if (reason?.trim()) this.deprogress.emit({ jobId, reason: reason.trim() }); }
+      accept: (reason) => { if (reason?.trim()) this.deprogress.emit({ row, reason: reason.trim() }); }
     });
   }
 
   correctTarget = signal<CorrectTarget | null>(null);
 
   openCorrect(r: HistoryRow) {
-    const job = this.jobById.get(r.jobId);
+    const job = this.jobFor(r);
     if (this.viewer.canUseLegacyWorkflowActions() && job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
   }
 
@@ -109,8 +111,8 @@ export class HistoryTableComponent {
     this.correctTarget.set(null);
   }
 
-  openDetails(jobId: string) {
-    const job = this.jobById.get(jobId);
-    if (job) this.router.navigate(jointRoute(job), { queryParams: { from: 'history' } });
+  openDetails(r: HistoryRow) {
+    const job = this.jobFor(r);
+    if (job) this.router.navigate(jointRoute(job, r.jointType), { queryParams: { from: 'history' } });
   }
 }

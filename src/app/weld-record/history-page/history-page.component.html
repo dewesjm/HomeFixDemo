@@ -58,7 +58,7 @@
   <span class="meta fw-normal">· {{ table.total() }} entries</span>
 </div>
 
-<app-history-table [table]="table" (deprogress)="deprogress($event.jobId, $event.reason)" />
+<app-history-table [table]="table" (deprogress)="deprogress($event.row, $event.reason)" />
 
 <app-table-pager [state]="table" />
 </div>

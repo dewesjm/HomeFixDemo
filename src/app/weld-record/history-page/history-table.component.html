@@ -50,7 +50,7 @@
         @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: false }" /> }
         <td>
           @if (isDeprogressable(r)) {
-            <button type="button" class="btn btn-ghost btn-xs" [disabled]="!viewer.canUseLegacyWorkflowActions()" (click)="confirmDeprogress(r.jobId)" title="Reverse to previous routing">
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="!viewer.canUseLegacyWorkflowActions()" (click)="confirmDeprogress(r)" title="Reverse to previous routing">
               <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Deprogress</span>
             </button>
           }
@@ -65,7 +65,7 @@
         @if (all) {
           <td>
             @if (viewer.canViewJoint()) {
-            <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
+            <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r)">
               <svg lucideArrowUpRight class="size-3"></svg>
             </button>
             }

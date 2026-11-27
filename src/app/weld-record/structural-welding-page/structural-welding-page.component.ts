@@ -1,7 +1,7 @@
 /* Structural Welding: Pipe Welding's search over the structural joints. Stacked-condition filter bar
    (shared condition bar), keyword search, column header filters, a column picker with draggable headings,
    saved views (with a default per browser) and Export, and Details opens a joint's Joint Details. The
-   Routing column is each joint's routing now. No role, Release or History yet. */
+   Routing column is each joint's routing now; History opens the joint's History. No role or Release yet. */
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -51,7 +51,7 @@ const PAGE_SIZES = [10, 25, 50, 100];
 export class StructuralWeldingPageComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
-  /* History and Details show for the same roles as on Pipe Welding; History opens nothing yet */
+  /* History and Details show for the same roles as on Pipe Welding */
   readonly viewer = inject(ViewerService);
   private router = inject(Router);
   private store = inject(WorkflowStore);
@@ -300,6 +300,9 @@ export class StructuralWeldingPageComponent {
   }
 
   openDetails(row: SearchRow) { this.router.navigate(jointRoute(row, 'structural')); }
+  openHistory(row: SearchRow) {
+    this.router.navigate(['/history'], { queryParams: { job: row.id, jointHistory: row.id, jointType: 'structural' } });
+  }
 
   cellText(row: SearchRow, f: SearchField): string {
     const v = row[f.key];

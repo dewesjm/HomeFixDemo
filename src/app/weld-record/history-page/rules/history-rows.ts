@@ -1,6 +1,6 @@
 /* A joint's History as table rows (History screen, Records Review), and which rows offer
    Deprogress and Correct */
-import { Job } from '../../../data/jobs';
+import { Job, JointType } from '../../../data/jobs';
 import { HistoryEntry, SignoffInput } from '../../model/history';
 import { JobWorkflow } from '../../model/workflow-types';
 import { fabricationChanges } from '../../fabrication-logic/fabrication-fields';
@@ -8,7 +8,8 @@ import { fabricationChanges } from '../../fabrication-logic/fabrication-fields';
 /* one History entry with its joint's identifiers; sign-offs carry inputs (every editable field and its value at that moment) */
 export interface HistoryRow extends HistoryEntry {
   key: string;
-  /* the joint's internal key, for opening it and deep links; never shown */
+  /* the joint's type and internal key (ids are only unique within a type), for opening it and deep links; never shown */
+  jointType: JointType;
   jobId: string;
   /* the joint's XREFID as shown; blank when the source system has none */
   xrefid: string;
@@ -31,7 +32,8 @@ export function historyRows(wf: JobWorkflow, job: Job | undefined): HistoryRow[]
     .map(e => ({
       ...e,
       fabChanges: fabChanges.get(e),
-      key: `${wf.jobId}|${e.when}|${e.action}`,
+      key: `${wf.jointType}|${wf.jobId}|${e.when}|${e.action}`,
+      jointType: wf.jointType,
       jobId: wf.jobId,
       xrefid: job?.xrefid ?? '',
       hull: job?.hull ?? `#${wf.jobId}`,

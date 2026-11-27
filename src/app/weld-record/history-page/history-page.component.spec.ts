@@ -5,6 +5,7 @@ import { HistoryPageComponent } from './history-page.component';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { RoutingService } from '../services/routing.service';
 import { JOBS } from '../../data/jobs';
+import { STRUCTURAL_JOINTS } from '../../data/structural-joints';
 
 describe('History filter clearing', () => {
   it('clears each search with its button and removes the value from the URL', () => {
@@ -51,5 +52,30 @@ describe('History filter clearing', () => {
     };
     expect(summaryFor(blank.id)).toBe(`${blank.hull} · ${blank.drawing} · ${blank.joint}`);
     expect(summaryFor(named.id)).toBe(`XREFID ${named.xrefid}`);
+  });
+
+  it("a structural joint's History lists only that joint's entries and goes back to Structural", () => {
+    localStorage.clear();
+    const navigate = jasmine.createSpy('navigate');
+    let params = {};
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ActivatedRoute, useValue: { get queryParamMap() { return of(convertToParamMap(params)); } } },
+        { provide: Router, useValue: { navigate } },
+      ],
+    });
+    const store = TestBed.inject(WorkflowStore);
+    const joint = STRUCTURAL_JOINTS.find(j => store.workflowFor(j)().history.length)!;
+    params = { job: joint.id, jointHistory: joint.id, jointType: 'structural' };
+    const fixture = TestBed.createComponent(HistoryPageComponent);
+    fixture.detectChanges();
+    const page = fixture.componentInstance;
+    const rows = page.table.rows();
+    expect(rows.length).toBe(store.workflowFor(joint)().history.filter(e => e.section !== 'Stages' && e.section !== 'Fabrication').length);
+    expect(rows.every(r => r.jointType === 'structural' && r.jobId === joint.id)).toBeTrue();
+    expect(page.scopeLabel()).toContain(joint.xrefid || joint.joint);
+    page.back();
+    expect(navigate).toHaveBeenCalledWith(['/structural-welding']);
   });
 });
