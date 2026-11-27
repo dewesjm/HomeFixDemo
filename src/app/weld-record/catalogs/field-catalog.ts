@@ -8,7 +8,7 @@ import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { getJointDesign, jointDesignOptions } from '../../data/joint-designs';
-import { Job, MCL_POOL, SS_VALUES, DSS_VALUES, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, RT_DEGREE_OPTIONS, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
+import { Job, MCL_POOL, SS_VALUES, DSS_VALUES, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, PLATE_THICKNESSES, RT_DEGREE_OPTIONS, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
 import { hasMaterialFlag, MaterialFlag } from '../../data/material-classification';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { NDT_LABELS } from '../../data/ndt-labels';
@@ -163,6 +163,11 @@ const JOINT_DETAILS: RuleEntry[] = inSection('Joint Details', [
   text('sequenceNumber', 'Sequence #'), text('engineeringNotes', 'Engineering Notes'),
   text('mcl1', 'MCL 1', MCL_POOL), text('materialType1', 'Material Type 1'), text('joiningItem', 'Joining Item'),
   text('mcl2', 'MCL 2', MCL_POOL), text('materialType2', 'Material Type 2'), text('joinToItem', 'Join To Item'),
+  /* Structural only (blank on pipe joints) */
+  text('mcl3', 'MCL 3', MCL_POOL), text('materialType3', 'Material Type 3'), text('item3', 'Material 3 Item'),
+  text('thickness1', 'Material 1 Thickness', PLATE_THICKNESSES), text('thickness2', 'Material 2 Thickness', PLATE_THICKNESSES),
+  text('thickness3', 'Material 3 Thickness', PLATE_THICKNESSES),
+  text('etRoot', NDT_LABELS.etRoot, YES_NO), text('etFinal', NDT_LABELS.etFinal, YES_NO),
   { key: 'ut', label: NDT_LABELS.ut, values: ['X', '-'], get: jointDetailsUt },
   { key: 'vt', label: NDT_LABELS.vt, values: ['X'], get: jointDetailsVt },
   text('order', 'Order'), text('workPackage', 'Work Package'), text('workPermit', 'Work Permit'), text('waff', 'WAFF'),

@@ -1,0 +1,104 @@
+<section class="panel">
+  <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
+  <div class="detail-columns">
+    <!-- Column 1: Job Info -->
+    <div class="min-w-0">
+      <div class="detail-col">
+        <div class="detail-row"><span class="meta">XREFID</span><span>{{ value('xrefid') }}</span></div>
+        <div class="detail-row"><span class="meta">Ship</span><span>{{ job().ship }}</span></div>
+        <div class="detail-row"><span class="meta">Hull</span><span>{{ job().hull }}</span></div>
+        <div class="detail-row"><span class="meta">Drawing</span><span>{{ value('drawing') }}</span></div>
+        <div class="detail-row"><span class="meta">Drawing Rev</span><span>{{ value('drawingRev') }}</span></div>
+        <div class="detail-row"><span class="meta">Joint</span><span>{{ value('joint') }}</span></div>
+        <div class="detail-row"><span class="meta">Joint Design</span><span>{{ value('jointDesign') }}</span></div>
+        <div class="detail-row"><span class="meta">Weld Type</span><span>{{ value('weldType') }}</span></div>
+        <div class="detail-row"><span class="meta">Nuclear Indicator</span><span [appTooltip]="nIndTooltip()">{{ value('nInd') }}</span></div>
+        <div class="detail-row"><span class="meta">Sequence #</span><span>{{ value('sequenceNumber') }}</span></div>
+        <div class="detail-row"><span class="meta">Routing</span><span>{{ currentRouting() }}</span></div>
+      </div>
+    </div>
+
+    <!-- Column 2: Materials -->
+    <div class="min-w-0">
+      @for (m of materials; track m.label; let first = $first) {
+        <div [class.mt-sm]="!first">
+          <div class="font-semibold text-sm mb-1">{{ m.label }}</div>
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">MCL</span><span>{{ value(m.keys.mcl) }}</span></div>
+            <div class="detail-row"><span class="meta">Material Type</span><span>{{ value(m.keys.type) }}</span></div>
+            <div class="detail-row"><span class="meta">Item</span><span>{{ value(m.keys.item) }}</span></div>
+            <div class="detail-row"><span class="meta">Thickness</span><span>{{ value(m.keys.thickness) }}</span></div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Column 3: NDT Data -->
+    <div class="min-w-0">
+      <div class="font-semibold text-sm mb-1">NDT Data</div>
+      <div class="detail-col">
+        <div class="detail-row"><span class="meta">{{ labels.rtRoot }}</span><span>{{ value('rtRoot') }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.rtFinal }}</span><span>{{ value('rtFinal') }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.ndtRoot }}</span><span>{{ value('ndtRoot') }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.ndtEach }}</span><span>{{ value('ndtEach') }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.ndtFinal }}</span><span>{{ value('ndtFinal') }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.ut }}</span><span>{{ ut() }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.vt }}</span><span>{{ vt() }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.etRoot }}</span><span>{{ value('etRoot') }}</span></div>
+        <div class="detail-row"><span class="meta">{{ labels.etFinal }}</span><span>{{ value('etFinal') }}</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- Engineering Notes: its own line across the whole panel, scrolling only when longer than that -->
+  <div class="detail-row mt-1"><span class="meta">Engineering Notes</span><span class="whitespace-nowrap overflow-x-auto" tabindex="0" aria-label="Engineering Notes">{{ value('engineeringNotes') }}</span></div>
+
+  <!-- Show more / less -->
+  <button type="button" class="btn btn-ghost btn-sm mt-sm" (click)="showAudit.set(!showAudit())">
+    {{ showAudit() ? 'Show less' : 'Show more' }}
+    @if (showAudit()) { <svg lucideChevronUp class="size-4"></svg> } @else { <svg lucideChevronDown class="size-4"></svg> }
+  </button>
+  @if (showAudit()) {
+    <!-- Additional Data -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">Additional Data</div>
+      <div class="detail-columns">
+        <div class="min-w-0">
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">Order</span><span>{{ value('order') }}</span></div>
+            <div class="detail-row"><span class="meta">Work Package</span><span>{{ value('workPackage') }}</span></div>
+            <div class="detail-row"><span class="meta">Work Permit</span><span>{{ value('workPermit') }}</span></div>
+            <div class="detail-row"><span class="meta">WAFF</span><span>{{ value('waff') }}</span></div>
+            <div class="detail-row"><span class="meta">Serial Number</span><span>{{ value('serialNumber') }}</span></div>
+          </div>
+        </div>
+        <div class="min-w-0">
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">Refit #</span><span>{{ value('refitNumber') }}</span></div>
+            <div class="detail-row"><span class="meta">Repair #</span><span>{{ value('repairNumber') }}</span></div>
+            <div class="detail-row"><span class="meta">SS</span><span>{{ value('ss') }}</span></div>
+            <div class="detail-row"><span class="meta">SFCC</span><span>{{ value('sfff') }}</span></div>
+            <div class="detail-row"><span class="meta">DSS-SOC</span><span>{{ value('dssAaa') }}</span></div>
+          </div>
+        </div>
+        <div class="min-w-0">
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">ER1</span><span>{{ value('er1') }}</span></div>
+            <div class="detail-row"><span class="meta">ER2</span><span>{{ value('er2') }}</span></div>
+            <div class="detail-row"><span class="meta">ER3</span><span>{{ value('er3') }}</span></div>
+            <div class="detail-row"><span class="meta">ER4</span><span>{{ value('er4') }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Attribute Codes -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">Attribute Codes</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-6">
+        <div class="detail-row"><span class="meta">Attribute Code 1</span><span>{{ attrCodeDisplay(job().attributeCode1) || '-' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 2</span><span>{{ attrCodeDisplay(job().attributeCode2) || '-' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 3</span><span>{{ attrCodeDisplay(job().attributeCode3) || '-' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 4</span><span>{{ attrCodeDisplay(job().attributeCode4) || '-' }}</span></div>
+      </div>
+    </div>
+  }
+</section>

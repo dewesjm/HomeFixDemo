@@ -1,14 +1,15 @@
 /* Admin > Routing Settings rows: the starting rows (welding-steps.ts) with the saved changes (localStorage)
    applied, and saving them. Checks before a save and the Type options each row offers are in
    weld-record/routing-logic/routing-settings-rules.ts. One table per joint type: Pipe starts from the
-   built-in rows, Structural from Pipe's Fit row. */
+   built-in rows, Structural from its own (structural-welding-steps.ts). */
 import { settingsKey } from './storage-keys';
 import type { JointType } from './jobs';
 import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ADDED_STAGE_TEMPLATES } from './welding-steps';
 import { StageTemplate } from '../weld-record/model/stage-template';
 import { ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
 import { RouteToRule } from '../weld-record/routing-logic/route-to-rules';
-import { isFitupInspId, STRUCTURAL_STEP_IDS } from './welding-step-ids';
+import { isFitupInspId } from './welding-step-ids';
+import { STRUCTURAL_WELDING_STEPS } from './structural-welding-steps';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
@@ -22,8 +23,8 @@ const STATIC_TEMPLATES: StageTemplate[] = withFabricationEditable(WELDING_STEPS
   .map(s => ({ ...s, thenRules: DEFAULT_THEN_RULES[s.id] ?? [] }))
   .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)).concat(ADDED_STAGE_TEMPLATES);
 
-/* Structural's starting rows: Pipe's, for the steps Structural has so far */
-const STRUCTURAL_TEMPLATES = STATIC_TEMPLATES.filter(s => STRUCTURAL_STEP_IDS.includes(s.id));
+/* Structural's starting rows, with the same Fabrication rule */
+const STRUCTURAL_TEMPLATES = withFabricationEditable(STRUCTURAL_WELDING_STEPS);
 
 /* ── Saved Admin > Routing Settings changes (localStorage) ── */
 

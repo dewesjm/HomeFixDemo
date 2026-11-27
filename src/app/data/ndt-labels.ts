@@ -8,4 +8,7 @@ export const NDT_LABELS = {
   ndtFinal: 'NDT Final Weld',
   ut: 'UT Final Weld',
   vt: 'VT Final Weld',
+  /* Structural only */
+  etRoot: 'ET Root',
+  etFinal: 'ET Final',
 } as const;

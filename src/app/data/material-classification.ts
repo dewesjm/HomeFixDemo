@@ -50,6 +50,7 @@ export function setMaterialClassification(entries: MaterialClassificationEntry[]
   materialClassification.set(entries);
 }
 
-export function hasMaterialFlag(job: { materialType1: string; materialType2: string }, flag: MaterialFlag): boolean {
-  return [job.materialType1, job.materialType2].some(code => materialClassification().some(e => e.code === code && e[flag]));
+/* any of the joint's materials (a structural joint can have a third) */
+export function hasMaterialFlag(job: { materialType1: string; materialType2: string; materialType3?: string }, flag: MaterialFlag): boolean {
+  return [job.materialType1, job.materialType2, job.materialType3 ?? ''].filter(Boolean).some(code => materialClassification().some(e => e.code === code && e[flag]));
 }

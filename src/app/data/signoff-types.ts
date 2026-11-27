@@ -1,7 +1,7 @@
 /* Admin > Signoff Types: every Type a step can be signed as. A Type is added here first, then
    offered on steps (Admin > Signoff Type to Routing) and given its fields (Admin > Signoff Type
    Forms, one definition per Type, matched by its value). Stored in localStorage, one table per joint
-   type: Pipe starts from the seed Types, Structural from the Types Pipe's Fit offers. */
+   type: Pipe starts from the seed Types, Structural from Pipe's for the steps it has, plus ET. */
 import { signal } from '@angular/core';
 import { settingsKey } from './storage-keys';
 import type { JointType } from './jobs';
@@ -67,7 +67,12 @@ export const seededSignoffTypeIds = SEED_TYPES.map(t => t.value);
 const version = signal(0);
 export const signoffTypesVersion = version.asReadonly();
 
-const STRUCTURAL_SEED_TYPES = SEED_TYPES.filter(t => ['fit', WELD_BUILDUP_TYPE].includes(t.value));
+/* Structural's: Pipe's Types for the steps Structural has (no Pre-Fit, Tack, Fit-Up Release or Layer), and ET */
+export const ET_TYPE = 'et';
+const STRUCTURAL_SEED_TYPES = [
+  ...SEED_TYPES.filter(t => !['pre-fit', 'tack', 'deferred-tack', 'fitup-release', 'interim'].includes(t.value)),
+  type('ET', ET_TYPE),
+];
 
 function seedTypes(jointType: JointType): SignoffType[] {
   return jointType === 'pipe' ? SEED_TYPES : STRUCTURAL_SEED_TYPES;

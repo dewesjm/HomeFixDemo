@@ -7,7 +7,7 @@
 import { repairCodesVersion } from './repair-codes';
 import { settingsKey } from './storage-keys';
 import type { JointType } from './jobs';
-import { WELD_BUILDUP_TYPE } from './signoff-types';
+import { ET_TYPE, WELD_BUILDUP_TYPE } from './signoff-types';
 import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
 import { type FieldFill } from '../weld-record/catalogs/field-catalog';
 import { FILLER_KEYS } from '../weld-record/signoff-forms-logic/weld-fields';
@@ -187,8 +187,20 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
 
 /* ── Storage ── */
 
-/* the starting definitions of a joint type's table: Pipe's seeds, Structural Pipe's for the Types Fit offers */
-const STRUCTURAL_TYPE_DEFINITIONS = DEFAULT_TYPE_DEFINITIONS.filter(d => ['fit', WELD_BUILDUP_TYPE].includes(d.typeId));
+/* the starting definitions of a joint type's table: Pipe's seeds; Structural's are Pipe's for the
+   Types it has, Fit without Defer Tack (no Tack), Records Review without Pipe Size / Wall Thickness,
+   and ET with the NDT fields every NDT Type has */
+const STRUCTURAL_LEFT_OUT: Record<string, string[]> = {
+  fit: ['deferTack'], 'review-o63': ['verifyPipeSize', 'verifyWallThickness'], 'review-o04': ['verifyPipeSize', 'verifyWallThickness'],
+};
+const without = (d: TypeDefinition, keys: string[] = []): TypeDefinition => !keys.length ? d
+  : { ...d, fields: numberLines(d.fields.filter(f => !keys.includes(f.key)).map(({ line: _line, ...f }) => f)) };
+const STRUCTURAL_TYPE_DEFINITIONS: TypeDefinition[] = [
+  ...DEFAULT_TYPE_DEFINITIONS
+    .filter(d => !['pre-fit', 'tack', 'deferred-tack', 'fitup-release', 'interim'].includes(d.typeId))
+    .map(d => without(d, STRUCTURAL_LEFT_OUT[d.typeId])),
+  ((et: TypeDefinition) => ({ ...et, fields: numberLines(et.fields) }))(ndtType(ET_TYPE, [DECISION, { key: 'references' }])),
+];
 export function defaultTypeDefinitions(jointType: JointType): TypeDefinition[] {
   return jointType === 'pipe' ? DEFAULT_TYPE_DEFINITIONS : STRUCTURAL_TYPE_DEFINITIONS;
 }

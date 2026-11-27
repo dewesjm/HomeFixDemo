@@ -7,7 +7,7 @@ import { ConditionClause, ConditionRule } from '../weld-record/conditions-logic/
 import { RouteToRule } from '../weld-record/routing-logic/route-to-rules';
 import { ENGINEERING_HOLD_TARGET } from '../weld-record/routing-logic/on-signoff/rule-targets';
 
-type NdtPhase = 'root' | 'layer' | 'final';
+export type NdtPhase = 'root' | 'layer' | 'final';
 type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
 
 /* each NDT routing's method pair, and the Types it starts with on Signoff Type to Routing */
@@ -18,7 +18,7 @@ export const NDT_KINDS: Record<NdtKind, { label: string; options: StageOption[] 
 };
 
 /* one NDT routing: a phase (root/layer/final) x method pair */
-function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
+export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
   return {
     id: `${phase}-ndt-${kind}`,
     label: `${phase[0].toUpperCase()}${phase.slice(1)} NDT ${NDT_KINDS[kind].label}`,
@@ -29,7 +29,7 @@ function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
   };
 }
 
-const BUILT_IN_STEPS: StageTemplate[] = [
+export const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, persona: 'NQC Inspector' },
   { id: 'fit', label: 'Fit', required: true, persona: 'Fitting|Welding' },
   { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, persona: 'Welding' },
@@ -62,8 +62,8 @@ const utrtRule = (ndtKey: string, rtKey: string): ConditionRule[] => [
 ];
 const mtptRule = (ndtKey: string): ConditionRule[] => [[{ field: ndtKey, op: 'is', values: ['MT', 'PT', 'MT/PT'] }]];
 
-/* the rules the app was built with, before the NQC split below */
-const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
+/* the rules the app was built with, before the NQC split below (Structural's rows use them as they are) */
+export const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'pre-fit': [
     [{ field: 'nInd', op: 'is', values: ['1', '2'] }],
     [{ field: 'jdInsert', op: 'is', values: ['Yes'] }],
@@ -119,7 +119,7 @@ const gtawPtHold = (weldStepId: string): RouteToRule[] => [{
   ],
   to: ENGINEERING_HOLD_TARGET,
 }];
-const BUILT_IN_REJECT_RULES: Record<string, RouteToRule[]> = {
+export const BUILT_IN_REJECT_RULES: Record<string, RouteToRule[]> = {
   'root-ndt-mtpt': gtawPtHold('root-weld'),
   'layer-ndt-mtpt': gtawPtHold('root-layer'),
   'final-ndt-mtpt': gtawPtHold('final-weld'),

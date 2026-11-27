@@ -32,6 +32,14 @@ export interface Job {
   mcl2: string;              /* MCL 2 */
   joiningItem: string;       /* joining item */
   joinToItem: string;        /* join to item */
+  /* Structural only, blank on pipe joints: Structural's Joint Details shows Material 1/2/3 (MCL, Material
+     Type, Item, Thickness), Material 1 and 2 being the fields above; a third material is optional */
+  mcl3: string;
+  materialType3: string;
+  item3: string;
+  thickness1: string;
+  thickness2: string;
+  thickness3: string;
   sequenceNumber: string;    /* sequence # */
   engineeringNotes: string;  /* engineering notes */
   ndt: string;               /* Non-Destructive Examination requirement */
@@ -44,6 +52,9 @@ export interface Job {
   ndtEach: string;
   ndtFinal: string;
   ut: string;
+  /* Structural only, blank on pipe joints: Yes adds that phase's ET routing */
+  etRoot: string;
+  etFinal: string;
   /* additional data (show more) */
   order: string;
   workPackage: string;
@@ -98,6 +109,8 @@ export const PIPE_SIZES = ['0.5"', '0.75"', '1"', '1.25"', '1.5"', '2"', '2.5"',
 export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
 export const MCL_POOL = ['STD', 'MC-I'];
+/* a structural material's thickness */
+export const PLATE_THICKNESSES = ['0.250"', '0.313"', '0.375"', '0.500"', '0.625"', '0.750"', '1.000"'];
 /* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14. The leading letter
    varies (invented, no real area-code scheme specified). */
 export const JOINING_ITEMS = [
@@ -251,6 +264,7 @@ export function generateJobs(count = 480, { seed, idOffset, jointType }: JobSeed
       mcl2: pick(MCL_POOL),
       joiningItem: pick(JOINING_ITEMS),
       joinToItem: pick(JOINING_ITEMS),
+      mcl3: '', materialType3: '', item3: '', thickness1: '', thickness2: '', thickness3: '',
       sequenceNumber: '1',
       engineeringNotes,
       ndt: (rand(), pick(NDT_POOL)),   /* rand(): the draw of a removed field, so later seeded values don't shift */
@@ -262,6 +276,7 @@ export function generateJobs(count = 480, { seed, idOffset, jointType }: JobSeed
       ndtEach: ((v: string) => ndtEachBlank ? '' : v)(pick(NDT_EACH_VALUES)),   /* always picks, so later seeded values don't shift */
       ndtFinal,
       ut: pick(NDT_RESULTS),
+      etRoot: '', etFinal: '',
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
       workPackage: workPackageFor(hull, i),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
@@ -285,7 +300,25 @@ export function generateJobs(count = 480, { seed, idOffset, jointType }: JobSeed
     const job = out[out.length - 1];
     Object.assign(job, ndtForAttributeCodes(codes, job, codeRand));
   }
+  if (jointType === 'structural') out.forEach(structuralValues(seeded(seed + 3)));
   return out;
+}
+
+/* a structural joint's own values, from their own draws so the shared ones don't shift: no pipe size or
+   wall thickness, a thickness per material, a third material on about a quarter, ET on some */
+function structuralValues(rand: () => number) {
+  const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
+  const yesNo = (chance: number) => rand() < chance ? 'Yes' : 'No';
+  return (job: Job) => {
+    const third = rand() < 0.25;
+    Object.assign(job, {
+      pipeSize: '', wallThickness: '',
+      thickness1: pick(PLATE_THICKNESSES), thickness2: pick(PLATE_THICKNESSES),
+      mcl3: third ? pick(MCL_POOL) : '', materialType3: third ? pick(getBaseMaterialCodes()) : '',
+      item3: third ? pick(JOINING_ITEMS) : '', thickness3: third ? pick(PLATE_THICKNESSES) : '',
+      etRoot: yesNo(0.2), etFinal: yesNo(0.3),
+    });
+  };
 }
 
 export const JOBS: Job[] = generateJobs();

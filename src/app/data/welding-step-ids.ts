@@ -30,5 +30,14 @@ export const repairIdForExcavation = (excavationId: string) => `repair${roundSuf
 /* round number after the first, e.g. "Repair 2" */
 export const roundLabel = (label: string, id: string) => roundSuffix(id) ? `${label} ${roundSuffix(id).slice(1)}` : label;
 
-/* the steps Structural's settings tables start with, copied from Pipe's */
-export const STRUCTURAL_STEP_IDS = ['fit'];
+/* Structural's NDT routings per phase, in order: Pipe's three method pairs plus ET (its own routing,
+   after MT/PT). Structural has no Layer. */
+export const STRUCTURAL_PHASE_NDT_KINDS = ['vt5x', 'mtpt', 'et', 'utrt'] as const;
+export const STRUCTURAL_PHASES = ['root', 'final'] as const;
+const structuralNdt = (phase: string) => STRUCTURAL_PHASE_NDT_KINDS.map(k => `${phase}-ndt-${k}`);
+
+/* the built-in routings Structural's settings tables start with, in order (no NQC rows) */
+export const STRUCTURAL_STEP_IDS = [
+  'fit', 'fitup-insp', 'root-weld', ...structuralNdt('root'), 'final-weld', ...structuralNdt('final'),
+  'review-o63', 'review-o04', 'sold',
+];

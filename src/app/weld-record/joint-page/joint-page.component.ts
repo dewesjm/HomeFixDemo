@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingPanelComponent } from '../routing-panel/routing-panel.component';
 import { JointDetailsPanelComponent } from '../joint-details-panel/joint-details-panel.component';
+import { StructuralJointDetailsPanelComponent } from '../structural-joint-details-panel/structural-joint-details-panel.component';
 import { FabricationPanelComponent } from '../fabrication-panel/fabrication-panel.component';
 import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component';
 import { SignoffContext } from '../signoff-panel/signoff-context';
@@ -60,7 +61,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
   selector: 'app-joint-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RoutingPanelComponent, JointDetailsPanelComponent, FabricationPanelComponent, SignoffPanelComponent,
+    CommonModule, FormsModule, RoutingPanelComponent, JointDetailsPanelComponent, StructuralJointDetailsPanelComponent, FabricationPanelComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
   providers: [JointOverridesService, SignoffFormEditsService, SignoffFormErrorsService],

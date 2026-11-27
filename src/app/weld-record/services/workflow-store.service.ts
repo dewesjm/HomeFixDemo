@@ -21,7 +21,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.81';
+const CURRENT_VERSION = '2.10.82';
 
 /* a joint's workflow key: type + id, since ids are only unique within one joint type */
 const workflowKey = (job: Pick<Job, 'jointType' | 'id'>) => `${job.jointType}|${job.id}`;

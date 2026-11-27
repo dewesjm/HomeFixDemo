@@ -10,6 +10,7 @@ export function testJob(overrides: Partial<Job> = {}): Job {
     drawing: 'H000-0001', drawingRev: 'A', joint: '1', jointDesign: 'C-24', weldType: 'Butt',
     pipeSize: '2"', wallThickness: '0.154"', materialType1: '02-CS', materialType2: '02-CS',
     mcl1: 'STD', mcl2: 'STD', joiningItem: 'Pipe A', joinToItem: 'Pipe B', sequenceNumber: '1',
+    mcl3: '', materialType3: '', item3: '', thickness1: '', thickness2: '', thickness3: '', etRoot: '', etFinal: '',
     engineeringNotes: '', ndt: 'Visual only', pwht: 'None', nInd: '3',
     rtRoot: '', rtFinal: '', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', ut: '',
     order: '200000001', workPackage: 'WP-TEST', workPermit: '', waff: '',
